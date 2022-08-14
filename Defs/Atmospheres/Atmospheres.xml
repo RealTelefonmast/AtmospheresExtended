@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+  
+	<TAE.AtmosphericDef>
+		<defName>Oxygen</defName>
+		<naturalSaturation>0.85</naturalSaturation>
+		<atmosphericTag>Air</atmosphericTag>
+		<labelShort>O2</labelShort>
+		<valueColor>(25,125,255)</valueColor>
+	</TAE.AtmosphericDef>
+	
+</Defs>
