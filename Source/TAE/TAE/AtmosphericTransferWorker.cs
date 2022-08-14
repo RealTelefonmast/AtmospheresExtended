@@ -11,6 +11,13 @@ namespace TAE
 {
     public class AtmosphericTransferWorker
     {
+        private AtmosphericDef def;
+
+        public AtmosphericTransferWorker(AtmosphericDef def)
+        {
+            this.def = def;
+        }
+
         public float GetBaseTransferRate(Thing thing)
         {
             return FinalizeTransferRate(thing, AtmosphericPassPercent(thing));
@@ -35,12 +42,13 @@ namespace TAE
             //
             var fullFillage = forThing.def.Fillage == FillCategory.Full;
             var fillage = forThing.def.fillPercent;
+            var flowPct = fullFillage ? 0 : 1f - fillage;
             return forThing switch
             {
-                Building_Door door => door.Open ? 1 : (fullFillage ? 0 : 1f - fillage),
+                Building_Door door => door.Open ? 1 : flowPct,
                 Building_Vent vent => FlickUtility.WantsToBeOn(vent) ? 1 : 0,
-                Building_Cooler cooler => cooler.IsPoweredOn() ? 1 : 0,
-                { } b => fullFillage ? 0 : 1f - fillage,
+                Building_Cooler cooler => cooler.IsPoweredOn() ? 1.5f : 0,
+                { } b => flowPct,
                 _ => 0
             };
         }

@@ -17,7 +17,6 @@ namespace TAE
         {
             public static void Postfix(IntVec3 c, Region reg, Map ___map)
             {
-                TLog.Debug("Calling - TryCacheRegionTempInfo Patch");
                 ___map.GetMapInfo<AtmosphericMapInfo>().Cache.TryCacheRegionAtmosphericInfo(c, reg);
             }
         }
@@ -38,7 +37,6 @@ namespace TAE
         {
             public static void Postfix(Map ___map)
             {
-                TLog.Debug("Calling - ApplyLoadedDataToRegions Patch");
                 ___map.GetMapInfo<AtmosphericMapInfo>().Cache.scriber.ApplyLoadedDataToRegions();
             }
         }

@@ -18,14 +18,14 @@ namespace TAE
 
     public class AtmosphereBiomeExtension : DefModExtension
     {
-        public List<DefValue<AtmosphericDef, float>> uniqueAtmospheres;
+        public List<DefFloat<AtmosphericDef>> uniqueAtmospheres;
     }
 
     public class AtmosphericBiomeRuleSetDef : Def
     {
         public AtmosphericOccurence occurence = AtmosphericOccurence.AnyBiome;
         public List<BiomeDef> biomes;
-        public List<DefValue<AtmosphericDef, float>> atmospheres;
+        public List<DefFloat<AtmosphericDef>> atmospheres;
     }
 
     public class AtmosphericDef : Def
@@ -57,7 +57,7 @@ namespace TAE
 
         public float FlowRate => 1f / viscosity;
 
-        public AtmosphericTransferWorker TransferWorker => workerInt ??= (AtmosphericTransferWorker)Activator.CreateInstance(transferWorker);
+        public AtmosphericTransferWorker TransferWorker => workerInt ??= (AtmosphericTransferWorker)Activator.CreateInstance(transferWorker, this);
 
     }
 }

@@ -93,10 +93,6 @@ namespace TAE.Caching
                     atmosphericGrid = new DefValueStack<AtmosphericDef>[arraySize];
                     GenSerialization.LoadFloat(dataBytes, arraySize, delegate (int idx, float idxValue)
                     {
-                        if (idxValue > 0)
-                        {
-                            Log.Message($"Loading {idx}[{map.cellIndices.IndexToCell(idx)}]: {idxValue} ({type})");
-                        }
                         atmosphericGrid[idx] += new DefValueStack<AtmosphericDef>(type, idxValue);
                     });
                 }

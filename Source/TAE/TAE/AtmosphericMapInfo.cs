@@ -26,7 +26,7 @@ namespace TAE
         private List<IAtmosphericSource> allSources;
 
         //Data
-        private static List<DefValue<AtmosphericDef, float>> naturalAtmospheres = new();
+        private static List<DefFloat<AtmosphericDef>> naturalAtmospheres = new();
 
         private List<AtmosphericPortal> allConnections;
         private List<AtmosphericPortal> allConnectionsToOutside;
@@ -150,8 +150,10 @@ namespace TAE
 
                 foreach (var ruleSet in DefDatabase<AtmosphericBiomeRuleSetDef>.AllDefs)
                 {
+                    TLog.Message($"Found Ruleset: {ruleSet}");
                     if (ruleSet.occurence == AtmosphericOccurence.AnyBiome)
                     {
+                        TLog.Message("Any Biome --");
                         naturalAtmospheres.AddRange(ruleSet.atmospheres);
                         continue;
                     }
@@ -168,6 +170,7 @@ namespace TAE
 
             foreach (var atmosphere in naturalAtmospheres)
             {
+                TLog.Message($"Adding natural atmosphere: {atmosphere}");
                 var storedOf = mapContainer.TotalStoredOf(atmosphere.Def);
                 var desired = mapContainer.Capacity * atmosphere.Value;
                 var diff = Mathf.Round(desired - storedOf);

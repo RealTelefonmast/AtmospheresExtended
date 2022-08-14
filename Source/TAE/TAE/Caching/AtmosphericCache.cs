@@ -37,7 +37,6 @@ namespace TAE.Caching
         //
         public void SetData(IntVec3 pos, CachedAtmosData atmosData)
         {
-            TLog.Debug($"Setting Data at {pos}: {atmosData}");
             atmosGrid[map.cellIndices.CellToIndex(pos)] = atmosData;
         }
 

@@ -7,7 +7,7 @@
     <TargetFramework>net472</TargetFramework>
     <LangVersion>latest</LangVersion>
     <PlatformTarget>x64</PlatformTarget>
-    <OutputPath>C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\AtmosphereExtended\Assemblies\</OutputPath>
+    <OutputPath>C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\AtmospheresExtended\Assemblies\</OutputPath>
     <Optimize>true</Optimize>
     <DebugType>none</DebugType>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>

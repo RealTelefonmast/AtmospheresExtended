@@ -13,7 +13,6 @@ namespace TAE
 {
     public class RoomComponent_Atmospheric : RoomComponent
     {
-        //
         private int dirtyMarks;
 
         //
@@ -226,10 +225,17 @@ namespace TAE
 
             TWidgets.DoTinyLabel(innerRect.RightPartPixels(20).BottomPartPixels(20), $"[{Room.ID}]");
 
-            if (Widgets.ButtonText(innerRect.BottomPartPixels(20).LeftPartPixels(40), "Add"))
+            var addRect = innerRect.BottomPartPixels(20).LeftPartPixels(40);
+            if (Widgets.ButtonText(addRect, "Add"))
             {
                 TryAddValue(DefDatabase<AtmosphericDef>.GetNamed("Oxygen"), 100, out _);
             }
+            if (Widgets.ButtonText(new Rect(addRect.xMax, addRect.y, addRect.width, addRect.height), "Clear"))
+            {
+                RoomContainer.Data_Clear();
+                //TryAddValue(DefDatabase<AtmosphericDef>.GetNamed("Oxygen"), 100, out _);
+            }
+
 
             Widgets.EndGroup();
         }
@@ -242,7 +248,7 @@ namespace TAE
             Text.Anchor = TextAnchor.UpperLeft;
             foreach (var type in container.AllStoredTypes)
             {
-                string label = $"{type.labelShort}: {container.TotalStoredOf(type)} | {outside.TotalStoredOf(type)}";
+                string label = $"{type.labelShort}: {container.TotalStoredOf(type)}({container.StoredPercentOf(type).ToStringPercent()}) | {outside.TotalStoredOf(type)}({outside.StoredPercentOf(type).ToStringPercent()})";
                 Rect typeRect = new Rect(5, height, 10, 10);
                 Vector2 typeSize = Text.CalcSize(label);
                 Rect typeLabelRect = new Rect(20, height - 2, typeSize.x, typeSize.y);
