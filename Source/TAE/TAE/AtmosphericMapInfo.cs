@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using HotSwap;
+using RimWorld;
 using TAE.Caching;
 using TeleCore;
 using UnityEngine;
@@ -11,6 +13,7 @@ using Verse;
 
 namespace TAE
 {
+    [HotSwappable]
     public class AtmosphericMapInfo : MapInformation
     {
         //
@@ -18,17 +21,18 @@ namespace TAE
 
         //
         private AtmosphericCache _cache;
-        private AtmosphericContainer mapContainer;
+        private readonly AtmosphericContainer mapContainer;
 
-        private Dictionary<Room, RoomComponent_Atmospheric> compByRoom;
-        private List<RoomComponent_Atmospheric> allComps;
+        private readonly Dictionary<Room, RoomComponent_Atmospheric> compByRoom;
+        private readonly List<RoomComponent_Atmospheric> allComps;
 
-        private List<IAtmosphericSource> allSources;
+        private readonly List<IAtmosphericSource> allSources;
 
         //Data
-        private static List<DefFloat<AtmosphericDef>> naturalAtmospheres = new();
+        private readonly List<DefFloat<AtmosphericDef>> naturalAtmospheres = new();
+        private readonly List<SkyOverlay> naturalOverlays = new();
 
-        private List<AtmosphericPortal> allConnections;
+        private readonly List<AtmosphericPortal> allConnections;
         private List<AtmosphericPortal> allConnectionsToOutside;
 
         //public int TotalMapPollution => OutsideContainer.Atmospheric + AllComps.Sum(c => c.PollutionContainer.Atmospheric);
@@ -37,6 +41,7 @@ namespace TAE
         public AtmosphericContainer MapContainer => mapContainer;
         public List<RoomComponent_Atmospheric> AllAtmosphericRooms => allComps;
         public AtmosphericCache Cache => _cache;
+        public int ConnectorCount => allConnections.Count; //{ get; set; }
 
         public AtmosphericMapInfo(Map map) : base(map)
         {
@@ -88,6 +93,7 @@ namespace TAE
 
             RegenerateMapInfo();
             PushNaturalSaturation(); //Add all natural atmospheres once
+            //map.GameConditionManager.RegisterCondition(GameConditionMaker.MakeConditionPermanent(AtmosDefOf.AtmosphericCondition));
         }
 
         public void RegenerateMapInfo()
@@ -131,24 +137,62 @@ namespace TAE
                     TryAddToAtmosphere(source);
                 }
             }
+
+            foreach (var overlay in naturalOverlays)
+            {
+                overlay.OverlayColor = naturalAtmospheres[0].Def.valueColor;
+                overlay.TickOverlay(map);
+            }
+        }
+
+        public void DrawSkyOverlays()
+        {
+            if (naturalOverlays.NullOrEmpty()) return;
+            for (var i = 0; i < naturalOverlays.Count; i++)
+            {
+                naturalOverlays[i].DrawOverlay(map);
+            }
         }
 
         private void PushNaturalSaturation()
         {
             //
-            if (naturalAtmospheres.NullOrEmpty())
-            {
-                var extension = map.Biome.GetModExtension<AtmosphereBiomeExtension>();
-                if (extension?.uniqueAtmospheres != null)
-                {
-                    foreach (var atmosphere in extension.uniqueAtmospheres)
-                    {
-                        naturalAtmospheres.Add(atmosphere);
-                    }
-                    return;
-                }
+            GenerateNaturalAtmospheres();
 
-                foreach (var ruleSet in DefDatabase<AtmosphericBiomeRuleSetDef>.AllDefs)
+            //
+            foreach (var atmosphere in naturalAtmospheres)
+            {
+                TLog.Message($"Adding natural atmosphere: {atmosphere}");
+                var storedOf = mapContainer.TotalStoredOf(atmosphere.Def);
+                var desired = mapContainer.Capacity * atmosphere.Value;
+                var diff = Mathf.Round(desired - storedOf);
+                if(diff <= 0) continue;
+                mapContainer.TryAddValue(atmosphere.Def, diff, out _);
+            }
+        }
+
+
+        private void GenerateNaturalAtmospheres()
+        {
+            if (!naturalAtmospheres.NullOrEmpty()) return;
+
+
+            TLog.Warning("GENERATING NATURAL ATMOSPHERES #############################");
+            var extension = map.Biome.GetModExtension<TAE_BiomeExtension>();
+            bool useRulesets = true;
+            if (extension?.uniqueAtmospheres != null)
+            {
+                foreach (var atmosphere in extension.uniqueAtmospheres)
+                {
+                    naturalAtmospheres.Add(atmosphere);
+                    mapContainer.Data_RegisterSourceType(atmosphere.def);
+                }
+                useRulesets = false;
+            }
+
+            if (useRulesets)
+            {
+                foreach (var ruleSet in DefDatabase<TAE_RulesetDef>.AllDefs)
                 {
                     TLog.Message($"Found Ruleset: {ruleSet}");
                     if (ruleSet.occurence == AtmosphericOccurence.AnyBiome)
@@ -162,7 +206,11 @@ namespace TAE
                     {
                         if (ruleSet.biomes.Contains(map.Biome))
                         {
-                            naturalAtmospheres.AddRange(ruleSet.atmospheres);
+                            foreach (var atmosphere in ruleSet.atmospheres)
+                            {
+                                naturalAtmospheres.Add(atmosphere);
+                                mapContainer.Data_RegisterSourceType(atmosphere.def);
+                            }
                         }
                     }
                 }
@@ -170,12 +218,16 @@ namespace TAE
 
             foreach (var atmosphere in naturalAtmospheres)
             {
-                TLog.Message($"Adding natural atmosphere: {atmosphere}");
-                var storedOf = mapContainer.TotalStoredOf(atmosphere.Def);
-                var desired = mapContainer.Capacity * atmosphere.Value;
-                var diff = Mathf.Round(desired - storedOf);
-                if(diff <= 0) continue;
-                mapContainer.TryAddValue(atmosphere.Def, diff, out _);
+                if (atmosphere.Def.naturalOverlay != null)
+                {
+                    TLog.Message($"Adding Natural Overlay: {atmosphere.Def}");
+                    TeleUpdateManager.Notify_EnqueueNewSingleAction(() =>
+                    {
+                        var newOverlay = new SkyOverlay_Atmosphere(atmosphere.Def.naturalOverlay);
+
+                        naturalOverlays.Add(newOverlay);
+                    });
+                }
             }
         }
 
@@ -225,8 +277,6 @@ namespace TAE
         {
             allComps.Remove(comp);
             compByRoom.Remove(comp.Room);
-
-            Log.Message($"[TAE] Disbanding roomComp: {comp.Room.ID}");
 
             //Remove Portals
             allConnections.RemoveAll(p => p.Connects(comp));

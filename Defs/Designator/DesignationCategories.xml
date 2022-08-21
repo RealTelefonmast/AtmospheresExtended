@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+
+	<TeleCore.SubMenuDesignator>
+		<defName>Atmospheric</defName>
+		<label>atmospheric</label>
+		<order>24</order>
+		<menuDef>AtmosphericMenu</menuDef>
+	</TeleCore.SubMenuDesignator>
+	
+	<TeleCore.SubBuildMenuDef>
+		<defName>AtmosphericMenu</defName>
+		<thingGroups>
+			<li>TestGroup</li>
+		</thingGroups>
+	</TeleCore.SubBuildMenuDef>
+	
+	<TeleCore.SubThingGroupDef>
+		<defName>TestGroup</defName>
+		<subCategories>
+			<li>Structure</li>
+			<li>Decoration</li>
+		</subCategories>
+	</TeleCore.SubThingGroupDef>
+	
+	<TeleCore.SubThingCategory>
+		<defName>Structure</defName>
+		<label>Structure</label>
+	</TeleCore.SubThingCategory>  
+  
+	<TeleCore.SubThingCategory>
+		<defName>Decoration</defName>
+		<label>Decoration</label>
+	</TeleCore.SubThingCategory>  
+	
+</Defs>

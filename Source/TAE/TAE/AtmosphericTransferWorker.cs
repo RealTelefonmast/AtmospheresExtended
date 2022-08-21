@@ -3,12 +3,71 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using HotSwap;
 using RimWorld;
 using TeleCore;
+using UnityEngine;
 using Verse;
 
 namespace TAE
 {
+    [HotSwappable]
+    public struct FlowResult
+    {
+        private bool hadFlow = false;
+        private bool flowToOther = false;
+        private bool isVoided = false;
+        private AtmosPortalFlow flowDirection = AtmosPortalFlow.None;
+
+        public bool NoFlow => !hadFlow;
+        public bool FlowsToOther => flowToOther;
+        public bool IsVoided => isVoided;
+
+        public int FromIndex
+        {
+            get
+            {
+                return flowDirection switch
+                {
+                    AtmosPortalFlow.Positive => 0,
+                    AtmosPortalFlow.Negative => 1,
+                    _ => -1
+                };
+            }
+        }
+
+        public int ToIndex
+        {
+            get
+            {
+                return flowDirection switch
+                {
+                    AtmosPortalFlow.Positive => 1,
+                    AtmosPortalFlow.Negative => 0,
+                    _ => -1
+                };
+            }
+        }
+
+        public FlowResult() { }
+
+        public void SetFlow(AtmosPortalFlow flowDir)
+        {
+            hadFlow = flowToOther = true;
+            this.flowDirection = flowDir;
+        }
+
+        public static FlowResult None => new() {hadFlow = false};
+        public static FlowResult ResultVoided => new() {isVoided = true, hadFlow = true };
+        public static FlowResult ResultNormalFlow => new() {flowToOther = true, hadFlow = true};
+
+        public override string ToString()
+        {
+            return $"HadFlow: {hadFlow}; FlowToOther: {flowToOther}; IsVoided: {isVoided}; FlowDir: {flowDirection} [{FromIndex} -> {ToIndex}]";
+        }
+    }
+
+    [HotSwappable]
     public class AtmosphericTransferWorker
     {
         private AtmosphericDef def;
@@ -28,10 +87,15 @@ namespace TAE
             return baseTransferRate;
         }
 
-        //
-        internal static float AtmosphericPassPercent(Thing forThing)
+        protected virtual FlowResult CustomTransferFunc(AtmosphericContainer @from, AtmosphericContainer to, AtmosphericDef valueType, float value)
         {
-            if (forThing == null) return 1;
+            return FlowResult.ResultNormalFlow;
+        }
+
+        //
+        public static float AtmosphericPassPercent(Thing forThing)
+        {
+            if (forThing == null) return 1.0f;
             
             //Custom Worker Subroutine
             if (AtmosPortalData.TryGetWorkerFor(forThing.def, out var worker))
@@ -42,18 +106,53 @@ namespace TAE
             //
             var fullFillage = forThing.def.Fillage == FillCategory.Full;
             var fillage = forThing.def.fillPercent;
-            var flowPct = fullFillage ? 0 : 1f - fillage;
+            var flowPct = fullFillage ? 0.0f : 1.0f - fillage;
             return forThing switch
             {
-                Building_Door door => door.Open ? 1 : flowPct,
-                Building_Vent vent => FlickUtility.WantsToBeOn(vent) ? 1 : 0,
-                Building_Cooler cooler => cooler.IsPoweredOn() ? 1.5f : 0,
+                Building_Door door => door.Open ? 1 : FlowPctForDoor(door, fillage),
+                Building_Vent vent => FlickUtility.WantsToBeOn(vent) ? 1.0f : 0.0f,
+                Building_Cooler cooler => cooler.IsPoweredOn() ? 1.5f : 0.0f,
                 { } b => flowPct,
-                _ => 0
+                _ => 0.0f
             };
         }
 
-        internal static bool IsPassBuilding(Building building)
+        private static float FlowPctForDoor(Building_Door door, float fillage)
+        {
+            var categories = door.Stuff?.stuffProps?.categories;
+            if (categories.NullOrEmpty()) return 1.0f - fillage;
+
+            foreach (var stuffCategory in categories)
+            {
+                if (stuffCategory == StuffCategoryDefOf.Fabric)
+                {
+                    return (float)Math.Round(1 - (fillage * 0.1), 2);
+                }
+
+                if (stuffCategory == StuffCategoryDefOf.Leathery)
+                {
+                    return (float)Math.Round(1 - (fillage * 0.25), 2);
+                }
+
+                if (stuffCategory == StuffCategoryDefOf.Woody)
+                {
+                    return (float)Math.Round(1 - (fillage * 0.75f), 2);
+                }
+
+                if (stuffCategory == StuffCategoryDefOf.Stony)
+                {
+                    return (float)Math.Round(1 - (fillage * 0.95f), 2);
+                }
+
+                if (stuffCategory == StuffCategoryDefOf.Metallic)
+                {
+                    return 0;
+                }
+            }
+            return 1 - fillage;
+        }
+
+        public static bool IsPassBuilding(Building building)
         {
             if (building == null) return false;
          
@@ -74,17 +173,48 @@ namespace TAE
             };
         }
 
-        public bool TryTransferVia(AtmosphericPortal atmosphericPortal, AtmosphericContainer @from, AtmosphericContainer to, AtmosphericDef atmosDef)
+        public FlowResult TryTransferVia(AtmosphericPortal atmosphericPortal, AtmosphericContainer from, AtmosphericContainer to, AtmosphericDef atmosDef)
         {
-            var diff = (from.StoredPercentOf(atmosDef) - to.StoredPercentOf(atmosDef));
-            var diffAbs = Math.Abs(diff);
-            if (!(diffAbs > 0.01f)) return false;
-            var positiveFlow = diff > 0;
+            if (!atmosphericPortal.NeedsEqualizing(atmosDef, out var flow, out var diffAbs))
+            {
+                return FlowResult.None;
+            }
 
-            var sendingContainer = positiveFlow ? from : to;
-            var receivingContainer = positiveFlow ? to : from;
-            var flowAmount = AtmosphericMapInfo.CELL_CAPACITY * diffAbs * GetBaseTransferRate(atmosphericPortal.Thing) * atmosDef.FlowRate;
-            return sendingContainer.TryTransferTo(receivingContainer, atmosDef, flowAmount);
+            FlowResult flowResult = new FlowResult();
+            flowResult.SetFlow(flow);
+
+            var sender = flow == AtmosPortalFlow.Positive ? from : to;
+            var receiver = flow == AtmosPortalFlow.Positive ? to : from;
+
+            //Get base transfer part
+            var fromComp = atmosphericPortal[flowResult.FromIndex];
+            var value = (sender.TotalStoredOf(atmosDef) / fromComp.ConnectorCount) * 0.5f;
+            value = Mathf.Clamp(value, 0, 100);
+
+            //
+            var flowAmount = value * diffAbs * GetBaseTransferRate(atmosphericPortal.Thing) * atmosDef.FlowRate;
+            flowAmount = Mathf.Ceil(flowAmount);
+
+            //
+            if (sender.CanFullyTransferTo(receiver, atmosDef, flowAmount))
+            {
+                if (sender.TryRemoveValue(atmosDef, flowAmount, out float actualVal))
+                {
+                    FlowResult result = CustomTransferFunc(sender, receiver, atmosDef, actualVal);
+                    if (result.FlowsToOther)
+                    {
+                        receiver.TryAddValue(atmosDef, actualVal, out _);
+                    }
+                    result.SetFlow(flow);
+                    return result;
+                }
+            }
+            return FlowResult.None;
+        }
+
+        public void ProcessFlow(Rot4 flowDir, IntVec3 flowOut, RoomComponent_Atmospheric flowInto)
+        {
+            FleckMaker.ThrowExplosionCell(flowOut, flowInto.Map, FleckDefOf.ExplosionFlash, Color.cyan);
         }
     }
 }

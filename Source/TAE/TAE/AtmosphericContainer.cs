@@ -4,12 +4,14 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using HotSwap;
 using TeleCore;
 using UnityEngine;
 using Verse;
 
 namespace TAE
 {
+    [HotSwappable]
     public class AtmosphericContainer
     {
         //
@@ -19,6 +21,7 @@ namespace TAE
         //
         private float totalStoredCache;
         private HashSet<AtmosphericDef> storedTypeCache;
+        private HashSet<AtmosphericDef> mapSourceTypes;
 
         //
         private Dictionary<AtmosphericDef, float> storedValues;
@@ -29,6 +32,7 @@ namespace TAE
 
         public RoomComponent_Atmospheric Parent => parentComp;
         public bool HasParentRoom => parentComp != null;
+        public bool IsSourceContainer => mapSourceTypes.Count > 0;
 
         //Dynamic State Getters
         public float CapacityOf(AtmosphericDef def)
@@ -43,7 +47,7 @@ namespace TAE
 
         public float StoredPercentOf(AtmosphericDef def)
         {
-            return TotalStoredOf(def) / (_capacity * def.maxSaturation);
+            return TotalStoredOf(def) / Mathf.Ceil(_capacity * def.maxSaturation);
         }
 
         public float StoredPercentRelative(AtmosphericDef def)
@@ -54,6 +58,11 @@ namespace TAE
         public bool FullFor(AtmosphericDef def)
         {
             return TotalStoredOf(def) > _capacity;
+        }
+
+        public bool IsSourceType(AtmosphericDef def)
+        {
+            return mapSourceTypes.Contains(def);
         }
 
         //
@@ -69,6 +78,7 @@ namespace TAE
             this.parentComp = parent;
             storedValues = new Dictionary<AtmosphericDef, float>();
             storedTypeCache = new HashSet<AtmosphericDef>();
+            mapSourceTypes = new HashSet<AtmosphericDef>();
         }
 
         public void Data_Clear()
@@ -90,6 +100,11 @@ namespace TAE
             {
                 TryAddValue(value.Def, value.Value, out _);
             }
+        }
+
+        public void Data_RegisterSourceType(AtmosphericDef sourceType)
+        {
+            mapSourceTypes.Add(sourceType);
         }
 
         public void Notify_RoomChanged(RoomComponent_Atmospheric parent, int roomCells)
@@ -122,8 +137,26 @@ namespace TAE
             */
         }
 
+        public bool CanAccept(AtmosphericDef def)
+        {
+            var totalPct = StoredPercentOf(def);
+            foreach (var value in storedValues)
+            {
+                var valDef = value.Key;
+                if (valDef.replaceTags != null && valDef.replaceTags.Contains(def.atmosphericTag))
+                {
+                    var valPct = value.Value / Capacity;
+                    return (1 - valPct) > totalPct;
+                }
+            }
+            return true;
+        }
+
         public bool CanFullyTransferTo(AtmosphericContainer other, AtmosphericDef valueType, float value)
         {
+            //Check Tag Rules
+            if (!CanAccept(valueType)) return false;
+            if (storedValues.TryGetValue(valueType) < value) return false;
             return other.TotalStoredOf(valueType) + value <= other.CapacityOf(valueType);
         }
 
@@ -132,7 +165,7 @@ namespace TAE
             //Attempt to transfer a weight to another container
             //Check if anything of that type is stored, check if transfer of weight is possible without loss, try remove the weight from this container
             //if (!other.AcceptsType(valueType)) return false;
-            if (storedValues.TryGetValue(valueType) >= value && CanFullyTransferTo(other, valueType, value) && TryRemoveValue(valueType, value, out float actualValue))
+            if (CanFullyTransferTo(other, valueType, value) && TryRemoveValue(valueType, value, out float actualValue))
             {
                 //If passed, try to add the actual weight removed from this container, to the other.
                 other.TryAddValue(valueType, actualValue, out float actualAddedValue);
@@ -169,6 +202,20 @@ namespace TAE
 
             //Update stack state
             Notify_ContainerStateChanged();
+            Parent?.Notify_AddedContainerValue(def, value);
+
+            //Tag Processing
+            if (def.replaceTags != null)
+            {
+                var newPct = StoredPercentOf(def);
+                var fittingTypes = AllStoredTypes.Where(t => def.replaceTags.Contains(t.atmosphericTag)).ToArray();
+                for (var i = 0; i < fittingTypes.Length; i++)
+                {
+                    //var valPct = StoredPercentOf(fittingTypes[i]);
+                    if (StoredPercentOf(fittingTypes[i]) > 1 - newPct)
+                        TryRemoveValue(fittingTypes[i], value / fittingTypes.Length, out _);
+                }
+            }
         }
 
         public void Notify_RemovedValue(AtmosphericDef def, float value)
@@ -197,8 +244,8 @@ namespace TAE
                 return false;
             }
 
-            //if (!AcceptsType(valueType))
-            //return false;
+            if (!CanAccept(def))
+                return false;
 
             //If the weight type is already stored, add to it, if not, make a new entry
             if (storedValues.ContainsKey(def))
@@ -217,14 +264,23 @@ namespace TAE
 
         public bool TryRemoveValue(AtmosphericDef def, float wantedValue, out float actualValue)
         {
+            if (mapSourceTypes.Contains(def))
+            {
+                actualValue = wantedValue;
+                return true;
+            }
+
             //Attempt to remove a certain weight from the container
-            actualValue = wantedValue;
+            actualValue = 0;
             var value = TotalStoredOf(def);
             if (value > 0)
             {
                 if (value >= wantedValue)
+                {
                     //If we have stored more than we need to pay, remove the wanted weight
                     storedValues[def] -= wantedValue;
+                    actualValue = wantedValue;
+                }
                 else if (value > 0)
                 {
                     //If not enough stored to "pay" the wanted weight, remove the existing weight and set actual removed weight to removed weight 
@@ -233,6 +289,7 @@ namespace TAE
                 }
             }
 
+            if (actualValue == 0) return false;
             if (storedValues[def] <= 0)
             {
                 storedValues.Remove(def);

@@ -3,34 +3,42 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using HotSwap;
 using TeleCore;
+using UnityEngine;
 using Verse;
 
 namespace TAE
 {
+    public enum AtmosPortalFlow
+    {
+        None,
+        Positive,
+        Negative,
+    }
+
+    [HotSwappable]
     public struct AtmosphericPortal
     {
         private readonly Building connector;
         private readonly RoomComponent_Atmospheric[] connections;
         private readonly Rot4[] connectionDirections;
-        private Rot4 flowDirection;
 
-        private bool _isFlowing;
+        private Dictionary<AtmosphericDef, FlowResult> lastResultByDef = new();
 
         public bool ConnectsToOutside => connections[0].IsOutdoors || connections[1].IsOutdoors;
-        public bool IsOutdoors => connections[0].IsOutdoors && connections[1].IsOutdoors;
+        public bool ConnectsToSame => connections[0].IsOutdoors && connections[1].IsOutdoors || connections[0] == connections[1];
 
-        public bool IsTransfering => _isFlowing;
         public bool IsValid => connector != null;
         public Thing Thing => connector;
+
+        public RoomComponent_Atmospheric this[int i] => connections[i];
 
         internal AtmosphericPortal(Building building, RoomComponent_Atmospheric roomA, RoomComponent_Atmospheric roomB)
         {
             connector = building;
             connections = new[] {roomA, roomB};
             connectionDirections = new Rot4[2];
-            flowDirection = Rot4.Invalid;
-            _isFlowing = false;
 
             //Get Directions
             for (int i = 0; i < 4; i++)
@@ -45,35 +53,86 @@ namespace TAE
             }
         }
 
+        public bool NeedsEqualizing(AtmosphericDef def, out AtmosPortalFlow flow, out float diffAbs)
+        {
+            flow = AtmosPortalFlow.None;
+            diffAbs = 0f;
+            if (connections[0].IsOutdoors && connections[1].IsOutdoors) return false;
+            var fromTotal = connections[0].CurrentContainer.TotalStoredOf(def);
+            var toTotal = connections[1].CurrentContainer.TotalStoredOf(def);
+
+            var fromPct = connections[0].CurrentContainer.StoredPercentOf(def);
+            var toPct = connections[1].CurrentContainer.StoredPercentOf(def);
+
+            var totalDiff = Mathf.Abs(fromTotal - toTotal);
+            var diffPct = fromPct - toPct;
+
+            flow = diffPct switch
+            {
+                > 0 => AtmosPortalFlow.Positive,
+                < 0 => AtmosPortalFlow.Negative,
+                _ => AtmosPortalFlow.None
+            };
+            diffAbs = Mathf.Abs(diffPct);
+            return diffAbs > 0 && totalDiff >= 1;
+        }
+
+        private bool PreventFlowBack(RoomComponent_Atmospheric to, AtmosphericDef ofDef)
+        {
+            int checkIndex = IndexOf(to);
+            if (lastResultByDef.TryGetValue(ofDef, out var result))
+            {
+                return result.FlowsToOther && result.FromIndex == checkIndex;
+            }
+            return false;
+        }
+
         public void TryEqualize()
         {
-            _isFlowing = false;
+            //Ignore connections to same
+            if (ConnectsToSame) return;
 
-            var from = connections[0].RoomContainer;
-            var to = connections[1].RoomContainer;
+            //Select containers
+            var from = connections[0].CurrentContainer;
+            var to = connections[1].CurrentContainer;
 
-            if (ConnectsToOutside)
+            //Go through all common types
+            var tempTypes = from.AllStoredTypes.Union(to.AllStoredTypes).ToArray();
+            for (var i = tempTypes.Length - 1; i >= 0; i--)
             {
-                var outsideConn = connections[0].IsOutdoors ? connections[0] : connections[1];
-                var otherConn = Opposite(outsideConn);
-                if (otherConn.IsOutdoors) return;
-                from = outsideConn.OutsideContainer;
-                to = otherConn.RoomContainer;
-            }
-
-            //
-            foreach (var atmosDef in from.AllStoredTypes.Concat(to.AllStoredTypes))
-            {
+                var atmosDef = tempTypes[i];
                 var transferWorker = atmosDef.TransferWorker;
-                if (transferWorker.TryTransferVia(this, from, to, atmosDef))
+
+                var flowResult = transferWorker.TryTransferVia(this, from, to, atmosDef);
+                if (flowResult.FlowsToOther)
                 {
-                    _isFlowing = true; 
-                    //flowDirection = positiveFlow ? connectionDirections[0].Opposite : connectionDirections[1].Opposite;
+                    SetFlowFor(atmosDef, flowResult);
+
+                    if (flowResult.ToIndex < 0) continue;
+                    var connDir = connectionDirections[flowResult.ToIndex];
+                    transferWorker.ProcessFlow(connDir, Thing.Position + connDir.FacingCell, connections[flowResult.ToIndex]);
                 }
             }
         }
 
+        private void SetFlowFor(AtmosphericDef def, FlowResult result)
+        {
+            if (lastResultByDef.TryGetValue(def, out _))
+            {
+                lastResultByDef[def] = result;
+                return;
+            }
+
+            //
+            lastResultByDef.Add(def, result);
+        }
+
         //
+        public int IndexOf(RoomComponent_Atmospheric comp)
+        {
+            return connections[0] == comp ? 0 : 1;
+        }
+
         public RoomComponent_Atmospheric Opposite(RoomComponent_Atmospheric other)
         {
             return other == connections[0] ? connections[1] : connections[0];

@@ -16,18 +16,6 @@ namespace TAE
         SpecificBiome
     }
 
-    public class AtmosphereBiomeExtension : DefModExtension
-    {
-        public List<DefFloat<AtmosphericDef>> uniqueAtmospheres;
-    }
-
-    public class AtmosphericBiomeRuleSetDef : Def
-    {
-        public AtmosphericOccurence occurence = AtmosphericOccurence.AnyBiome;
-        public List<BiomeDef> biomes;
-        public List<DefFloat<AtmosphericDef>> atmospheres;
-    }
-
     public class AtmosphericDef : Def
     {
         //
@@ -38,11 +26,6 @@ namespace TAE
         public float maxSaturation = 1f;
         //The rate at which gas flows between rooms
         public float viscosity = 1;
-        //The base value occuring naturally "Outside"
-
-
-        public bool dissipatesIntoAir;
-        public bool dissipatesIntoTerrain;
 
         //
         public string labelShort;
@@ -51,10 +34,19 @@ namespace TAE
         //The corresponding network value (if available)
         public NetworkValueDef networkValue;
 
+        //Interaction Rules
+        public bool dissipatesIntoAir;
+        public bool dissipatesIntoTerrain;
+
         public string atmosphericTag;
         public List<string> replaceTags;
         public List<string> dissipationTerrainTags;
 
+        //Rendering
+        public NaturalOverlayProperties naturalOverlay;
+        public RoomOverlayProperties roomOverlay;
+
+        //Runtime
         public float FlowRate => 1f / viscosity;
 
         public AtmosphericTransferWorker TransferWorker => workerInt ??= (AtmosphericTransferWorker)Activator.CreateInstance(transferWorker, this);

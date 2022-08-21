@@ -36,7 +36,6 @@ namespace TAE.Caching
             {
                 var valueStack = atmosphericGrid[cellIndices.CellToIndex(comp.Parent.Room.Cells.First())];
                 comp.RoomContainer.Data_LoadFromStack(valueStack);
-                TLog.Message($"Applying on Tracker {comp.Room.ID}: {valueStack}");
             }
             //
             /*

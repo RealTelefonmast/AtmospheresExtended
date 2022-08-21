@@ -12,5 +12,6 @@ namespace TAE
     internal static class AtmosDefOf
     {
         public static RoomRoleDef TAE_AirLockRole;
+        //public static GameConditionDef AtmosphericCondition;
     }
 }

@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+
+	<ThingDef ParentName="Tele_BuildingBase">
+		<defName>AtmosphericPump</defName>
+		<label>Atmospheric Pump</label>
+		<description>.</description>
+		<thingCategories Inherit="false" />
+		<altitudeLayer>Building</altitudeLayer>
+		<passability>PassThroughOnly</passability>
+		<drawerType>MapMeshAndRealTime</drawerType>
+		<designationCategory>Atmospheric</designationCategory>
+		<graphicData>
+			<texPath>Things/Building/Power/WoodFiredGenerator</texPath>
+			<graphicClass>Graphic_Single</graphicClass>
+			<drawSize>(2,2)</drawSize>
+		</graphicData>
+		<statBases>
+			<MaxHitPoints>200</MaxHitPoints>
+			<WorkToBuild>1000</WorkToBuild>
+			<Flammability>1.0</Flammability>
+			<Beauty>-5</Beauty>
+		</statBases>
+		<size>(2,2)</size>
+		<costList>
+			<Steel>100</Steel>
+			<ComponentIndustrial>5</ComponentIndustrial>
+		</costList>
+		<comps>
+			<li Class="TeleCore.CompProperties_NetworkStructure">
+				<!--<compClass>TiberiumRim.Comp_ANS_Filter</compClass>-->
+				<networks>
+					<li>
+						<networkDef>AtmosphericNetwork</networkDef>
+						<networkRoles>
+							<li>Transmitter</li>
+							<li>Controller</li>
+							<li>Storage</li>
+						</networkRoles>
+						<containerProps>
+							<maxStorage>1000</maxStorage>
+							<dropContents>false</dropContents>
+						</containerProps>
+						<networkDefForValues>AtmosphericNetwork</networkDefForValues>
+					</li>
+				</networks>
+				<!--<generalIOPattern>++|++</generalIOPattern>-->
+			</li>
+			<li Class="CompProperties_Power">
+				<compClass>CompPowerTrader</compClass>
+				<basePowerConsumption>1000</basePowerConsumption>
+			</li>
+		</comps>
+		<rotatable>true</rotatable>
+		<tickerType>Never</tickerType>
+		<castEdgeShadows>false</castEdgeShadows>
+		<staticSunShadowHeight>0</staticSunShadowHeight>	
+		<fillPercent>1</fillPercent>			
+		<surfaceType>Item</surfaceType>
+		<modExtensions>
+			<li	Class="TeleCore.TeleDefExtension">
+				<subMenuDesignation>TestGroup, Structure</subMenuDesignation>
+			</li>
+		</modExtensions>
+	</ThingDef>
+	
+	<ThingDef ParentName="Tele_StationBase">
+		<defName>AtmosphericVentIn</defName>
+		<label>pollution vent (intake)</label>
+		<description>.</description>
+		<thingCategories Inherit="false" />
+		<altitudeLayer>Building</altitudeLayer>
+		<passability>PassThroughOnly</passability>
+		<drawerType>MapMeshAndRealTime</drawerType>
+		<tickerType>Normal</tickerType>
+		<uiIconPath>Buildings/Network/Intake/icon</uiIconPath>
+		<designationCategory>Atmospheric</designationCategory>
+		<graphicData>
+			<texPath>Buildings/Network/Intake/base</texPath>
+			<graphicClass>Graphic_Single</graphicClass>
+			<drawSize>(1.25,1.25)</drawSize>
+			<drawOffset>(0,0,0.1)</drawOffset>
+		</graphicData>
+		<statBases>
+			<MaxHitPoints>100</MaxHitPoints>
+			<WorkToBuild>1500</WorkToBuild>
+			<Flammability>1.0</Flammability>
+			<Beauty>-10</Beauty>
+		</statBases>
+		<size>(1,1)</size>
+		<costList>
+			<Steel>50</Steel>
+			<ComponentIndustrial>1</ComponentIndustrial>
+		</costList>
+		<comps>
+			<li Class="TAE.CompProperties_ANS_AirVent">
+				<networks>
+					<li>
+						<networkDef>AtmosphericNetwork</networkDef>
+						<networkRoles>
+							<li>Transmitter</li>
+							<li>Producer</li>
+						</networkRoles>
+						<containerProps>
+							<maxStorage>100</maxStorage>
+							<dropContents>false</dropContents>
+						</containerProps>
+						<networkDefForValues>AtmosphericNetwork</networkDefForValues>
+					</li>
+				</networks>
+				<generalIOPattern>+</generalIOPattern>
+			</li>
+			<li Class="TeleCore.CompProperties_FX"> 
+				<overlays>
+					<li><skip>true</skip></li>
+					<li><skip>true</skip></li>
+					<li>
+						<data>
+							<texPath>Buildings/Network/Intake/fan</texPath>
+							<graphicClass>Graphic_Single</graphicClass>
+							<drawSize>(1.25,1.25)</drawSize>
+							<drawOffset>(0,0,0.1)</drawOffset>
+						</data>
+						<mode>Dynamic</mode>
+						<rotate>
+							<rotationSpeed>75</rotationSpeed>
+						</rotate>
+						<drawOffset>(0,0,0.1)</drawOffset>
+						<needsPower>false</needsPower>
+					</li>
+					<li>
+						<data>
+							<texPath>Buildings/Network/Intake/top</texPath>
+							<graphicClass>Graphic_Single</graphicClass>
+							<drawSize>(1.25,1.25)</drawSize>
+							<drawOffset>(0,0,0.1)</drawOffset>
+						</data>
+						<needsPower>false</needsPower>
+					</li>
+				</overlays>
+			</li>
+			<li Class="CompProperties_Power">
+				<compClass>CompPowerTrader</compClass>
+				<basePowerConsumption>45</basePowerConsumption>
+			</li>
+		</comps>
+		<castEdgeShadows>false</castEdgeShadows>
+		<staticSunShadowHeight>0</staticSunShadowHeight>	
+		<fillPercent>1</fillPercent>
+		<rotatable>true</rotatable>			
+		<surfaceType>Item</surfaceType>
+		<modExtensions>
+			<li	Class="TeleCore.TeleDefExtension">
+				<subMenuDesignation>TestGroup, Structure</subMenuDesignation>
+			</li>
+		</modExtensions>
+	</ThingDef>
+	
+	<ThingDef ParentName="Tele_StationBase">
+		<defName>AtmosphericVentOut</defName>
+		<label>pollution vent (out)</label>
+		<description>.</description>
+		<thingCategories Inherit="false" />
+		<altitudeLayer>Building</altitudeLayer>
+		<passability>PassThroughOnly</passability>
+		<drawerType>MapMeshOnly</drawerType>
+		<size>(1,1)</size>
+		<designationCategory>Atmospheric</designationCategory>
+		<graphicData>
+			<texPath>Buildings/Network/Vent_Out</texPath>
+			<graphicClass>Graphic_Multi</graphicClass>
+			<drawSize>(1,1)</drawSize>
+		</graphicData>
+		<statBases>
+			<MaxHitPoints>100</MaxHitPoints>
+			<WorkToBuild>1500</WorkToBuild>
+			<Flammability>1.0</Flammability>
+			<Beauty>-10</Beauty>
+		</statBases>
+		<costList>
+			<Steel>50</Steel>
+			<ComponentIndustrial>1</ComponentIndustrial>
+		</costList>
+		<comps>
+			<li Class="TAE.CompProperties_ANS_AirVent">
+				<ventMode>Output</ventMode>
+				<gasThroughPut>10</gasThroughPut>
+				<networks>
+					<li>
+						<networkDef>AtmosphericNetwork</networkDef>
+						<networkRoles>
+							<li>Transmitter</li>
+							<li>Requester</li>
+						</networkRoles>
+						<containerProps>
+							<maxStorage>100</maxStorage>
+							<dropContents>false</dropContents>
+						</containerProps>
+						<networkDefForValues>AtmosphericNetwork</networkDefForValues>
+					</li>
+				</networks>
+				<generalIOPattern>+</generalIOPattern>
+			</li>
+			<li Class="CompProperties_Power">
+				<compClass>CompPowerTrader</compClass>
+				<basePowerConsumption>45</basePowerConsumption>
+			</li>
+		</comps>
+		<tickerType>Normal</tickerType>
+		<castEdgeShadows>false</castEdgeShadows>
+		<staticSunShadowHeight>0</staticSunShadowHeight>	
+		<fillPercent>1</fillPercent>
+		<rotatable>true</rotatable>			
+		<surfaceType>Item</surfaceType>
+		<modExtensions>
+			<li	Class="TeleCore.TeleDefExtension">
+				<subMenuDesignation>TestGroup, Structure</subMenuDesignation>
+			</li>
+		</modExtensions>
+	</ThingDef>
+	
+</Defs>

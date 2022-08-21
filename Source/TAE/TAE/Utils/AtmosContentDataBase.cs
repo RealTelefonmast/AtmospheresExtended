@@ -18,7 +18,10 @@ namespace TAE
 
         //Shaders
         public static readonly Shader TextureBlend = LoadShader("TextureBlend");
-        public static readonly Shader WavesShader = LoadShader("Waves");
+        public static readonly Shader CustomOverlay = LoadShader("CustomOverlay");
+
+        public static readonly Material CustomOverlayWorld = LoadMaterial("CustomOverlayWorld");
+        //public static readonly Shader WavesShader = LoadShader("Waves");
 
         public static AssetBundle AtmosBundle
         {
@@ -49,6 +52,25 @@ namespace TAE
                 return ShaderDatabase.DefaultShader;
             }
             return shader;
+        }
+
+
+        public static Material LoadMaterial(string materialName)
+        {
+            lookupMats ??= new Dictionary<string, Material>();
+
+            if (AtmosBundle != null)
+            {
+                if (!lookupMats.ContainsKey(materialName))
+                    lookupMats[materialName] = AtmosBundle.LoadAsset<Material>(materialName);
+            }
+
+            if (!lookupMats.TryGetValue(materialName, out var mat) || mat == null)
+            {
+                Log.Warning($"Could not load material '{materialName}'");
+                return BaseContent.BadMat;
+            }
+            return mat;
         }
 
     }

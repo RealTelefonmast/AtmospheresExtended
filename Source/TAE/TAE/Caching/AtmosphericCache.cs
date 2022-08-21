@@ -49,7 +49,7 @@ namespace TAE.Caching
         {
             Room room = reg.Room;
             if (room == null) return;
-            SetData(pos, new CachedAtmosData(room.ID, room.CellCount, AtmosphericMapInfo.ComponentAt(room).RoomContainer.ValueStack));
+            SetData(pos, new CachedAtmosData(room.ID, room.CellCount, AtmosphericMapInfo.ComponentAt(room)));
         }
 
         public bool TryGetAtmosphericValuesForRoom(Room r, out DefValueStack<AtmosphericDef> result)

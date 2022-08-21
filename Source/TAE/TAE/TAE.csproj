@@ -1,21 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <RootNamespace>TAE</RootNamespace>
-    <AssemblyName>AtmosphereExtended</AssemblyName>
-    <TargetFramework>net472</TargetFramework>
-    <LangVersion>latest</LangVersion>
-    <PlatformTarget>x64</PlatformTarget>
-    <OutputPath>C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\AtmospheresExtended\Assemblies\</OutputPath>
-    <Optimize>true</Optimize>
-    <DebugType>none</DebugType>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+	<PropertyGroup>
+		<RootNamespace>TAE</RootNamespace>
+		<AssemblyName>AtmosphereExtended</AssemblyName>
+		<TargetFramework>net48</TargetFramework>
+		<LangVersion>latest</LangVersion>
+		<PlatformTarget>x64</PlatformTarget>
+		<OutputPath>C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\AtmospheresExtended\Assemblies\</OutputPath>
+		<Optimize>true</Optimize>
+		<DebugType>none</DebugType>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 
-    <Authors>Telefonmast (aka Maxim)</Authors>
-    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
-    <Company>Telefonmast</Company>
-  </PropertyGroup>
+		<Authors>Telefonmast (aka Maxim)</Authors>
+		<GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+		<Company>Telefonmast</Company>
+		<UseCommonOutputDirectory>true</UseCommonOutputDirectory>
+	</PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DefineConstants>TRACE;DEBUG</DefineConstants>
@@ -37,11 +38,18 @@
 
     <PackageReference Include="Microsoft.NETCore.Platforms" Version="*" />
 
-    <PackageReference Include="TeleCore" Version="1.2.0">
+    <PackageReference Include="TeleCore" Version="1.2.3">
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
     <PackageReference Include="UnlimitedHugs.Rimworld.HugsLib" Version="*" ExcludeAssets="runtime" />
     <PackageReference Include="RimWorld.MultiplayerAPI" Version="*" ExcludeAssets="runtime" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="HotSwap">
+      <HintPath>..\..\HotSwap.dll</HintPath>
+      <CopyLocal>False</CopyLocal>
+    </Reference>
   </ItemGroup>
 
   <Target Name="MyCode" BeforeTargets="UpdateReferences">

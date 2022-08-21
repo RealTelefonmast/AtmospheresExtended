@@ -13,11 +13,15 @@ namespace TAE.Caching
         public int numCells;
         public DefValueStack<AtmosphericDef> stack;
 
-        public CachedAtmosData(int roomID, int numCells, DefValueStack<AtmosphericDef> stack)
+        public CachedAtmosData(int roomID, int numCells, RoomComponent_Atmospheric roomComp)
         {
             this.roomID = roomID;
             this.numCells = numCells;
-            this.stack = stack;
+            this.stack = roomComp.RoomContainer.ValueStack;
+            if (roomComp.IsOutdoors)
+            {
+                stack += roomComp.OutsideContainer.ValueStack;
+            }
         }
 
         public void Reset()
