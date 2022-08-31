@@ -4,7 +4,7 @@
 	<TeleCore.SubMenuDesignator>
 		<defName>Atmospheric</defName>
 		<label>atmospheric</label>
-		<order>24</order>
+		<order>1</order>
 		<menuDef>AtmosphericMenu</menuDef>
 	</TeleCore.SubMenuDesignator>
 	
@@ -20,6 +20,7 @@
 		<subCategories>
 			<li>Structure</li>
 			<li>Decoration</li>
+			<li>TestCat</li>
 		</subCategories>
 	</TeleCore.SubThingGroupDef>
 	
@@ -31,6 +32,11 @@
 	<TeleCore.SubThingCategory>
 		<defName>Decoration</defName>
 		<label>Decoration</label>
+	</TeleCore.SubThingCategory>  
+	
+	<TeleCore.SubThingCategory>
+		<defName>TestCat</defName>
+		<label>TestCat</label>
 	</TeleCore.SubThingCategory>  
 	
 </Defs>
