@@ -18,7 +18,6 @@ namespace TAE.Caching
 
         private AtmosphericMapInfo AtmosphericMapInfo => map.GetMapInfo<AtmosphericMapInfo>();
 
-
         internal AtmosphericScriber(Map map)
         {
             this.map = map;
@@ -27,43 +26,37 @@ namespace TAE.Caching
         public void ApplyLoadedDataToRegions()
         {
             if (atmosphericGrid == null) return;
-
+            
             CellIndices cellIndices = map.cellIndices;
-            AtmosphericMapInfo.MapContainer.Data_LoadFromStack(atmosphericGrid[map.cellIndices.NumGridCells]);
-            TLog.Message($"Applying Outside Atmospheric: {atmosphericGrid[map.cellIndices.NumGridCells]}");
+            var values = atmosphericGrid[map.cellIndices.NumGridCells];
+            if (values.IsValid)
+            {
+                AtmosphericMapInfo.MapContainer.Data_LoadFromStack(values);
+            }
 
             foreach (var comp in AtmosphericMapInfo.AllAtmosphericRooms)
             {
-                var valueStack = atmosphericGrid[cellIndices.CellToIndex(comp.Parent.Room.Cells.First())];
-                comp.RoomContainer.Data_LoadFromStack(valueStack);
-            }
-            //
-            /*
-            foreach (Region region in map.regionGrid.AllRegions_NoRebuild_InvalidAllowed)
-            {
-                if (region.Room != null)
+                var index = cellIndices.CellToIndex(comp.Parent.Room.Cells.First());
+                var valueStack = atmosphericGrid[index];
+                if (valueStack.IsValid)
                 {
-                    var valueStack = atmosphericGrid[cellIndices.CellToIndex(region.Cells.First())];
-                    Log.Message($"Applying on Region  {region.Room.ID}: {valueStack}");
-                    AtmosphericMapInfo.PollutionFor(region.Room).ActualContainer.Container.LoadFromStack(valueStack);
+                    comp.RoomContainer.Data_LoadFromStack(valueStack);
                 }
             }
-            */
-            //
-
+            
             atmosphericGrid = null;
         }
 
         internal void ScribeData()
         {
-            Log.Message($"[TAE] Exposing Atmospheric | {Scribe.mode}".Colorize(Color.cyan));
+            //TLog.Debug($"Exposing Atmospheric | {Scribe.mode}".Colorize(Color.cyan));
             int arraySize = map.cellIndices.NumGridCells + 1;
             if (Scribe.mode == LoadSaveMode.Saving)
             {
                 temporaryGrid = new DefValueStack<AtmosphericDef>[arraySize];
                 var outsideAtmosphere = AtmosphericMapInfo.MapContainer.ValueStack;
                 temporaryGrid[arraySize - 1] = outsideAtmosphere;
-
+                
                 foreach (var roomComp in AtmosphericMapInfo.AllAtmosphericRooms)
                 {
                     if (roomComp.IsOutdoors) continue;
@@ -75,6 +68,12 @@ namespace TAE.Caching
                 }
             }
 
+
+            if (Scribe.mode == LoadSaveMode.LoadingVars)
+            {
+                atmosphericGrid = new DefValueStack<AtmosphericDef>[arraySize];
+            }
+
             //Turn temp grid into byte arrays
             var savableTypes = DefDatabase<AtmosphericDef>.AllDefsListForReading;
             foreach (var type in savableTypes)
@@ -82,18 +81,29 @@ namespace TAE.Caching
                 byte[] dataBytes = null;
                 if (Scribe.mode == LoadSaveMode.Saving)
                 {
-                    dataBytes = GenSerialization.SerializeFloat(arraySize, (int idx) => temporaryGrid[idx].values?.FirstOrFallback(f => f.Def == type).Value ?? 0);
+                    //GenSerialization.SerializeFloat(arraySize, (int idx) => temporaryGrid[idx].values?.FirstOrFallback(f => f.Def == type).Value ?? 0);
+                    dataBytes = DataSerializeUtility.SerializeUshort(arraySize, (int idx) => (ushort)(temporaryGrid[idx].values?.FirstOrFallback(f => f.Def == type).Value ?? 0));
                     DataExposeUtility.ByteArray(ref dataBytes, $"{type.defName}.atmospheric");
                 }
 
                 if (Scribe.mode == LoadSaveMode.LoadingVars)
                 {
                     DataExposeUtility.ByteArray(ref dataBytes, $"{type.defName}.atmospheric");
-                    atmosphericGrid = new DefValueStack<AtmosphericDef>[arraySize];
+                    DataSerializeUtility.LoadUshort(dataBytes, arraySize, delegate(int idx, ushort idxValue)
+                    {
+                        var atmosStack =  new DefValueStack<AtmosphericDef>(type, idxValue);
+                        if (atmosStack.TotalValue > 0)
+                        {
+                            atmosphericGrid[idx] += atmosStack;
+                        }
+                    });
+                    
+                    /*
                     GenSerialization.LoadFloat(dataBytes, arraySize, delegate (int idx, float idxValue)
                     {
                         atmosphericGrid[idx] += new DefValueStack<AtmosphericDef>(type, idxValue);
                     });
+                    */
                 }
             }
         }

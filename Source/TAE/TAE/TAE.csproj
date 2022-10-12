@@ -32,17 +32,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Krafs.Rimworld.Ref" Version="*" GeneratePathProperty="true" />
-    <PackageReference Include="Lib.Harmony" Version="*" ExcludeAssets="runtime" />
+    <PackageReference Include="Krafs.Rimworld.Ref" Version="1.4.3510-beta" GeneratePathProperty="true" />
+    <PackageReference Include="Lib.Harmony" Version="2.2.2" ExcludeAssets="runtime" />
     <PackageReference Include="TaskPubliciser" Version="1.0.3" />
 
-    <PackageReference Include="Microsoft.NETCore.Platforms" Version="*" />
+    <PackageReference Include="Microsoft.NETCore.Platforms" Version="7.0.0-rc.1.22426.10" />
 
-    <PackageReference Include="TeleCore" Version="1.2.4">
+    <PackageReference Include="TeleCore" Version="1.4.1">
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
-    <PackageReference Include="UnlimitedHugs.Rimworld.HugsLib" Version="*" ExcludeAssets="runtime" />
-    <PackageReference Include="RimWorld.MultiplayerAPI" Version="*" ExcludeAssets="runtime" />
+    <PackageReference Include="UnlimitedHugs.Rimworld.HugsLib" Version="9.0.1" ExcludeAssets="runtime" />
+    <PackageReference Include="RimWorld.MultiplayerAPI" Version="0.4.0" ExcludeAssets="runtime" />
   </ItemGroup>
 
   <ItemGroup>

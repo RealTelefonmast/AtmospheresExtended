@@ -19,11 +19,10 @@ namespace TAE
         private RoomComponent_Atmospheric atmosphericCompInt;
 
         //
-        private HashSet<Comp_ANS_AirVent> AirVentComps = new();
         private HashSet<Building> AirVents = new();
+        private HashSet<Comp_ANS_AirLockVent> AirVentComps = new();
+        
         private HashSet<Building_Airlock> AirLockDoors = new();
-
-        public Dictionary<Pawn, IntVec3> queuePositions = new();
 
         //
         public RoomComponent_Atmospheric Atmospheric => atmosphericCompInt ??= Parent.GetRoomComp<RoomComponent_Atmospheric>();
@@ -234,7 +233,7 @@ namespace TAE
 
         private void TryAddComponent(Thing thing)
         {
-            var comp = thing.TryGetComp<Comp_ANS_AirVent>();
+            var comp = thing.TryGetComp<Comp_ANS_AirLockVent>();
             if (comp != null)
             {
                 if (AirVents.Add(thing as Building) && AirVentComps.Add(comp))

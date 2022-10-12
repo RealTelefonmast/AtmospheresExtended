@@ -1,17 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using HotSwap;
-using RimWorld;
 using TeleCore;
 using UnityEngine;
 using Verse;
 
 namespace TAE
 {
-    [HotSwappable]
     public class RoomComponent_Atmospheric : RoomComponent
     {
         private int dirtyMarks;
@@ -107,7 +102,6 @@ namespace TAE
         {
             base.Notify_Reused();
             portals.Clear();
-            Log.Message($"[TEA] Reusing Atmospheric Room: {Room.ID}[{IsOutdoors}]");
         }
 
         public override void Notify_RoofClosed()
@@ -179,8 +173,7 @@ namespace TAE
 
         private void Data_GetCachedRegionalAtmosphere()
         {
-            TLog.Message($"Setting Cached Regional Data: {Room.ID}");
-            //Assign starting pollution based on position
+            //Assign starting atmosphere based on position
             if (AtmosphericInfo.Cache.TryGetAtmosphericValuesForRoom(Room, out var stack))
             {
                 RoomContainer.Data_LoadFromStack(stack);

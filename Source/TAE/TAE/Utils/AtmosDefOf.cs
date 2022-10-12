@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using RimWorld;
+using TeleCore;
 using Verse;
 
 namespace TAE
@@ -13,5 +14,10 @@ namespace TAE
     {
         public static RoomRoleDef TAE_AirLockRole;
         //public static GameConditionDef AtmosphericCondition;
+        
+        //
+        public static NetworkDef AtmosphericNetwork;
+        public static AtmosphericDef Oxygen;
+        
     }
 }

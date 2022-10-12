@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using HarmonyLib;
 using TeleCore;
 using Verse;
+using Verse.Profile;
 
 namespace TAE
 {
@@ -32,12 +33,23 @@ namespace TAE
         }
 
         [HarmonyPatch(typeof(TemperatureSaveLoad))]
-        [HarmonyPatch("ApplyLoadedDataToRegions")]
+        [HarmonyPatch(nameof(TemperatureSaveLoad.ApplyLoadedDataToRegions))]
         public static class ApplyLoadedDataToRegionsPatch
         {
             public static void Postfix(Map ___map)
             {
+                TLog.Debug("## ApplyLoadedDataToRegionsPatch");
                 ___map.GetMapInfo<AtmosphericMapInfo>().Cache.scriber.ApplyLoadedDataToRegions();
+            }
+        }
+
+        [HarmonyPatch(typeof(MemoryUtility))]
+        [HarmonyPatch(nameof(MemoryUtility.ClearAllMapsAndWorld))]
+        internal static class MemoryUtility_ClearAllMapsAndWorldPatch
+        {
+            static void Postfix()
+            {
+                TLog.Debug("Cleaing All Maps And World");
             }
         }
     }

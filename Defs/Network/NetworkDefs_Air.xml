@@ -51,8 +51,9 @@
 			</li>
 		</comps>
 		<modExtensions>
-			<li	Class="TeleCore.TeleDefExtension">
-				<subMenuDesignation>TestGroup, Structure</subMenuDesignation>
+			<li Class="TeleCore.SubMenuExtension">
+				<groupDef>TestGroup</groupDef>
+				<category>Structure</category>
 			</li>
 		</modExtensions>
 	</ThingDef>

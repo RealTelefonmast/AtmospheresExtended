@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using HotSwap;
-using RimWorld;
 using TAE.Caching;
 using TeleCore;
 using UnityEngine;
@@ -13,7 +7,6 @@ using Verse;
 
 namespace TAE
 {
-    [HotSwappable]
     public class AtmosphericMapInfo : MapInformation
     {
         //
@@ -22,6 +15,7 @@ namespace TAE
         //
         private AtmosphericCache _cache;
         private readonly AtmosphericContainer mapContainer;
+        private readonly AtmosphereRenderer renderer;
 
         private readonly Dictionary<Room, RoomComponent_Atmospheric> compByRoom;
         private readonly List<RoomComponent_Atmospheric> allComps;
@@ -42,6 +36,7 @@ namespace TAE
         public List<RoomComponent_Atmospheric> AllAtmosphericRooms => allComps;
         public AtmosphericCache Cache => _cache;
         public int ConnectorCount => allConnections.Count; //{ get; set; }
+        public AtmosphereRenderer Renderer => renderer;
 
         public AtmosphericMapInfo(Map map) : base(map)
         {
@@ -55,6 +50,9 @@ namespace TAE
             allSources = new List<IAtmosphericSource>();
             allConnections = new List<AtmosphericPortal>();
             allConnectionsToOutside = new List<AtmosphericPortal>();
+            
+            //
+            renderer = new AtmosphereRenderer(map);
         }
 
         public override void ExposeData()
@@ -162,7 +160,6 @@ namespace TAE
             //
             foreach (var atmosphere in naturalAtmospheres)
             {
-                TLog.Message($"Adding natural atmosphere: {atmosphere}");
                 var storedOf = mapContainer.TotalStoredOf(atmosphere.Def);
                 var desired = mapContainer.Capacity * atmosphere.Value;
                 var diff = Mathf.Round(desired - storedOf);
@@ -175,9 +172,7 @@ namespace TAE
         private void GenerateNaturalAtmospheres()
         {
             if (!naturalAtmospheres.NullOrEmpty()) return;
-
-
-            TLog.Warning("GENERATING NATURAL ATMOSPHERES #############################");
+            
             var extension = map.Biome.GetModExtension<TAE_BiomeExtension>();
             bool useRulesets = true;
             if (extension?.uniqueAtmospheres != null)
@@ -328,11 +323,18 @@ namespace TAE
         }
         */
 
+        public override void UpdateOnGUI()
+        {
+        }
+
         public override void Update()
         {
             base.Update();
             if (allConnections != null)
                 GenDraw.DrawFieldEdges(allConnections.Select(p => p.Thing.Position).ToList(), Color.cyan);
+            
+            //
+            renderer.AtmosphereDrawerUpdate();
         }
 
         //

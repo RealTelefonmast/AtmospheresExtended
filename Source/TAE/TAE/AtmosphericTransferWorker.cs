@@ -1,9 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using HotSwap;
 using RimWorld;
 using TeleCore;
 using UnityEngine;
@@ -11,7 +7,6 @@ using Verse;
 
 namespace TAE
 {
-    [HotSwappable]
     public struct FlowResult
     {
         private bool hadFlow = false;
@@ -66,8 +61,7 @@ namespace TAE
             return $"HadFlow: {hadFlow}; FlowToOther: {flowToOther}; IsVoided: {isVoided}; FlowDir: {flowDirection} [{FromIndex} -> {ToIndex}]";
         }
     }
-
-    [HotSwappable]
+    
     public class AtmosphericTransferWorker
     {
         private AtmosphericDef def;
@@ -122,6 +116,7 @@ namespace TAE
             var categories = door.Stuff?.stuffProps?.categories;
             if (categories.NullOrEmpty()) return 1.0f - fillage;
 
+            //TODO:Add Stat for gas permeability
             foreach (var stuffCategory in categories)
             {
                 if (stuffCategory == StuffCategoryDefOf.Fabric)

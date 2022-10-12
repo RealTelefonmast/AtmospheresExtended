@@ -18,8 +18,16 @@ namespace TAE
         private static Harmony atmosphere;
 
         public static AtmosphereMod Mod => modInt;
-        public static Harmony TAE => atmosphere ??= new Harmony("telefonmast.AtmosphereExtended");
+        public static Harmony TAE
+        {
+            get
+            {
+                return atmosphere ??= new Harmony("telefonmast.AtmosphereExtended");
+            }
+        }
 
+        public AtmosphereSettings Settings => (AtmosphereSettings) modSettings;
+        
         internal AssetBundle MainBundle
         {
             get
@@ -49,7 +57,8 @@ namespace TAE
         {
             modInt = this;
             var assembly = Assembly.GetExecutingAssembly();
-
+            modSettings = new AtmosphereSettings();
+            
             //
             TAE.PatchAll(assembly);
         }

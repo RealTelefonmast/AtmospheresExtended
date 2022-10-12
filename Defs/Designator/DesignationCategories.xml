@@ -10,33 +10,33 @@
 	
 	<TeleCore.SubBuildMenuDef>
 		<defName>AtmosphericMenu</defName>
-		<thingGroups>
+		<subMenus>
 			<li>TestGroup</li>
-		</thingGroups>
+		</subMenus>
 	</TeleCore.SubBuildMenuDef>
 	
-	<TeleCore.SubThingGroupDef>
+	<TeleCore.SubMenuGroupDef>
 		<defName>TestGroup</defName>
 		<subCategories>
 			<li>Structure</li>
 			<li>Decoration</li>
 			<li>TestCat</li>
 		</subCategories>
-	</TeleCore.SubThingGroupDef>
+	</TeleCore.SubMenuGroupDef>
 	
-	<TeleCore.SubThingCategory>
+	<TeleCore.SubMenuCategoryDef>
 		<defName>Structure</defName>
 		<label>Structure</label>
-	</TeleCore.SubThingCategory>  
+	</TeleCore.SubMenuCategoryDef>  
   
-	<TeleCore.SubThingCategory>
+	<TeleCore.SubMenuCategoryDef>
 		<defName>Decoration</defName>
 		<label>Decoration</label>
-	</TeleCore.SubThingCategory>  
+	</TeleCore.SubMenuCategoryDef>  
 	
-	<TeleCore.SubThingCategory>
+	<TeleCore.SubMenuCategoryDef>
 		<defName>TestCat</defName>
 		<label>TestCat</label>
-	</TeleCore.SubThingCategory>  
+	</TeleCore.SubMenuCategoryDef>  
 	
 </Defs>

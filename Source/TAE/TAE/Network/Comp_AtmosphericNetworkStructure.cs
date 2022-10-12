@@ -12,7 +12,7 @@ namespace TAE
     {
         private RoomComponent_Atmospheric atmosphericInt;
 
-        public NetworkSubPart AtmosphericComp => null; //this[TiberiumDefOf.AtmosphericNetwork];
+        public NetworkSubPart AtmosphericComp => this[AtmosDefOf.AtmosphericNetwork];
 
         public RoomComponent_Atmospheric Atmospheric
         {

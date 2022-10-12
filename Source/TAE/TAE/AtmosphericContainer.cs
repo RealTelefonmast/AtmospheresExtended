@@ -1,17 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using HotSwap;
 using TeleCore;
 using UnityEngine;
 using Verse;
 
 namespace TAE
 {
-    [HotSwappable]
     public class AtmosphericContainer
     {
         //
@@ -126,6 +120,8 @@ namespace TAE
             }
             //colorInt = Color.clear;
 
+            Parent?.Map?.GetMapInfo<AtmosphericMapInfo>()?.Renderer?.Drawer_SetDirty();
+            
             /*
             if (storedValues.Count > 0)
             {
@@ -143,7 +139,7 @@ namespace TAE
             foreach (var value in storedValues)
             {
                 var valDef = value.Key;
-                if (valDef.replaceTags != null && valDef.replaceTags.Contains(def.atmosphericTag))
+                if (valDef.displaceTags != null && valDef.displaceTags.Contains(def.atmosphericTag))
                 {
                     var valPct = value.Value / Capacity;
                     return (1 - valPct) > totalPct;
@@ -205,10 +201,10 @@ namespace TAE
             Parent?.Notify_AddedContainerValue(def, value);
 
             //Tag Processing
-            if (def.replaceTags != null)
+            if (def.displaceTags != null)
             {
                 var newPct = StoredPercentOf(def);
-                var fittingTypes = AllStoredTypes.Where(t => def.replaceTags.Contains(t.atmosphericTag)).ToArray();
+                var fittingTypes = AllStoredTypes.Where(t => def.displaceTags.Contains(t.atmosphericTag)).ToArray();
                 for (var i = 0; i < fittingTypes.Length; i++)
                 {
                     //var valPct = StoredPercentOf(fittingTypes[i]);

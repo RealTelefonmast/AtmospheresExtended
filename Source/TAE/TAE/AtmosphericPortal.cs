@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using HotSwap;
 using TeleCore;
 using UnityEngine;
 using Verse;
@@ -16,8 +13,7 @@ namespace TAE
         Positive,
         Negative,
     }
-
-    [HotSwappable]
+    
     public struct AtmosphericPortal
     {
         private readonly Building connector;
@@ -97,10 +93,9 @@ namespace TAE
             var to = connections[1].CurrentContainer;
 
             //Go through all common types
-            var tempTypes = from.AllStoredTypes.Union(to.AllStoredTypes).ToArray();
-            for (var i = tempTypes.Length - 1; i >= 0; i--)
+            //var tempTypes = from.AllStoredTypes.Union(to.AllStoredTypes).ToArray();
+            foreach (var atmosDef in from.AllStoredTypes.Union(to.AllStoredTypes))
             {
-                var atmosDef = tempTypes[i];
                 var transferWorker = atmosDef.TransferWorker;
 
                 var flowResult = transferWorker.TryTransferVia(this, from, to, atmosDef);

@@ -10,7 +10,7 @@ namespace TAE
     public class CompProperties_AtmosphericSource : CompProperties
     {
         public int pushAmount;
-        public int tickInterval;
+        public int pushInterval;
         public AtmosphericDef atmosphericDef;
 
         public CompProperties_AtmosphericSource()

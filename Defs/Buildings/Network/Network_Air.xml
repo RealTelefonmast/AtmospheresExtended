@@ -58,8 +58,9 @@
 		<fillPercent>1</fillPercent>			
 		<surfaceType>Item</surfaceType>
 		<modExtensions>
-			<li	Class="TeleCore.TeleDefExtension">
-				<subMenuDesignation>TestGroup, Structure</subMenuDesignation>
+			<li Class="TeleCore.SubMenuExtension">
+				<groupDef>TestGroup</groupDef>
+				<category>Structure</category>
 			</li>
 		</modExtensions>
 	</ThingDef>
@@ -94,6 +95,9 @@
 		</costList>
 		<comps>
 			<li Class="TAE.CompProperties_ANS_AirVent">
+				<ventMode>Intake</ventMode>
+				<gasThroughPut>10</gasThroughPut>
+				<acceptedAtmosphericTag>Air</acceptedAtmosphericTag>
 				<networks>
 					<li>
 						<networkDef>AtmosphericNetwork</networkDef>
@@ -108,7 +112,7 @@
 						<networkDefForValues>AtmosphericNetwork</networkDefForValues>
 					</li>
 				</networks>
-				<generalIOPattern>+</generalIOPattern>
+				<generalIOPattern>I</generalIOPattern>
 			</li>
 			<li Class="TeleCore.CompProperties_FX"> 
 				<overlays>
@@ -150,8 +154,9 @@
 		<rotatable>true</rotatable>			
 		<surfaceType>Item</surfaceType>
 		<modExtensions>
-			<li	Class="TeleCore.TeleDefExtension">
-				<subMenuDesignation>TestGroup, Structure</subMenuDesignation>
+			<li Class="TeleCore.SubMenuExtension">
+				<groupDef>TestGroup</groupDef>
+				<category>Structure</category>
 			</li>
 		</modExtensions>
 	</ThingDef>
@@ -163,7 +168,8 @@
 		<thingCategories Inherit="false" />
 		<altitudeLayer>Building</altitudeLayer>
 		<passability>PassThroughOnly</passability>
-		<drawerType>MapMeshOnly</drawerType>
+		<drawerType>MapMeshAndRealTime</drawerType>
+		<tickerType>Normal</tickerType>
 		<size>(1,1)</size>
 		<designationCategory>Atmospheric</designationCategory>
 		<graphicData>
@@ -185,6 +191,7 @@
 			<li Class="TAE.CompProperties_ANS_AirVent">
 				<ventMode>Output</ventMode>
 				<gasThroughPut>10</gasThroughPut>
+				<acceptedAtmosphericTag>Air</acceptedAtmosphericTag>
 				<networks>
 					<li>
 						<networkDef>AtmosphericNetwork</networkDef>
@@ -206,15 +213,15 @@
 				<basePowerConsumption>45</basePowerConsumption>
 			</li>
 		</comps>
-		<tickerType>Normal</tickerType>
 		<castEdgeShadows>false</castEdgeShadows>
 		<staticSunShadowHeight>0</staticSunShadowHeight>	
 		<fillPercent>1</fillPercent>
 		<rotatable>true</rotatable>			
 		<surfaceType>Item</surfaceType>
 		<modExtensions>
-			<li	Class="TeleCore.TeleDefExtension">
-				<subMenuDesignation>TestGroup, Structure</subMenuDesignation>
+			<li Class="TeleCore.SubMenuExtension">
+				<groupDef>TestGroup</groupDef>
+				<category>Structure</category>
 			</li>
 		</modExtensions>
 	</ThingDef>

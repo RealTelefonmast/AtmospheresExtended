@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TAE.Static;
 using TeleCore;
 using Verse;
 
@@ -18,7 +19,6 @@ namespace TAE
     public class Comp_ANS_AirVent : Comp_AtmosphericNetworkStructure
     {
         private FloatControl speedControl;
-        private RoomComponent_AirLock airlockComp;
 
         public CompProperties_ANS_AirVent Props => (CompProperties_ANS_AirVent)base.props;
 
@@ -51,7 +51,7 @@ namespace TAE
             get
             {
                 if (!IsPowered) return false;
-                foreach (var def in Props.workingDefs)
+                foreach (var def in Props.AllowedValues)
                 {
                     switch (Props.ventMode)
                     {
@@ -81,20 +81,18 @@ namespace TAE
                 {
                     speedControl.Start();
                     if (speedControl.ReachedPeak)
-                        _ = ManipulatePollution(1);
+                        _ = TryManipulateAtmosphere(1);
                     return;
                 }
                 speedControl.Stop();
             }
         }
 
-        private bool ManipulatePollution(int tick)
+        private bool TryManipulateAtmosphere(int tick)
         {
             int totalThroughput = Props.gasThroughPut * tick;
-            foreach (var def in Props.workingDefs)
+            foreach (var def in Props.AllowedValues)
             {
-
-
                 switch (Props.ventMode)
                 {
                     case AtmosphericVentMode.Intake:
@@ -108,8 +106,8 @@ namespace TAE
                         if(def.networkValue == null) continue;
                         if (AtmosphericComp.Container.TryConsume(def.networkValue, totalThroughput))
                         {
-                            parent.Map.GetMapInfo<AtmosphericMapInfo>().TrySpawnGasAt(parent.Position,
-                                ThingDef.Named("Gas_TiberiumGas"), totalThroughput * 100);
+                            Atmospheric.RoomContainer.TryAddValue(def, 1, out _);
+                            //parent.Map.GetMapInfo<AtmosphericMapInfo>().TrySpawnGasAt(parent.Position, ThingDef.Named("Gas_TiberiumGas"), totalThroughput * 100);
                             return true;
                         }
 
@@ -121,7 +119,7 @@ namespace TAE
 
             return false;
         }
-
+        
         public override string CompInspectStringExtra()
         {
 
@@ -144,20 +142,42 @@ namespace TAE
                 }
             };
         }
-
-        public void SetAirLock(RoomComponent_AirLock roomComponentAirLock)
-        {
-            airlockComp = roomComponentAirLock;
-        }
     }
 
     public class CompProperties_ANS_AirVent : CompProperties_ANS
     {
+        [Unsaved()]
+        private List<AtmosphericDef> allowedValuesInt;
+        
+        //
         public AtmosphericVentMode ventMode = AtmosphericVentMode.Intake;
         public int gasThroughPut = 1;
 
-        public List<AtmosphericDef> workingDefs;
+        public string acceptedAtmosphericTag;
+        private List<AtmosphericDef> acceptedAtmospheres;
+        public List<DefValue<AtmosphericDef, float>> upkeepLevels; 
 
+        public List<AtmosphericDef> AllowedValues
+        {
+            get
+            {
+                if (allowedValuesInt == null)
+                {
+                    var list = new List<AtmosphericDef>();
+                    if (acceptedAtmosphericTag != null)
+                    {
+                        list.AddRange(AtmosphericReferenceCache.AtmospheresOfTag(acceptedAtmosphericTag));
+                    }
+                    if (!acceptedAtmospheres.NullOrEmpty())
+                    {
+                        list.AddRange(acceptedAtmospheres);
+                    }
+                    allowedValuesInt = list.Distinct().ToList();
+                }
+                return allowedValuesInt;
+            }
+        }
+        
         public CompProperties_ANS_AirVent()
         {
             compClass = typeof(Comp_ANS_AirVent);

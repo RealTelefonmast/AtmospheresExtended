@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using RimWorld;
+using TAE.Static;
 using TeleCore;
 using UnityEngine;
 using Verse;
@@ -39,17 +40,23 @@ namespace TAE
         public bool dissipatesIntoTerrain;
 
         public string atmosphericTag;
-        public List<string> replaceTags;
+        public List<string> displaceTags;
         public List<string> dissipationTerrainTags;
 
         //Rendering
         public NaturalOverlayProperties naturalOverlay;
         public RoomOverlayProperties roomOverlay;
+        public bool useRenderLayer = false;
 
         //Runtime
         public float FlowRate => 1f / viscosity;
 
         public AtmosphericTransferWorker TransferWorker => workerInt ??= (AtmosphericTransferWorker)Activator.CreateInstance(transferWorker, this);
 
+        public override void PostLoad()
+        {
+            //
+            AtmosphericReferenceCache.RegisterDef(this);
+        }
     }
 }

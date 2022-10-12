@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+
+	<TAE.SpreadingGasTypeDef>
+		<defName>Gas_TestGas</defName>
+		<label>Test Gas</label>
+		
+		<texPath>VisualFX/Natural/TiberiumGas/TiberiumGas</texPath>
+		<shaderType>MoteGlow</shaderType>
+		<colorMin>(0,0,0)</colorMin>
+		<colorMax>(1,1,1,1)</colorMax>
+		
+		<maxDensityPerCell>100</maxDensityPerCell>
+		<expireSeconds>30~60</expireSeconds>
+		<rotationSpeed>10~20</rotationSpeed>
+		<blockTurretTracking>true</blockTurretTracking>
+		<accuracyPenalty>0.3</accuracyPenalty>
+	</TAE.SpreadingGasTypeDef>
+
+</Defs>
