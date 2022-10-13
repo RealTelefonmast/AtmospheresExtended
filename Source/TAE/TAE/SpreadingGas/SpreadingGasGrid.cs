@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using RimWorld;
 using TeleCore;
@@ -18,35 +19,46 @@ public class SpreadingGasGrid : MapInformation
     private SpreadingGasGridRenderer renderer;
     
     //
-    private int gasTypeCount;
+    public readonly SpreadingGasTypeDef[] gasDefs;
+    public readonly Color[] minColors;
+    public readonly Color[] maxColors;
+    
+    //
     private GasCellStack[] gasGrid;
     private int[] totalSubGasCount;
     private int[] totalSubGasValue;
 
-    private int totalGasCount;
+    private uint totalGasCount;
     private long totalGasValue;
     
     private int dissipationIndex = 0;
     private int spreadIndex = 0;
     
     private readonly IntVec3[] randomSpreadCells;
-
+    
+    public GasCellStack[] Grid => gasGrid;
+    public uint TotalGasCount => totalGasCount;
     public bool HasAnyGas => totalGasCount > 0;
     
     public SpreadingGasGrid(Map map) : base(map)
     {
         _selfRef = this;
-        var allDefs = DefDatabase<SpreadingGasTypeDef>.AllDefsListForReading;
-        gasTypeCount = allDefs.Count;
+        gasDefs = DefDatabase<SpreadingGasTypeDef>.AllDefsListForReading.ToArray();
+        //gasTypeCount = gasDefs.Length;
         
-        renderer = new SpreadingGasGridRenderer();
+        renderer = new SpreadingGasGridRenderer(this, map);
         
         gasGrid = new GasCellStack[map.cellIndices.NumGridCells];
-        totalSubGasCount = new int[gasTypeCount];
-        totalSubGasValue = new int[gasTypeCount];
+        totalSubGasCount = new int[gasDefs.Length];
+        totalSubGasValue = new int[gasDefs.Length];
         
         //
         randomSpreadCells = GenAdj.CardinalDirections.ToArray();
+
+        for (int i = 0; i < map.Area; i++)
+        {
+            gasGrid[i] = new GasCellStack();
+        }
         
         //
         /*
@@ -68,32 +80,49 @@ public class SpreadingGasGrid : MapInformation
     }
     
     //CellStack / Value
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public GasCellStack CellStackAt(int index)
     {
         return gasGrid[index];
     }
     
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public GasCellValue CellValueAt(int index, int defID)
     {
         return gasGrid[index][defID];
     }
     
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void SetCellValueAt(int index, GasCellValue value)
     {
+        TLog.Message($"Setting Value at: {index}: {value}");
         gasGrid[index][value.defID] = value;
     }
 
     //Access Helpers
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ushort DensityAt(int index, int defID)
     {
         return gasGrid[index][defID].value;
     }
     
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ushort OverflowAt(int index, int defID)
     {
         return gasGrid[index][defID].overflow;
     }
 
+    public float[] DensityPercentagesAt(int index)
+    {
+        var pcts = new float[index];
+        for (int id = 0; id < gasDefs.Length; id++)
+        {
+            pcts[id] = (float) gasGrid[index][id].value / gasDefs[id].maxDensityPerCell;
+        }
+
+        return pcts;
+    }
+    
     public float DensityPercentAt(int index, int defID)
     {
         return (float)DensityAt(index,defID) / ((SpreadingGasTypeDef)defID).maxDensityPerCell;
@@ -105,14 +134,14 @@ public class SpreadingGasGrid : MapInformation
         return gasGrid[cell.Index(map)].HasAnyGas;
     }
 
+    public bool AnyGasAt(int index)
+    {
+        return gasGrid[index].HasAnyGas;
+    }
+    
     public ushort TypeDensityAt(IntVec3 cell, SpreadingGasTypeDef gasType)
     {
         return gasGrid[cell.Index(map)][gasType].value;
-    }
-    
-    public Color ColorAt(IntVec3 cell)
-    {
-        return gasGrid[cell.Index(map)].Color;
     }
 
     public void SetDensity_Direct(int index, int defID, ushort value)
@@ -177,7 +206,7 @@ public class SpreadingGasGrid : MapInformation
             
             //if(gasType.roofBlocksDissipation && cell.Roofed(map)) continue;
             
-            for (int id = 0; id <= gasTypeCount; id++)
+            for (int id = 0; id <= gasDefs.Length; id++)
             {
                 Dissipate(CellIndicesUtility.CellToIndex(cell, map.Size.x), id);
             }
@@ -191,7 +220,7 @@ public class SpreadingGasGrid : MapInformation
             if (spreadIndex >= area)
                 spreadIndex = 0;
 
-            for (int id = 0; id <= gasTypeCount; id++)
+            for (int id = 0; id <= gasDefs.Length; id++)
             {
                 TrySpreadGas(cellsInRandomOrder[spreadIndex], id);
             }
@@ -213,7 +242,7 @@ public class SpreadingGasGrid : MapInformation
         
         densityValue = (ushort)Math.Max(densityValue - def.dissipationAmount, 0);
         
-        SetDensity(index, defID, densityValue);
+        SetDensity_Direct(index, defID, densityValue);
     }
     
     void TrySpreadGas(IntVec3 pos, int defID)
@@ -258,6 +287,7 @@ public class SpreadingGasGrid : MapInformation
     
     public void AdjustSaturation(ref GasCellValue cellValue, SpreadingGasTypeDef def, int value, out int actualValue)
     {
+        TLog.Message($"Adjusting {cellValue} with {def}: {value}");
         actualValue = value;
         var val = cellValue.value + value;
         if (cellValue.overflow > 0 && val < def.maxDensityPerCell)
@@ -312,7 +342,7 @@ public class SpreadingGasGrid : MapInformation
     {
         foreach (var subCell in GenRadial.RadialCellsAround(cell, 6, true))
         {
-            TryAddGasAt_Internal(cell, def, (ushort)def.maxDensityPerCell, true);
+            TryAddGasAt_Internal(subCell, def, (ushort)def.maxDensityPerCell, true);
         }
     }
     
@@ -326,10 +356,11 @@ public class SpreadingGasGrid : MapInformation
     {
         if (!CanSpreadTo(cell, gasType, out _)) return;
         
-        int index = CellIndicesUtility.CellToIndex(cell, map.Size.x);
-        var cellValue = gasGrid[gasType][index];
+        int index = CellIndicesUtility.CellToIndex(cell, Map.Size.x);
+        var cellValue = gasGrid[index][gasType];
         AdjustSaturation(ref cellValue, gasType, amount, out _);
-
+        TLog.Message($"Adjusted To: {cellValue}");
+        
         if (noOverflow)
             cellValue.overflow = 0;
         

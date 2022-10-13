@@ -48,4 +48,9 @@ public struct GasCellValue
     {
         return self.totalBitVal != value;
     }
+
+    public override string ToString()
+    {
+        return $"[{(SpreadingGasTypeDef)defID}]: ({value}, {overflow})";
+    }
 }

@@ -9,19 +9,14 @@ namespace TAE;
 public struct GasCellStack
 {
     public GasCellValue[] stack;
-    private Color colorVal;
     private uint totalValue;
     
     public GasCellValue this[SpreadingGasTypeDef def] => stack[def.IDReference];
 
-    public static implicit operator GasCellValue[](GasCellStack stack) => stack.stack;
-    
-    public Color Color => colorVal;
     public bool HasAnyGas => totalValue > 0;
 
     public static GasCellStack Max => new GasCellStack()
     {
-        colorVal = Color.white,
         stack = FullStack,
     };
 
@@ -39,6 +34,8 @@ public struct GasCellStack
             return stack;
         }
     }
+
+    public static implicit operator GasCellValue[](GasCellStack stack) => stack.stack;
     
     public GasCellValue this[int idx]
     {
@@ -50,7 +47,6 @@ public struct GasCellStack
     {
         var allDefs = DefDatabase<SpreadingGasTypeDef>.AllDefsListForReading;
         stack = new GasCellValue[allDefs.Count];
-        colorVal = Color.white;
         totalValue = 0;
         for (var i = 0; i < allDefs.Count; i++)
         {
@@ -63,12 +59,14 @@ public struct GasCellStack
     public static GasCellStack operator +(GasCellStack stack, (SpreadingGasTypeDef def, ushort val) value)
     {
         stack[value.def.IDReference] += new GasCellValue((ushort)value.def.IDReference, value.val);
+        stack.ChangedValueOf(value.def, value.val);
         return stack;
     }
 
     public static GasCellStack operator -(GasCellStack stack, (SpreadingGasTypeDef def, ushort val) value)
     {
         stack[value.def.IDReference] -= new GasCellValue((ushort)value.def.IDReference, value.val);
+        stack.ChangedValueOf(value.def, -value.val);
         return stack;
     }
 
@@ -76,12 +74,14 @@ public struct GasCellStack
     public static GasCellStack operator +(GasCellStack stack, GasCellValue value)
     {
         stack[value.defID] += value;
+        stack.ChangedValueOf(value.defID, value.value);
         return stack;
     }
 
     public static GasCellStack operator -(GasCellStack stack, GasCellValue value)
     {
         stack[value.defID] -= value;
+        stack.ChangedValueOf(value.defID, -value.value);
         return stack;
     }
 
@@ -91,6 +91,7 @@ public struct GasCellStack
         for (int i = 0; i < stack.stack.Length; i++)
         {
             stack[i] += value[i];
+            stack.ChangedValueOf(stack[i].defID, value[i].value);
         }
 
         return stack;
@@ -101,33 +102,19 @@ public struct GasCellStack
         for (int i = 0; i < stack.stack.Length; i++)
         {
             stack[i] -= value[i];
+            stack.ChangedValueOf(stack[i].defID, -value[i].value);
         }
-
+        
         return stack;
     }
-
-    public void ChangedValueOf(ushort defID, ushort previousValue, ushort newValue)
+    
+    internal void ChangedValueOf(ushort defID, int diff)
     {
-        totalValue = (uint)(totalValue + (previousValue - newValue));
-        
-        //
-        var def = (SpreadingGasTypeDef)defID;
-        var previousColor = Color.Lerp(def.colorMin, def.colorMax,(previousValue/(float)def.maxDensityPerCell));
-        var newColor = Color.Lerp(def.colorMin, def.colorMax,(newValue/(float)def.maxDensityPerCell));
-        var colorDiff = previousColor - newColor;
-        colorVal += colorDiff;
+        totalValue = (uint)(totalValue + diff);
     }
 
-    public void UpdateColor()
+    internal void ChangedValueOf(ushort defID, ushort previousValue, ushort newValue)
     {
-        colorVal = new Color(0, 0, 0, 0);
-        for (int i = 0; i < stack.Length; i++)
-        {
-            var value = stack[i];
-            var def = (SpreadingGasTypeDef)value.defID;
-            colorVal += Color.Lerp(def.colorMin, def.colorMax, value.value/(float)def.maxDensityPerCell);
-           
-        }
-        colorVal /= stack.Length;
+        totalValue = (uint)(totalValue + (previousValue - newValue));
     }
 }

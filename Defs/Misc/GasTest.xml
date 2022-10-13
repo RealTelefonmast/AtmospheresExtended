@@ -12,7 +12,7 @@
 		
 		<maxDensityPerCell>100</maxDensityPerCell>
 		<expireSeconds>30~60</expireSeconds>
-		<rotationSpeed>10~20</rotationSpeed>
+		<rotationSpeeds>10~20</rotationSpeeds>
 		<blockTurretTracking>true</blockTurretTracking>
 		<accuracyPenalty>0.3</accuracyPenalty>
 	</TAE.SpreadingGasTypeDef>

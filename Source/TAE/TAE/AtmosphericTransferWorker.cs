@@ -65,7 +65,12 @@ namespace TAE
     public class AtmosphericTransferWorker
     {
         private AtmosphericDef def;
-
+        
+        public AtmosphericTransferWorker(SpreadingGasTypeDef def)
+        {
+            this.def = def.dissipateTo;
+        }
+        
         public AtmosphericTransferWorker(AtmosphericDef def)
         {
             this.def = def;
