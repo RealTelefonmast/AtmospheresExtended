@@ -7,14 +7,14 @@ namespace TAE;
 
 public class SpreadingGasTypeDef : Def
 {
-    private static int _masterID;
+    private static ushort _masterID;
     private static Dictionary<int, SpreadingGasTypeDef> _defByID = new();
 
 
     [Unsaved]
     private AtmosphericTransferWorker workerInt;
     [Unsaved] 
-    public int IDReference;
+    public ushort IDReference;
     
     public string texPath;
     public ShaderTypeDef shaderType;
@@ -45,7 +45,7 @@ public class SpreadingGasTypeDef : Def
 
     public AtmosphericTransferWorker TransferWorker => workerInt ??= (AtmosphericTransferWorker)Activator.CreateInstance(transferWorker, this);
 
-    public static implicit operator int(SpreadingGasTypeDef def) => def.IDReference;
+    public static implicit operator ushort(SpreadingGasTypeDef def) => def.IDReference;
     public static explicit operator SpreadingGasTypeDef(int ID) => _defByID[ID];
     
     public override void PostLoad()

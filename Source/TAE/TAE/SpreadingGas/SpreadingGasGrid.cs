@@ -20,15 +20,18 @@ public class SpreadingGasGrid : MapInformation
     //
     private int gasTypeCount;
     private GasCellStack[] gasGrid;
-    private int[] totalGasCount;
-    private int[] totalGasValue;
+    private int[] totalSubGasCount;
+    private int[] totalSubGasValue;
 
+    private int totalGasCount;
+    private long totalGasValue;
+    
     private int dissipationIndex = 0;
     private int spreadIndex = 0;
     
     private readonly IntVec3[] randomSpreadCells;
-    
-    public bool HasAnyGas =>;
+
+    public bool HasAnyGas => totalGasCount > 0;
     
     public SpreadingGasGrid(Map map) : base(map)
     {
@@ -39,8 +42,8 @@ public class SpreadingGasGrid : MapInformation
         renderer = new SpreadingGasGridRenderer();
         
         gasGrid = new GasCellStack[map.cellIndices.NumGridCells];
-        totalGasCount = new int[gasTypeCount];
-        totalGasValue = new int[gasTypeCount];
+        totalSubGasCount = new int[gasTypeCount];
+        totalSubGasValue = new int[gasTypeCount];
         
         //
         randomSpreadCells = GenAdj.CardinalDirections.ToArray();
@@ -64,7 +67,7 @@ public class SpreadingGasGrid : MapInformation
         base.ExposeData();
     }
     
-    //
+    //CellStack / Value
     public GasCellStack CellStackAt(int index)
     {
         return gasGrid[index];
@@ -75,12 +78,12 @@ public class SpreadingGasGrid : MapInformation
         return gasGrid[index][defID];
     }
     
-    public void SetCellValueAt(int index, int defID, GasCellValue value)
+    public void SetCellValueAt(int index, GasCellValue value)
     {
-        gasGrid[index][defID] = value;
+        gasGrid[index][value.defID] = value;
     }
 
-    //
+    //Access Helpers
     public ushort DensityAt(int index, int defID)
     {
         return gasGrid[index][defID].value;
@@ -91,12 +94,28 @@ public class SpreadingGasGrid : MapInformation
         return gasGrid[index][defID].overflow;
     }
 
-    public float PercentAt(int index, int defID)
+    public float DensityPercentAt(int index, int defID)
     {
         return (float)DensityAt(index,defID) / ((SpreadingGasTypeDef)defID).maxDensityPerCell;
     }
+    
+    //
+    public bool AnyGasAt(IntVec3 cell)
+    {
+        return gasGrid[cell.Index(map)].HasAnyGas;
+    }
 
-    public void SetDensity(int index, int defID, ushort value)
+    public ushort TypeDensityAt(IntVec3 cell, SpreadingGasTypeDef gasType)
+    {
+        return gasGrid[cell.Index(map)][gasType].value;
+    }
+    
+    public Color ColorAt(IntVec3 cell)
+    {
+        return gasGrid[cell.Index(map)].Color;
+    }
+
+    public void SetDensity_Direct(int index, int defID, ushort value)
     {
         var previous = DensityAt(index, defID);
         var cellValue = gasGrid[index][defID];
@@ -108,25 +127,25 @@ public class SpreadingGasGrid : MapInformation
         //
         if (value > previous)
         {
-            totalGasValue[defID] += value - previous;
+            totalSubGasCount[defID] += value - previous;
         }
         else if (value < previous)
         {
-            totalGasValue[defID] -= previous - value;
+            totalSubGasCount[defID] -= previous - value;
         }
         
         if (value > 0 && previous <= 0)
         {
-            totalGasCount[defID]++;
+            totalSubGasCount[defID]++;
         }
         
         else if (value <= 0 && previous > 0)
         {
-            totalGasCount[defID]--;
+            totalSubGasCount[defID]--;
         }
     }
     
-    public void SetOverflow(int index, int defID, ushort value)
+    public void SetOverflow_Direct(int index, int defID, ushort value)
     {
         var cellValue = gasGrid[index][defID];
         cellValue.overflow = value;
@@ -192,7 +211,8 @@ public class SpreadingGasGrid : MapInformation
         if (densityValue == 0) return;
         if (densityValue < def.minDissipationDensity) return;
         
-        densityValue = (ushort)Math.Max(densityValue - def.dissipationAmount, 0);;
+        densityValue = (ushort)Math.Max(densityValue - def.dissipationAmount, 0);
+        
         SetDensity(index, defID, densityValue);
     }
     
@@ -215,10 +235,10 @@ public class SpreadingGasGrid : MapInformation
             int newIndex = CellIndicesUtility.CellToIndex(cell, map.Size.x);
             var cellValueNghb = CellValueAt(index, defID);
             
-            if (TryEqualizeWith(ref cellValue, ref cellValueNghb, passPct))
+            if (TryEqualizeWith(ref cellValue, ref cellValueNghb, def, passPct))
             {
-                SetCellData(index, gasCellA);
-                SetCellData(newIndex, gasCellB);
+                SetCellValueAt(index, cellValue);
+                SetCellValueAt(newIndex, cellValueNghb);
             }
         }
     }
@@ -231,8 +251,8 @@ public class SpreadingGasGrid : MapInformation
         
         // var value = (ushort)Math.Min((diff * 0.5f * passPct), );
         ushort value = (ushort)(Mathf.Abs(diff * passPct) / 2);
-        AdjustSaturation(ref gasCellA, -value, out int changedValue);
-        AdjustSaturation(ref gasCellB, -changedValue, out _);
+        AdjustSaturation(ref gasCellA, def, -value, out int changedValue);
+        AdjustSaturation(ref gasCellB, def, -changedValue, out _);
         return true;
     }
     
@@ -253,10 +273,10 @@ public class SpreadingGasGrid : MapInformation
             return;
         }
 
-        if (val < gasType.maxDensityPerCell) return;
-        var overFlow = val - gasType.maxDensityPerCell;
+        if (val < def.maxDensityPerCell) return;
+        var overFlow = val - def.maxDensityPerCell;
         actualValue = value - overFlow;
-        cellValue.Item2 = (ushort)(cellValue.Item2 + overFlow);
+        cellValue.overflow = (ushort)(cellValue.overflow + overFlow);
     }
     
     //
@@ -268,85 +288,51 @@ public class SpreadingGasGrid : MapInformation
         return passPct > 0;
     }
     
+    //
     public override void Update()
     {
-        
-        
-        /*
-        for (var l = 0; l < renderStack.Length; l++)
-        {
-            renderStack[l].Draw();
-        }
-        */
+        renderer.Draw();
     }
 
-    public IEnumerable<(SpreadingGasTypeDef gasType, ushort density, ushort overflow)> AllGassesAt(IntVec3 cell)
-    {
-        var index = CellIndicesUtility.CellToIndex(cell, map.Size.x);;
-        foreach (var gasLayer in layerStack)
-        {
-            if (gasLayer.HasAnyGas)
-            {
-                yield return (gasLayer.GasType, gasLayer.DensityAt(index), gasLayer.OverflowAt(index));
-            }
-        }
-    }
-
-    public ushort GasDensityAt(IntVec3 cell, SpreadingGasTypeDef gasType)
-    {
-        return layerStack[gasType.IDReference].DensityAt(cell.Index(map));
-    }
-    
-    public Color ColorAt(IntVec3 cell)
-    {
-        Color color = Color.white;
-        for (var l = 0; l < layerStack.Length; l++)
-        {
-            color = layerStack[l].ColorAt(cell);
-        }
-        return color;
-    }
-
-    //
-    public static void TryAddGasAt(IntVec3 cell, SpreadingGasTypeDef gasType, ushort amount)
-    {
-        _selfRef.TryAddGasAt_Internal(cell, gasType, amount);
-    }
-
-    private void TryAddGasAt_Internal(IntVec3 cell, SpreadingGasTypeDef gasType, ushort amount)
-    {
-        layerStack[gasType.IDReference].TryAddGasAt(cell, amount);   
-    }
-
-    public bool AnyGasAt(IntVec3 cell)
-    {
-        return layerStack.Any(s => s.AnyGasAt(cell));
-    }
-
+    //Debug Options
     internal void Debug_FillAll()
     {
-        foreach (var gasLayer in layerStack)
+        for (int i = 0; i < map.Area; i++)
         {
-            for (int i = 0; i < map.Area; i++)
-            {
-                gasLayer.TryAddGasAt(map.cellIndices.IndexToCell(i), gasLayer.GasType.maxDensityPerCell);
-            }
+            gasGrid[i] = GasCellStack.Max;
         }
     }
 
     internal void Debug_AddAllAt(IntVec3 cell)
     {
-        foreach (var gasLayer in layerStack)
-        {
-            gasLayer.TryAddGasAt(cell, gasLayer.GasType.maxDensityPerCell);
-        }
+        gasGrid[cell.Index(map)] = GasCellStack.Max;
     }
 
-    public void Debug_PushTypeRadial(IntVec3 cell, SpreadingGasTypeDef def)
+    internal void Debug_PushTypeRadial(IntVec3 cell, SpreadingGasTypeDef def)
     {
         foreach (var subCell in GenRadial.RadialCellsAround(cell, 6, true))
         {
-            layerStack[def.IDReference].TryAddGasAt(subCell, def.maxDensityPerCell, true);
+            TryAddGasAt_Internal(cell, def, (ushort)def.maxDensityPerCell, true);
         }
+    }
+    
+    //
+    public static void TryAddGasAt(IntVec3 cell, SpreadingGasTypeDef gasType, ushort amount)
+    {
+        _selfRef.TryAddGasAt_Internal(cell, gasType, amount);
+    }
+    
+    private void TryAddGasAt_Internal(IntVec3 cell, SpreadingGasTypeDef gasType, ushort amount, bool noOverflow = false)
+    {
+        if (!CanSpreadTo(cell, gasType, out _)) return;
+        
+        int index = CellIndicesUtility.CellToIndex(cell, map.Size.x);
+        var cellValue = gasGrid[gasType][index];
+        AdjustSaturation(ref cellValue, gasType, amount, out _);
+
+        if (noOverflow)
+            cellValue.overflow = 0;
+        
+        SetCellValueAt(index, cellValue);
     }
 }

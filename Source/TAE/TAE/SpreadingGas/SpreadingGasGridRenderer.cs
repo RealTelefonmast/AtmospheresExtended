@@ -22,4 +22,8 @@ struct GasMeshProperties
 
 public class SpreadingGasGridRenderer
 {
+    public void Draw()
+    {
+        throw new System.NotImplementedException();
+    }
 }

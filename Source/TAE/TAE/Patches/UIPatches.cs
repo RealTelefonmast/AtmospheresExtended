@@ -42,15 +42,17 @@ public static class UIPatches
             var gasGrid =  Find.CurrentMap.GetMapInfo<SpreadingGasGrid>();
             if (gasGrid.AnyGasAt(intVec))
             {
-                var allGasses = gasGrid.AllGassesAt(UI.MouseCell());
-                foreach (var gasCell in allGasses)
+                var allGasses = gasGrid.CellStackAt(UI.MouseCell().Index(gasGrid.Map)); //.AllGassesAt(UI.MouseCell());
+                for (var i = 0; i < allGasses.stack.Length; i++)
                 {
-                    if (gasCell.density >= 0)
+                    var gasCell = allGasses.stack[i];
+                    if (gasCell.value >= 0)
                     {
+                        var def = (SpreadingGasTypeDef)gasCell.defID;
                         Widgets.Label(
                             new Rect(MouseoverReadout.BotLeft.x,
-                                (float) UI.screenHeight - MouseoverReadout.BotLeft.y - curYOffset, 999f, 999f),
-                            $"{gasCell.gasType}: ({gasCell.density}) ({gasCell.overflow}) ({gasCell.density / (float) gasCell.gasType.maxDensityPerCell})[{gasGrid.Layers[gasCell.gasType.IDReference].TotalGasCount}][{gasGrid.Layers[gasCell.gasType.IDReference].TotalValue}]");
+                                (float)UI.screenHeight - MouseoverReadout.BotLeft.y - curYOffset, 999f, 999f),
+                            $"{def}: ({gasCell.value}) ({gasCell.overflow}) ({gasCell.value / (float)def.maxDensityPerCell})");//[{allGasses[def].TotalGasCount}][{allGasses[def].TotalValue}]");
                         curYOffset += 19f;
                     }
                 }
