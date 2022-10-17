@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using RimWorld;
 using TeleCore;
 using UnityEngine;
@@ -13,11 +14,90 @@ public static class AtmosphereUtility
     public static List<IntVec3> relevantCells = new List<IntVec3>();
     private static List<Room> visibleRooms = new List<Room>();
 
+    public static void DrawSpreadingGasAroundMouse()
+    {
+        if (!AtmosphereMod.Mod.Settings.DrawAtmosphereAroundMouse) return;
+        FillAtmosphereRelevantCells(UI.MouseCell(), Find.CurrentMap);
+        for (int i = 0; i < relevantCells.Count; i++)
+        {
+            IntVec3 intVec = relevantCells[i];
+            var gasGrid =  Find.CurrentMap.GetMapInfo<SpreadingGasGrid>();
+            var gasStack = gasGrid.CellStackAt(intVec.Index(gasGrid.Map));
+
+            string stackLabel = "";
+            for (int s = 0; s < gasStack.Length; s++)
+            {
+                stackLabel += $"[{gasStack[s].value}]\n[{gasStack[s].overflow}]";
+            }
+            
+            GenMapUI.DrawThingLabel(GenMapUI.LabelDrawPosFor(intVec), stackLabel, Color.white);
+        }
+
+        //
+        OnGUI();
+    }
+
+    public static void OnGUI()
+    {
+        if (!UI.MouseCell().InBounds(Find.CurrentMap)) return;
+        
+        Rect rect = new Rect(Event.current.mousePosition.x, Event.current.mousePosition.y, 336f, (float)CellInspectorDrawer.numLines * 24f + 24f);
+        CellInspectorDrawer.numLines = 0;
+        
+        rect.x += 26f;
+        rect.y += 26f;
+        if (rect.xMax > (float)UI.screenWidth)
+        {
+            rect.x -= rect.width + 52f;
+        }
+        if (rect.yMax > (float)UI.screenHeight)
+        {
+            rect.y -= rect.height + 52f;
+        }
+        Find.WindowStack.ImmediateWindow(733348, rect, WindowLayer.Super, FillWindow);
+    }
+
+    private static void FillWindow()
+    {
+        Text.Font = GameFont.Small;
+        Text.Anchor = TextAnchor.MiddleLeft;
+        Text.WordWrap = false;
+        
+        IntVec3 intVec = UI.MouseCell();
+        if (!intVec.InBounds(Find.CurrentMap)) return;
+        var gasGrid =  Find.CurrentMap.GetMapInfo<SpreadingGasGrid>();
+        var gasStack = gasGrid.CellStackAt(intVec.Index(gasGrid.Map));
+        
+        CellInspectorDrawer.DrawHeader("Stack Inspection");
+        CellInspectorDrawer.DrawRow("Gas Grid: ", gasGrid.GasGrid.Length.ToString());
+        CellInspectorDrawer.DrawRow("Has Any Gas: ",gasGrid.HasAnyGas.ToString());
+        CellInspectorDrawer.DrawRow("Total Gas Count: ",gasGrid.TotalGasCount.ToString());
+        CellInspectorDrawer.DrawRow("Total Gas Value: ",gasGrid.TotalGasValue.ToString());
+        CellInspectorDrawer.DrawDivider();
+        CellInspectorDrawer.DrawRow("Stack Types: ",gasStack.Length.ToString());
+        CellInspectorDrawer.DrawRow("Any Gas In Stack: ",gasStack.HasAnyGas.ToString());
+        CellInspectorDrawer.DrawRow("Total Stack Value: ",(gasStack.totalValue).ToString());
+        CellInspectorDrawer.DrawDivider();
+        for(int i = 0; i < gasStack.Length; i++)
+        {
+            var value = gasStack[i];
+            CellInspectorDrawer.DrawRow($"{(SpreadingGasTypeDef)value.defID}:", String.Empty);
+            CellInspectorDrawer.DrawRow($"Total Gas Count:", gasGrid.TotalSubGasCount[value.defID].ToString());
+            CellInspectorDrawer.DrawRow($"Total Gas Value:", gasGrid.TotalSubGasValue[value.defID].ToString());
+            CellInspectorDrawer.DrawRow($"{nameof(GasCellValue.value)}:",  value.value.ToString());
+            CellInspectorDrawer.DrawRow($"{nameof(GasCellValue.overflow)}:",  value.overflow.ToString());
+            CellInspectorDrawer.DrawRow($"{nameof(GasCellValue.totalBitVal)}:",  value.totalBitVal.ToString());
+        }
+
+        Text.WordWrap = true;
+        Text.Anchor = TextAnchor.UpperLeft;
+    }
+    
     public static void DrawAtmosphereAroundMouse()
     {
         if (!AtmosphereMod.Mod.Settings.DrawAtmosphereAroundMouse) return;
         
-        FillBeautyRelevantCells(UI.MouseCell(), Find.CurrentMap);
+        FillAtmosphereRelevantCells(UI.MouseCell(), Find.CurrentMap);
         for (int i = 0; i < relevantCells.Count; i++)
         {
             IntVec3 intVec = relevantCells[i];
@@ -29,7 +109,7 @@ public static class AtmosphereUtility
         }
     }
     
-    public static void FillBeautyRelevantCells(IntVec3 root, Map map)
+    public static void FillAtmosphereRelevantCells(IntVec3 root, Map map)
     {
         relevantCells.Clear();
         Room room = root.GetRoom(map);

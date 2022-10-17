@@ -42,10 +42,10 @@ public static class UIPatches
             var gasGrid =  Find.CurrentMap.GetMapInfo<SpreadingGasGrid>();
             if (gasGrid.AnyGasAt(intVec))
             {
-                var allGasses = gasGrid.CellStackAt(UI.MouseCell().Index(gasGrid.Map)); //.AllGassesAt(UI.MouseCell());
-                for (var i = 0; i < allGasses.stack.Length; i++)
+                var allGasses = gasGrid.CellStackAt(UI.MouseCell().Index(gasGrid.Map));
+                for (var i = 0; i < allGasses.Length; i++)
                 {
-                    var gasCell = allGasses.stack[i];
+                    var gasCell = allGasses[i];
                     if (gasCell.value >= 0)
                     {
                         var def = (SpreadingGasTypeDef)gasCell.defID;

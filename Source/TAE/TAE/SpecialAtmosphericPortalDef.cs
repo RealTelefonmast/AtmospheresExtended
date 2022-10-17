@@ -30,24 +30,24 @@ namespace TAE
 
     public static class AtmosPortalData
     {
-        private static readonly Dictionary<ThingDef, SpecialAtmosphericPortalDef> workerByDef = new();
-        private static readonly HashSet<ThingDef> specialPassBuildings = new ();
+        private static readonly Dictionary<ThingDef, SpecialAtmosphericPortalDef> WorkerByDef = new();
+        private static readonly HashSet<ThingDef> SpecialPassBuildings = new ();
 
         public static bool TryGetWorkerFor(ThingDef def, out SpecialAtmosphericPortalDef portalDef)
         {
-            return workerByDef.TryGetValue(def, out portalDef);
+            return WorkerByDef.TryGetValue(def, out portalDef);
         }
 
         public static bool IsPassBuilding(ThingDef def)
         {
-            return specialPassBuildings.Contains(def);
+            return SpecialPassBuildings.Contains(def);
         }
 
         internal static void RegisterPortalDef(SpecialAtmosphericPortalDef def)
         {
-            if (workerByDef.TryAdd(def.portalThingDef, def))
+            if (WorkerByDef.TryAdd(def.portalThingDef, def))
             {
-                specialPassBuildings.Add(def.portalThingDef);
+                SpecialPassBuildings.Add(def.portalThingDef);
                 return;
             }
             Log.Warning($"[TAE] Added {def} with existing ThingDef {def.portalThingDef} already in Dictionary.");

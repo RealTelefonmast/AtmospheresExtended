@@ -44,6 +44,7 @@ public class SpreadingGasTypeDef : Def
     public Type cellEffectWorker;
 
     public AtmosphericTransferWorker TransferWorker => workerInt ??= (AtmosphericTransferWorker)Activator.CreateInstance(transferWorker, this);
+    public float ViscosityMultiplier { get; private set; }
 
     public static implicit operator ushort(SpreadingGasTypeDef def) => def.IDReference;
     public static explicit operator SpreadingGasTypeDef(int ID) => _defByID[ID];
@@ -53,5 +54,8 @@ public class SpreadingGasTypeDef : Def
         base.PostLoad();
         IDReference = _masterID++;
         _defByID.Add(IDReference, this);
+     
+        //
+        ViscosityMultiplier = Mathf.Lerp(1, 0.0125f, spreadViscosity);
     }
 }

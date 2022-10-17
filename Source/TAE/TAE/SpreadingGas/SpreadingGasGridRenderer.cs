@@ -1,7 +1,9 @@
-﻿using System.Runtime.InteropServices;
+﻿using System;
+using System.Runtime.InteropServices;
 using TeleCore;
 using TeleCore.Loading;
 using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 using Verse;
 
@@ -10,9 +12,8 @@ namespace TAE;
 [StructLayout(LayoutKind.Sequential)]
 struct GasMeshProperties
 {
-    public int forwardIndex; //Only used to forward to a different MeshProp data struct
-    public int index;        //CellIndex on the Map
-    public float[] indexedAlphas;
+    public int forwardIndex;    //Only used to forward to a different MeshProp data struct
+    public int mapIndex;        //CellIndex on the Map
     public Matrix4x4 _matrix;
     
     public static int Size()
@@ -36,44 +37,66 @@ public class SpreadingGasGridRenderer
     
     //Buffer Data
     private NativeArray<GasMeshProperties> meshProperties;
-    private Matrix4x4[] internalMatrices;
+    private unsafe GasMeshProperties* meshPropsPtr;
+    private NativeArray<float> indexedAlphas;
+    private unsafe float* indexedAlphasPtr;
+    
+    private NativeArray<Matrix4x4> internalMatrices;
+    private unsafe Matrix4x4* internalMatricesPtr;
+    
+    private ComputeBuffer bufferMinColors;
+    private ComputeBuffer bufferMaxColors;
 
     private ComputeBuffer bufferMeshData;
+    private ComputeBuffer bufferIndexedAlphas;
     private ComputeBuffer bufferArguments;
     
     private bool isInitialised = false;
     
     //PropertyIDs
-    private const string PropertyAngle = "_Angle";
-    private const string PropertyMaxAlpha = "_MaxAlpha";
     private const string PropertyTypeCount = "_TypeCount";
-    private const string PropertySrcMode = "SrcMode";
-    private const string PropertyDstMode = "DstMode";
-    
-    private static readonly int TypeCount = Shader.PropertyToID(PropertyTypeCount);
-    private static readonly int MinColors = Shader.PropertyToID("_MinColors");
-    private static readonly int MaxColors = Shader.PropertyToID("_MaxColors");
+    private const string PropertyMaxAlpha = "_MaxAlpha";
+    private const string PropertyRotSpeed = "_RotSpeed";
 
+    //
+    private const string PropertySrcMode = "_SrcMode";
+    private const string PropertyDstMode = "_DstMode";
+
+    //
+    private const string PropertyBufferMinColors = "_MinColors";
+    private const string PropertyBufferMaxColors= "_MaxColors";
+    
+    private const string PropertyBufferAlphas = "_IndexedAlphas";
+    private const string PropertyBufferMeshProps = "_MeshProperties";
+    
     public SpreadingGasGridRenderer(SpreadingGasGrid grid, Map map)
     {
         this.grid = grid;
         this.map = map;
         this.bufferSize = map.cellIndices.NumGridCells;
-        meshProperties = new NativeArray<GasMeshProperties>(bufferSize, Allocator.Persistent);
-        internalMatrices = new Matrix4x4[bufferSize];
         
+        //
         SetupInternalMatrixBuffer();
         
         //
-        void UnloadData()
+        void Unloader()
         {
-            meshProperties.Dispose();
-            bufferMeshData?.Dispose();
-            bufferArguments?.Dispose();
+            LongEventHandler.ExecuteWhenFinished(delegate
+            {
+                meshProperties.Dispose();
+                indexedAlphas.Dispose();
+
+                bufferMinColors?.Dispose();
+                bufferMaxColors?.Dispose();
+
+                bufferMeshData?.Dispose();
+                bufferIndexedAlphas?.Dispose();
+                bufferArguments?.Dispose();
+            });
         }
 
-        UnloadUtility.RegisterUnloadAction(UnloadData);
-        ApplicationQuitUtility.RegisterQuitEvent(UnloadData);
+        UnloadUtility.RegisterUnloadAction(Unloader);
+        ApplicationQuitUtility.RegisterQuitEvent(Unloader);
     }
     
     public Material Material
@@ -87,10 +110,8 @@ public class SpreadingGasGridRenderer
                     TLog.Error($"Cannot find {nameof(AtmosContent.InstancedGas)}!");
                 }
 
-                _material = MaterialPool.MatFrom("Things/Gas/GasCloudThickA", AtmosContent.InstancedGas);
-                _material.SetInt(TypeCount, grid.gasDefs.Length);
-                _material.SetColorArray(MinColors, grid.minColors);
-                _material.SetColorArray(MaxColors, grid.maxColors);
+                _material = MaterialPool.MatFrom("Things/Gas/GasCloudThickA", AtmosContent.InstancedGas, 3170);
+                _material.SetInt(PropertyTypeCount, SpreadingGasGrid.GasDefsCount);
                 _material.enableInstancing = true;
             }
             return _material;
@@ -107,12 +128,15 @@ public class SpreadingGasGridRenderer
         UpdateMeshProps();
 
         //Set Speed
-        Material.SetFloat("_RotSpeed", _RotSpeed);
+        Material.SetFloat(PropertyRotSpeed, _RotSpeed);
     }
 
     //
-    private void SetupInternalMatrixBuffer()
+    private unsafe void SetupInternalMatrixBuffer()
     {
+        internalMatrices = new NativeArray<Matrix4x4>(bufferSize, Allocator.Persistent); //new Matrix4x4[bufferSize];
+        internalMatricesPtr = (Matrix4x4*)internalMatrices.GetUnsafePtr();
+        
         Vector3 size = new(4.0f, 0f, 4.0f);
         for (int i = 0; i < bufferSize; i++)
         {
@@ -121,73 +145,104 @@ public class SpreadingGasGridRenderer
             pos.x += Rand.Range(-0.25f, 0.25f);
             pos.z += Rand.Range(-0.24f, 0.24f);
             Quaternion rotation = Quaternion.AngleAxis(((float) Rand.Range(0, 360)), Vector3.up);
-            internalMatrices[i] = Matrix4x4.TRS(pos, rotation, size);
+            internalMatricesPtr[i] = Matrix4x4.TRS(pos, rotation, size);
             Rand.PopState();
         }
     }
-    
-    private void InitRenderData()
+
+    private void InitColorBuffers()
     {
-        //Init Data
-        Material.SetFloat(PropertyMaxAlpha, 1.0f);
+        bufferMinColors = new ComputeBuffer(SpreadingGasGrid.GasDefsCount, Marshal.SizeOf<Color>(), ComputeBufferType.Constant, ComputeBufferMode.Immutable);
+        bufferMaxColors = new ComputeBuffer(SpreadingGasGrid.GasDefsCount, Marshal.SizeOf<Color>(), ComputeBufferType.Constant, ComputeBufferMode.Immutable);
+
+        bufferMinColors.SetData(grid.minColors);
+        bufferMaxColors.SetData(grid.maxColors);
         
-        bufferMeshData = new ComputeBuffer(bufferSize, GasMeshProperties.Size());
+        Material.SetBuffer(PropertyBufferMinColors, bufferMinColors);
+        Material.SetBuffer(PropertyBufferMaxColors, bufferMaxColors);
+    }
+    
+    private unsafe void InitRenderData()
+    {
+        //
+        InitColorBuffers();
+        
+        //
+        meshProperties = new NativeArray<GasMeshProperties>(bufferSize, Allocator.Persistent);
+        indexedAlphas = new NativeArray<float>(bufferSize * SpreadingGasGrid.GasDefsCount, Allocator.Persistent);
+
+        meshPropsPtr = (GasMeshProperties*)meshProperties.GetUnsafePtr();
+        indexedAlphasPtr = (float*)indexedAlphas.GetUnsafePtr();
+        
+        //
+        bufferMeshData = new ComputeBuffer(bufferSize, GasMeshProperties.Size(), ComputeBufferType.Structured);
+        bufferIndexedAlphas = new ComputeBuffer(indexedAlphas.Length, sizeof(float), ComputeBufferType.Structured);
         bufferArguments = new ComputeBuffer(1, shaderArguments.Length * sizeof(uint), ComputeBufferType.IndirectArguments);
 
-        Material.SetBuffer("_MeshProperties", bufferMeshData);
+        //
+        Material.SetFloat(PropertyMaxAlpha, 1.0f);
+        Material.SetBuffer(PropertyBufferMeshProps, bufferMeshData);
+        Material.SetBuffer(PropertyBufferAlphas, bufferIndexedAlphas);
     }
 
-    public void UpdateArguments()
+    private void UpdateArguments()
     {
         shaderArguments[0] = MeshPool.plane10.GetIndexCount(0);
-        shaderArguments[1] = (uint)(grid.TotalGasCount);
+        shaderArguments[1] = grid.TotalGasCount;
         shaderArguments[2] = MeshPool.plane10.GetIndexStart(0);
-        shaderArguments[3] = MeshPool.plane10.GetBaseVertex(0);
+        shaderArguments[3] = 0;
+        TLog.Message($"Pushing arguments: {shaderArguments[0]}; {shaderArguments[1]}; {shaderArguments[2]}; {shaderArguments[3]}; ");
         bufferArguments.SetData(shaderArguments);
     }
-    
-    private void UpdateMeshProps()
+
+    private unsafe void UpdateMeshProps()
     {
         //Fill
         int j = 0;
-        for (var i = 0; i < grid.Grid.Length; i++)
+        for (var i = 0; i < grid.GasGrid.Length; i++)
         {
-            //var value = layer.Grid[i];
-            if (grid.AnyGasAt(i))
-            {
-                //Forward Mapping
-                var forwarded = meshProperties[j];
-                forwarded.forwardIndex = i;
-                meshProperties[j] = forwarded;
+            if (!grid.AnyGasAt(i)) continue;
+            
+            //Map internalIndex j of GPU instance, to mapIndex i
+            var forwarded = meshPropsPtr[j];
+            forwarded.forwardIndex = i;
+            meshPropsPtr[j] = forwarded;
 
-                //Set MeshData
-                var meshProps = meshProperties[i];
-                meshProps._matrix = internalMatrices[i];
-                
-                meshProps.index = i;
-                meshProps.indexedAlphas = grid.DensityPercentagesAt(i);
-                meshProperties[i] = meshProps;
-                j++;
-                
-                //bufferMeshData.SetData(meshProperties, i, i, 1);
-            }
+            //
+            var meshProps = meshPropsPtr[i];
+            meshProps._matrix = internalMatricesPtr[i];
+            
+            meshProps.mapIndex = i;
+            
+            //
+            meshPropsPtr[i] = meshProps;
+            grid.AddPercentages(indexedAlphasPtr, i);
+            
+            j++;
         }
         
-        //
-        bufferMeshData.SetData(meshProperties); //, 0, 0, meshProperties.Length
+        //TLog.Message($"{indexedAlphas.ToStringSafeEnumerable()}");
+        
+        bufferMeshData.SetData(meshProperties);
+        bufferIndexedAlphas.SetData(indexedAlphas);
     }
     
     //
     public void Draw()
     {
         if (!grid.HasAnyGas) return;
+        
         if (!isInitialised)
         {
             InitRenderData();
             isInitialised = true;
         }
         
-        UpdateGPUData();
+        //
+        if(Find.TickManager.TicksGame % 2 == 0)
+            UpdateGPUData();
+        
+        //Render Always
         Graphics.DrawMeshInstancedIndirect(MeshPool.plane10, 0, Material, bounds, bufferArguments);
     }
 }

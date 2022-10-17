@@ -1,72 +1,74 @@
 ﻿using System.Collections;
+using System.Linq;
 using System.Runtime.InteropServices;
+using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 using Verse;
 
 namespace TAE;
 
 [StructLayout(LayoutKind.Sequential)]
-public struct GasCellStack
+public unsafe struct GasCellStack
 {
-    public GasCellValue[] stack;
-    private uint totalValue;
-    
-    public GasCellValue this[SpreadingGasTypeDef def] => stack[def.IDReference];
+    internal GasCellValue* stackPtr;
+    private NativeArray<GasCellValue> stackData;
+    internal uint totalValue;
 
     public bool HasAnyGas => totalValue > 0;
-
-    public static GasCellStack Max => new GasCellStack()
-    {
-        stack = FullStack,
-    };
-
-    private static GasCellValue[] FullStack
-    {
-        get
-        {
-            var list = DefDatabase<SpreadingGasTypeDef>.AllDefsListForReading;
-            var stack = new GasCellValue[list.Count];
-            for (var i = 0; i < list.Count; i++)
-            {
-                var gas = list[i];
-                stack[i] = new GasCellValue(gas.IDReference, (ushort)gas.maxDensityPerCell);
-            }
-            return stack;
-        }
-    }
-
-    public static implicit operator GasCellValue[](GasCellStack stack) => stack.stack;
+    public int Length => stackData.Length;
     
+    //public static implicit operator NativeArray<GasCellValue>(GasCellStack stack) => stack.stackData;
+    
+    public GasCellValue this[SpreadingGasTypeDef def] => stackPtr[def.IDReference];
     public GasCellValue this[int idx]
     {
-        get => stack[idx];
-        set => stack[idx] = value;
+        get => stackPtr[idx];
+        //Main Setting Operation
+        set
+        {
+            //
+            ChangedValueOf(stackPtr[idx].value, value.value);
+            stackPtr[idx] = value;
+        }
     }
 
     public GasCellStack()
     {
         var allDefs = DefDatabase<SpreadingGasTypeDef>.AllDefsListForReading;
-        stack = new GasCellValue[allDefs.Count];
+        stackData = new NativeArray<GasCellValue>(allDefs.Count, Allocator.Persistent); //new GasCellValue[allDefs.Count];
+        stackPtr = (GasCellValue*) stackData.GetUnsafePtr();
         totalValue = 0;
-        for (var i = 0; i < allDefs.Count; i++)
+        
+        //
+        for (var i = 0; i < SpreadingGasGrid.GasDefsCount; i++)
         {
-            var def = allDefs[i];
-            stack[i] = new GasCellValue();
+            stackPtr[i] = new GasCellValue(allDefs[i], 0);
         }
     }
+    
+    public GasCellStack(NativeArray<GasCellValue> stackData)
+    {
+        this.stackData = stackData;
+        stackPtr = (GasCellValue*) stackData.GetUnsafePtr();
+        totalValue = 0;
+
+        totalValue = (uint)stackData.Sum(c => c.value);
+    }
+    
 
     //Numerically
     public static GasCellStack operator +(GasCellStack stack, (SpreadingGasTypeDef def, ushort val) value)
     {
-        stack[value.def.IDReference] += new GasCellValue((ushort)value.def.IDReference, value.val);
-        stack.ChangedValueOf(value.def, value.val);
+        stack[value.def.IDReference] += new GasCellValue(value.def.IDReference, value.val);
+        stack.ChangedValueOf(value.val);
         return stack;
     }
 
     public static GasCellStack operator -(GasCellStack stack, (SpreadingGasTypeDef def, ushort val) value)
     {
         stack[value.def.IDReference] -= new GasCellValue((ushort)value.def.IDReference, value.val);
-        stack.ChangedValueOf(value.def, -value.val);
+        stack.ChangedValueOf(-value.val);
         return stack;
     }
 
@@ -74,24 +76,24 @@ public struct GasCellStack
     public static GasCellStack operator +(GasCellStack stack, GasCellValue value)
     {
         stack[value.defID] += value;
-        stack.ChangedValueOf(value.defID, value.value);
+        stack.ChangedValueOf(value.value);
         return stack;
     }
 
     public static GasCellStack operator -(GasCellStack stack, GasCellValue value)
     {
         stack[value.defID] -= value;
-        stack.ChangedValueOf(value.defID, -value.value);
+        stack.ChangedValueOf(-value.value);
         return stack;
     }
 
     //Stacks
     public static GasCellStack operator +(GasCellStack stack, GasCellStack value)
     {
-        for (int i = 0; i < stack.stack.Length; i++)
+        for (int i = 0; i < stack.Length; i++)
         {
             stack[i] += value[i];
-            stack.ChangedValueOf(stack[i].defID, value[i].value);
+            stack.ChangedValueOf(value[i].value);
         }
 
         return stack;
@@ -99,22 +101,40 @@ public struct GasCellStack
 
     public static GasCellStack operator -(GasCellStack stack, GasCellStack value)
     {
-        for (int i = 0; i < stack.stack.Length; i++)
+        for (int i = 0; i < stack.Length; i++)
         {
             stack[i] -= value[i];
-            stack.ChangedValueOf(stack[i].defID, -value[i].value);
+            stack.ChangedValueOf(-value[i].value);
         }
         
         return stack;
     }
-    
-    internal void ChangedValueOf(ushort defID, int diff)
+
+    private void ChangedValueOf(int diff)
     {
         totalValue = (uint)(totalValue + diff);
     }
 
-    internal void ChangedValueOf(ushort defID, ushort previousValue, ushort newValue)
+    private void ChangedValueOf(ushort previousValue, ushort newValue)
     {
-        totalValue = (uint)(totalValue + (previousValue - newValue));
+        totalValue = (uint)(totalValue + (newValue - previousValue));
+    }
+    
+    //Static Values
+    public static GasCellStack Max => new GasCellStack(FullStack);
+
+    private static NativeArray<GasCellValue> FullStack
+    {
+        get
+        {
+            var list = DefDatabase<SpreadingGasTypeDef>.AllDefsListForReading;
+            var stack = new NativeArray<GasCellValue>(list.Count, Allocator.Persistent); // new GasCellValue[list.Count];
+            for (var i = 0; i < list.Count; i++)
+            {
+                var gas = list[i];
+                stack[i] = new GasCellValue(gas.IDReference, (ushort)gas.maxDensityPerCell);
+            }
+            return stack;
+        }
     }
 }

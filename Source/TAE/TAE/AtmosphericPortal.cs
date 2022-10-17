@@ -93,8 +93,8 @@ namespace TAE
             var to = connections[1].CurrentContainer;
 
             //Go through all common types
-            //var tempTypes = from.AllStoredTypes.Union(to.AllStoredTypes).ToArray();
-            foreach (var atmosDef in from.AllStoredTypes.Union(to.AllStoredTypes))
+            var tempTypes = from.AllStoredTypes.Union(to.AllStoredTypes);//.ToArray();
+            foreach (var atmosDef in tempTypes)
             {
                 var transferWorker = atmosDef.TransferWorker;
 
@@ -135,7 +135,6 @@ namespace TAE
 
         public bool Connects(RoomComponent_Atmospheric toThis)
         {
-            Log.Message($"Checking connection to {toThis.Room.ID} between {connections[0].Room.ID} and {connections[1].Room.ID}");
             return toThis == connections[0] || toThis == connections[1];
         }
         public override string ToString()

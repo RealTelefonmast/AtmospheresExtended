@@ -1,9 +1,10 @@
-﻿using System.Runtime.InteropServices;
+﻿using System;
+using System.Runtime.InteropServices;
 
 namespace TAE;
 
 [StructLayout(LayoutKind.Explicit, Size = 48)]
-public struct GasCellValue
+public unsafe struct GasCellValue
 {
     [FieldOffset(0)] public ushort defID = 0;
 
@@ -16,7 +17,7 @@ public struct GasCellValue
         this.defID = defID;
         this.value = value;
     }
-
+    
     public GasCellValue(ushort defID, ushort value, ushort overflow)
     {
         this.defID = defID;
@@ -38,6 +39,18 @@ public struct GasCellValue
         return self;
     }
 
+    public static GasCellValue operator +(GasCellValue self, ushort value)
+    {
+        self.value += value;
+        return self;
+    }
+    
+    public static GasCellValue operator -(GasCellValue self, ushort value)
+    {
+        self.value -= value;
+        return self;
+    }
+    
     //
     public static bool operator ==(GasCellValue self, int value)
     {

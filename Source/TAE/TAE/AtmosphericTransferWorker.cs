@@ -78,7 +78,7 @@ namespace TAE
 
         public float GetBaseTransferRate(Thing thing)
         {
-            return FinalizeTransferRate(thing, AtmosphericPassPercent(thing));
+            return FinalizeTransferRate(thing, DefaultAtmosphericPassPercent(thing));
         }
 
         protected virtual float FinalizeTransferRate(Thing thing, float baseTransferRate)
@@ -92,7 +92,7 @@ namespace TAE
         }
 
         //
-        public static float AtmosphericPassPercent(Thing forThing)
+        public static float DefaultAtmosphericPassPercent(Thing forThing)
         {
             if (forThing == null) return 1.0f;
             
