@@ -23,6 +23,7 @@ public class DynamicDataCacheInfo : MapInformation
         EdificeGrid = new ComputeGrid<uint>(map);
     }
 
+    //TODO: Let data get filled directly in map load - update buffer later
     public override void ThreadSafeInit()
     {
         AtmosphericPassGrid.ThreadSafeInit();

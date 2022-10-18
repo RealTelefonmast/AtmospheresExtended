@@ -236,6 +236,10 @@ public unsafe class SpreadingGasGrid : MapInformation
     public override void Tick()
     {
         //
+    }
+
+    public override void TeleTick()
+    {
         if (!HasAnyGas) return;
 
         int area = map.Area;
@@ -401,7 +405,7 @@ public unsafe class SpreadingGasGrid : MapInformation
         AtmosphereUtility.DrawSpreadingGasAroundMouse();
     }
 
-    public override void CustomUpdate()
+    public override void TeleUpdate()
     {
         renderer.Draw();
     }

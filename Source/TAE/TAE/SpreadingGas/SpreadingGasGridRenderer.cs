@@ -158,6 +158,9 @@ public class SpreadingGasGridRenderer
         bufferMinColors.SetData(grid.minColors);
         bufferMaxColors.SetData(grid.maxColors);
         
+        TLog.Message($"MinColors: {grid.minColors.ToStringSafeEnumerable()}");
+        TLog.Message($"MaxColors: {grid.maxColors.ToStringSafeEnumerable()}");
+        
         Material.SetBuffer(PropertyBufferMinColors, bufferMinColors);
         Material.SetBuffer(PropertyBufferMaxColors, bufferMaxColors);
     }
