@@ -9,6 +9,9 @@
 	<li>Telefonmast</li>
   </authors>
   <url></url>
+  <loadAfter>
+	<li>Telefonmast.TeleCore</li>
+  </loadAfter>
   <modDependencies>
     <li>
       <packageId>brrainz.harmony</packageId>
