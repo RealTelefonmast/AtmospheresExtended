@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using TeleCore;
 using UnityEngine;
 using Verse;
@@ -18,17 +19,19 @@ namespace TAE
         private HashSet<AtmosphericDef> mapSourceTypes;
 
         //
-        private Dictionary<AtmosphericDef, float> storedValues;
+        private readonly Dictionary<AtmosphericDef, float> storedValues;
 
         public DefValueStack<AtmosphericDef> ValueStack { get; private set; }
         public float Capacity => _capacity;
         public float TotalStored => totalStoredCache;
 
         public RoomComponent_Atmospheric Parent => parentComp;
+        public bool ParentIsDoorWay => Parent?.IsDoorway ?? false;
         public bool HasParentRoom => parentComp != null;
         public bool IsSourceContainer => mapSourceTypes.Count > 0;
 
         //Dynamic State Getters
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float CapacityOf(AtmosphericDef def)
         {
             return _capacity * def.maxSaturation;
@@ -41,7 +44,7 @@ namespace TAE
 
         public float StoredPercentOf(AtmosphericDef def)
         {
-            return TotalStoredOf(def) / Mathf.Ceil(_capacity * def.maxSaturation);
+            return TotalStoredOf(def) / Mathf.Ceil(CapacityOf(def));
         }
 
         public float StoredPercentRelative(AtmosphericDef def)
@@ -64,7 +67,10 @@ namespace TAE
         public Dictionary<AtmosphericDef, float> StoredValuesByType => storedValues;
         public HashSet<AtmosphericDef> AllStoredTypes
         {
-            get { return storedTypeCache ??= new HashSet<AtmosphericDef>(); }
+            get
+            {
+                return storedTypeCache ??= new HashSet<AtmosphericDef>();
+            }
         }
 
         public AtmosphericContainer(RoomComponent_Atmospheric parent)
@@ -104,7 +110,7 @@ namespace TAE
         public void Notify_RoomChanged(RoomComponent_Atmospheric parent, int roomCells)
         {
             parentComp = parent;
-            _capacity = roomCells * AtmosphericMapInfo.CELL_CAPACITY;
+            _capacity = roomCells * AtmosMath.CELL_CAPACITY;
         }
 
         internal void Notify_ContainerStateChanged(bool updateMetaData = false)
@@ -135,6 +141,8 @@ namespace TAE
 
         public bool CanAccept(AtmosphericDef def)
         {
+            if (FullFor(def)) return false;
+            
             var totalPct = StoredPercentOf(def);
             foreach (var value in storedValues)
             {
@@ -148,10 +156,15 @@ namespace TAE
             return true;
         }
 
+        public float GetMaxTransferRateTo(AtmosphericContainer other, AtmosphericDef valueType, float desiredValue)
+        {
+            //var maxCap = other.CapacityOf(valueType) - other.TotalStoredOf(valueType);
+            return Mathf.Clamp(desiredValue, 0, other.CapacityOf(valueType) - other.TotalStoredOf(valueType));
+        }
+        
         public bool CanFullyTransferTo(AtmosphericContainer other, AtmosphericDef valueType, float value)
         {
             //Check Tag Rules
-            if (!CanAccept(valueType)) return false;
             if (storedValues.TryGetValue(valueType) < value) return false;
             return other.TotalStoredOf(valueType) + value <= other.CapacityOf(valueType);
         }
@@ -161,6 +174,7 @@ namespace TAE
             //Attempt to transfer a weight to another container
             //Check if anything of that type is stored, check if transfer of weight is possible without loss, try remove the weight from this container
             //if (!other.AcceptsType(valueType)) return false;
+            if (!other.CanAccept(valueType)) return false;
             if (CanFullyTransferTo(other, valueType, value) && TryRemoveValue(valueType, value, out float actualValue))
             {
                 //If passed, try to add the actual weight removed from this container, to the other.

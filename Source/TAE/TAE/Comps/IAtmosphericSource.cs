@@ -14,7 +14,7 @@ namespace TAE
         public Room Room { get; }
         public AtmosphericDef AtmosphericDef { get; }
         bool IsActive { get; }
-        int CreationInterval { get; }
-        int CreationAmount { get; }
+        int PushInterval { get; }
+        int PushAmount { get; }
     }
 }

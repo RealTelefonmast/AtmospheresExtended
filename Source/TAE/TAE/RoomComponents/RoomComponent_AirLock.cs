@@ -185,9 +185,8 @@ namespace TAE
             if (Parent.IsOutside) return;
 
             //Pre-gen data by only checking bordering cells (Getting Airlocks)
-            for (var c = 0; c < Parent.BorderCellsNoCorners.Length; c++)
+            foreach (var cell in Parent.BorderCellsNoCorners)
             {
-                var cell = Parent.BorderCellsNoCorners[c];
                 var things = cell.GetThingList(Map);
                 for (var t = 0; t < things.Count; t++)
                 {

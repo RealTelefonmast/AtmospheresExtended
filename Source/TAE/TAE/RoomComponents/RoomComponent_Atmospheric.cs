@@ -19,12 +19,18 @@ namespace TAE
         private RoomOverlay_Atmospheric renderer;
 
         //
+        public bool IsDoorway => Room.IsDoorway;
+        
+        //
         public bool IsOutdoors => Parent.IsOutside;
         public bool IsDirty => dirtyMarks > 0;
         public bool IsConnector => selfPortal.IsValid;
 
         public int ConnectorCount => IsOutdoors ? AtmosphericInfo.ConnectorCount : portals.Count;
-
+        
+        //
+        public AtmosphericPortal Portal => selfPortal;
+        
         //
         public AtmosphericMapInfo AtmosphericInfo => Map.GetMapInfo<AtmosphericMapInfo>();
         
@@ -146,15 +152,11 @@ namespace TAE
         }
 
         //Value Manipulation
-        public bool TryAddValue(AtmosphericDef def, float amount, out float actualAmount)
+        public bool TryAddValueToRoom(AtmosphericDef def, float amount, out float actualAmount)
         {
-            //Log.Message($"Adding {value} ({amount}) to RoomComp {Room.ID} | Outside: {Outside}");
-            if (CurrentContainer.TryAddValue(def, amount, out actualAmount))
-            {
-                Notify_AddedContainerValue(def, actualAmount);
-                return true;
-            }
-            return false;
+            if (!AtmosMath.TryAddValueTo(CurrentContainer, def, amount, out actualAmount)) return false;
+            Notify_AddedContainerValue(def, actualAmount);
+            return true;
         }
 
         public bool TryRemoveValue(AtmosphericDef def, float amount, out float actualAmount)
@@ -191,7 +193,7 @@ namespace TAE
                 var pct = OutsideContainer.StoredPercentOf(atmosphericDef);
                 var newValue = Mathf.Round(container.Capacity * pct);
 
-                TryAddValue(atmosphericDef, newValue, out _);
+                TryAddValueToRoom(atmosphericDef, newValue, out _);
             }
         }
 
@@ -204,6 +206,19 @@ namespace TAE
         public override void CompTick()
         {
             base.CompTick();
+            
+            foreach (var portal in Parent.RoomPortals)
+            {
+                var portalComp = portal.PortalRoom.GetRoomComp<RoomComponent_Atmospheric>();
+                var eqRoom = RoomContainer;
+                var portalCont = portalComp.RoomContainer;
+                
+                var tempTypes = RoomContainer.AllStoredTypes.Union(portalComp.RoomContainer.AllStoredTypes).ToArray();
+                foreach (var atmosDef in tempTypes)
+                {
+                    AtmosMath.TryEqualize(eqRoom, portalCont, atmosDef);
+                }
+            }
         }
 
         /*
@@ -255,14 +270,14 @@ namespace TAE
 
             DrawAtmosContainerReadout(innerRect, RoomContainer, OutsideContainer);
 
-            TWidgets.DoTinyLabel(innerRect.RightPartPixels(20).BottomPartPixels(20), $"[{Room.ID}]");
+            TWidgets.DoTinyLabel(innerRect.RightPartPixels(100).BottomPartPixels(20), $"[{Room.ID}][{AdjacentComps.Count}]|[{Parent.RoomPortals.Count}]:[{Parent.AdjacentTrackers.Count}]");
 
             var addRect = innerRect.BottomPartPixels(20).LeftPartPixels(40);
             if (Widgets.ButtonText(addRect, "Add"))
             {
                 FloatMenu floatMenu = new FloatMenu(
                     DefDatabase<AtmosphericDef>.AllDefsListForReading.Select(d => new FloatMenuOption(d.defName, 
-                        delegate { TryAddValue(d, container.Capacity * 0.25f, out _); })).ToList());
+                        delegate { TryAddValueToRoom(d, container.Capacity * 0.25f, out _); })).ToList());
 
                 Find.WindowStack.Add(floatMenu);
             }

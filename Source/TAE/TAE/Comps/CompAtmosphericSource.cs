@@ -16,8 +16,8 @@ namespace TAE
 
         //
         public AtmosphericDef AtmosphericDef => Props.atmosphericDef;
-        public int CreationInterval => Props.pushInterval;
-        public int CreationAmount => Props.pushAmount;
+        public int PushInterval => Props.pushInterval;
+        public int PushAmount => Props.pushAmount;
 
         public virtual bool IsActive => true;
 

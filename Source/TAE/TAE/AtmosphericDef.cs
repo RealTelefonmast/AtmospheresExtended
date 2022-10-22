@@ -24,7 +24,7 @@ namespace TAE
         public Type transferWorker = typeof(AtmosphericTransferWorker);
 
         //Maximum saturation relative to the room's capacity
-        public float maxSaturation = 1f;
+        public int maxSaturation = 1;
         //The rate at which gas flows between rooms
         public float viscosity = 1;
 

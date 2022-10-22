@@ -9,15 +9,14 @@ public class SpreadingGasTypeDef : Def
 {
     private static ushort _masterID;
     private static Dictionary<int, SpreadingGasTypeDef> _defByID = new();
-
-
+    
     [Unsaved]
     private AtmosphericTransferWorker workerInt;
     [Unsaved] 
     public ushort IDReference;
     
-    public string texPath;
-    public ShaderTypeDef shaderType;
+    //public string texPath;
+    //public ShaderTypeDef shaderType;
     public Color colorMin;
     public Color colorMax;
 
@@ -29,7 +28,7 @@ public class SpreadingGasTypeDef : Def
 
     public AtmosphericDef dissipateTo;
     public Type transferWorker = typeof(AtmosphericTransferWorker);
-    
+
     public FloatRange rotationSpeeds = new FloatRange(100,100);
     public FloatRange expireSeconds = new FloatRange(10, 20);
     public float accuracyPenalty;
@@ -48,7 +47,20 @@ public class SpreadingGasTypeDef : Def
 
     public static implicit operator ushort(SpreadingGasTypeDef def) => def.IDReference;
     public static explicit operator SpreadingGasTypeDef(int ID) => _defByID[ID];
-    
+
+    public override IEnumerable<string> ConfigErrors()
+    {
+        foreach (var error in base.ConfigErrors())
+        {
+            yield return error;
+        }
+
+        if (maxDensityPerCell > ushort.MaxValue)
+        {
+            yield return $"{nameof(maxDensityPerCell)} cannot be larger than {ushort.MaxValue}!";
+        }
+    }
+
     public override void PostLoad()
     {
         base.PostLoad();

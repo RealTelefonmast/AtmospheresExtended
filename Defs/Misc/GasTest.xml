@@ -8,7 +8,7 @@
 		<texPath>VisualFX/Natural/TiberiumGas/TiberiumGas</texPath>
 		<shaderType>MoteGlow</shaderType>
 		<colorMin>(0,0,0)</colorMin>
-		<colorMax>(1,1,1,1)</colorMax>
+		<colorMax>(1,0,0)</colorMax>
 		
 		<maxDensityPerCell>100</maxDensityPerCell>
 		<expireSeconds>30~60</expireSeconds>

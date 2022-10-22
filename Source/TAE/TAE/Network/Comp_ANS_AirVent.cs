@@ -106,8 +106,8 @@ namespace TAE
                         if(def.networkValue == null) continue;
                         if (AtmosphericComp.Container.TryConsume(def.networkValue, totalThroughput))
                         {
-                            Atmospheric.RoomContainer.TryAddValue(def, 1, out _);
-                            //parent.Map.GetMapInfo<AtmosphericMapInfo>().TrySpawnGasAt(parent.Position, ThingDef.Named("Gas_TiberiumGas"), totalThroughput * 100);
+                            //Atmospheric.RoomContainer.TryAddValue(def, 1, out _);
+                            parent.Map.GetMapInfo<AtmosphericMapInfo>().TrySpawnGasAt(parent.Position, Props.spawnedGasType, totalThroughput * Props.spawnedGasType.maxDensityPerCell);
                             return true;
                         }
 
@@ -155,7 +155,8 @@ namespace TAE
 
         public string acceptedAtmosphericTag;
         private List<AtmosphericDef> acceptedAtmospheres;
-        public List<DefValue<AtmosphericDef, float>> upkeepLevels; 
+        public List<DefValue<AtmosphericDef, float>> upkeepLevels;
+        public SpreadingGasTypeDef spawnedGasType;
 
         public List<AtmosphericDef> AllowedValues
         {

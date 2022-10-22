@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using RimWorld;
 using TeleCore;
 using UnityEngine;
 using Verse;
@@ -49,35 +50,12 @@ namespace TAE
             }
         }
 
-        public bool NeedsEqualizing(AtmosphericDef def, out AtmosPortalFlow flow, out float diffAbs)
-        {
-            flow = AtmosPortalFlow.None;
-            diffAbs = 0f;
-            if (connections[0].IsOutdoors && connections[1].IsOutdoors) return false;
-            var fromTotal = connections[0].CurrentContainer.TotalStoredOf(def);
-            var toTotal = connections[1].CurrentContainer.TotalStoredOf(def);
-
-            var fromPct = connections[0].CurrentContainer.StoredPercentOf(def);
-            var toPct = connections[1].CurrentContainer.StoredPercentOf(def);
-
-            var totalDiff = Mathf.Abs(fromTotal - toTotal);
-            var diffPct = fromPct - toPct;
-
-            flow = diffPct switch
-            {
-                > 0 => AtmosPortalFlow.Positive,
-                < 0 => AtmosPortalFlow.Negative,
-                _ => AtmosPortalFlow.None
-            };
-            diffAbs = Mathf.Abs(diffPct);
-            return diffAbs > 0 && totalDiff >= 1;
-        }
-
-        private bool PreventFlowBack(RoomComponent_Atmospheric to, AtmosphericDef ofDef)
+        private bool PreventFlowBack(AtmosphericDef ofDef, RoomComponent_Atmospheric to)
         {
             int checkIndex = IndexOf(to);
             if (lastResultByDef.TryGetValue(ofDef, out var result))
             {
+                lastResultByDef[ofDef] = FlowResult.None;
                 return result.FlowsToOther && result.FromIndex == checkIndex;
             }
             return false;
@@ -91,14 +69,15 @@ namespace TAE
             //Select containers
             var from = connections[0].CurrentContainer;
             var to = connections[1].CurrentContainer;
-
+            
             //Go through all common types
             var tempTypes = from.AllStoredTypes.Union(to.AllStoredTypes);//.ToArray();
             foreach (var atmosDef in tempTypes)
             {
+                if(PreventFlowBack(atmosDef, connections[1])) continue;
+                
                 var transferWorker = atmosDef.TransferWorker;
-
-                var flowResult = transferWorker.TryTransferVia(this, from, to, atmosDef);
+                var flowResult = AtmosMath.TryEqualizeVia(this, transferWorker, from, to, atmosDef);
                 if (flowResult.FlowsToOther)
                 {
                     SetFlowFor(atmosDef, flowResult);
@@ -117,8 +96,6 @@ namespace TAE
                 lastResultByDef[def] = result;
                 return;
             }
-
-            //
             lastResultByDef.Add(def, result);
         }
 

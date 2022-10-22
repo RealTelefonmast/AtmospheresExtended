@@ -10,9 +10,6 @@ namespace TAE
     public class AtmosphericMapInfo : MapInformation
     {
         //
-        internal static int CELL_CAPACITY = 100;
-
-        //
         private AtmosphericCache _cache;
         private readonly AtmosphericContainer mapContainer;
         private readonly AtmosphereRenderer renderer;
@@ -130,9 +127,9 @@ namespace TAE
             foreach (var source in allSources)
             {
                 if(!source.Thing.Spawned) continue;
-                if (source.Thing.IsHashIntervalTick(source.CreationInterval))
+                if (source.Thing.IsHashIntervalTick(source.PushInterval))
                 {
-                    TryAddToAtmosphere(source);
+                    TryAddToAtmosphereFromSource(source);
                 }
             }
 
@@ -140,15 +137,6 @@ namespace TAE
             {
                 overlay.OverlayColor = naturalAtmospheres[0].Def.valueColor;
                 overlay.TickOverlay(map);
-            }
-        }
-
-        public void DrawSkyOverlays()
-        {
-            if (naturalOverlays.NullOrEmpty()) return;
-            for (var i = 0; i < naturalOverlays.Count; i++)
-            {
-                naturalOverlays[i].DrawOverlay(map);
             }
         }
 
@@ -160,11 +148,11 @@ namespace TAE
             //
             foreach (var atmosphere in naturalAtmospheres)
             {
-                var storedOf = mapContainer.TotalStoredOf(atmosphere.Def);
-                var desired = mapContainer.Capacity * atmosphere.Value;
+                var storedOf = MapContainer.TotalStoredOf(atmosphere.Def);
+                var desired = MapContainer.Capacity * atmosphere.Value;
                 var diff = Mathf.Round(desired - storedOf);
                 if(diff <= 0) continue;
-                mapContainer.TryAddValue(atmosphere.Def, diff, out _);
+                MapContainer.TryAddValue(atmosphere.Def, diff, out _);
             }
         }
 
@@ -226,10 +214,10 @@ namespace TAE
             }
         }
 
-        private void TryAddToAtmosphere(IAtmosphericSource source)
+        private void TryAddToAtmosphereFromSource(IAtmosphericSource source)
         {
             if (!source.IsActive) return;
-            if (compByRoom[source.Room].TryAddValue(source.AtmosphericDef, source.CreationAmount, out _))
+            if (compByRoom[source.Room].TryAddValueToRoom(source.AtmosphericDef, source.PushAmount, out _))
             {
                 //TODO: effect on source...
             }
@@ -299,30 +287,6 @@ namespace TAE
             allConnections.Add(connection);
         }
 
-        /*
-        public void Notify_AddConnection(AtmosphericPortal connection)
-        {
-            var same = AllConnections.Find(t => t.IsSameBuilding(connection));
-            if (same != null)
-            {
-                Notify_RemoveConnection(same);
-            }
-
-            if (connection.ConnectsOutside())
-            {
-                ConnectionsToOutside.Add(connection);
-            }
-
-            AllConnections.Add(connection);
-        }
-
-        public void Notify_RemoveConnection(AtmosphericPortal connection)
-        {
-            ConnectionsToOutside.RemoveAll(c => c.IsSameBuilding(connection));
-            AllConnections.RemoveAll(c => c.IsSameBuilding(connection));
-        }
-        */
-
         public override void UpdateOnGUI()
         {
         }
@@ -337,20 +301,29 @@ namespace TAE
             renderer.AtmosphereDrawerUpdate();
         }
 
+        public void DrawSkyOverlays()
+        {
+            if (naturalOverlays.NullOrEmpty()) return;
+            for (var i = 0; i < naturalOverlays.Count; i++)
+            {
+                naturalOverlays[i].DrawOverlay(map);
+            }
+        }
+        
         //
-        public bool TrySpawnGasAt(IntVec3 cell, ThingDef def, int value)
+        public bool TrySpawnGasAt(IntVec3 cell, SpreadingGasTypeDef gasType, int value)
         {
             return false;
             /*
-            if (!ComponentAt(cell).CanHaveTangibleGas) return false;
-            if (cell.GetGas(Map) is SpreadingGas existingGas)
-            {
-                existingGas.AdjustSaturation(value, out _);
-                return true;
-            }
-            ((SpreadingGas)GenSpawn.Spawn(def, cell, Map)).AdjustSaturation(value, out _);
-            return true;
-            */
+               if (!ComponentAt(cell).CanHaveTangibleGas) return false;
+               if (cell.GetGas(Map) is SpreadingGas existingGas)
+               {
+                   existingGas.AdjustSaturation(value, out _);
+                   return true;
+               }
+               ((SpreadingGas)GenSpawn.Spawn(def, cell, Map)).AdjustSaturation(value, out _);
+               return true;
+           */
         }
     }
 }

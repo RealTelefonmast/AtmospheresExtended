@@ -5,6 +5,7 @@ using TeleCore.Loading;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
+using UnityEngine.Rendering;
 using Verse;
 
 namespace TAE;
@@ -12,8 +13,8 @@ namespace TAE;
 [StructLayout(LayoutKind.Sequential)]
 struct GasMeshProperties
 {
-    public int forwardIndex;    //Only used to forward to a different MeshProp data struct
-    public int mapIndex;        //CellIndex on the Map
+    public uint forwardIndex;    //Only used to forward to a different MeshProp data struct
+    public uint mapIndex;        //CellIndex on the Map
     public Matrix4x4 _matrix;
     
     public static int Size()
@@ -38,17 +39,20 @@ public class SpreadingGasGridRenderer
     //Buffer Data
     private NativeArray<GasMeshProperties> meshProperties;
     private unsafe GasMeshProperties* meshPropsPtr;
-    private NativeArray<float> indexedAlphas;
-    private unsafe float* indexedAlphasPtr;
     
+    //
+    private NativeArray<uint> indexedDensities;
+    private unsafe uint* indexedDensitiesPtr;
+
     private NativeArray<Matrix4x4> internalMatrices;
     private unsafe Matrix4x4* internalMatricesPtr;
     
     private ComputeBuffer bufferMinColors;
     private ComputeBuffer bufferMaxColors;
-
+    private ComputeBuffer bufferMaxDensities;
+    
     private ComputeBuffer bufferMeshData;
-    private ComputeBuffer bufferIndexedAlphas;
+    private ComputeBuffer bufferIndexedDensities;
     private ComputeBuffer bufferArguments;
     
     private bool isInitialised = false;
@@ -66,15 +70,15 @@ public class SpreadingGasGridRenderer
     private const string PropertyBufferMinColors = "_MinColors";
     private const string PropertyBufferMaxColors= "_MaxColors";
     
-    private const string PropertyBufferAlphas = "_IndexedAlphas";
     private const string PropertyBufferMeshProps = "_MeshProperties";
+    
     
     public SpreadingGasGridRenderer(SpreadingGasGrid grid, Map map)
     {
         this.grid = grid;
         this.map = map;
         this.bufferSize = map.cellIndices.NumGridCells;
-        
+
         //
         SetupInternalMatrixBuffer();
         
@@ -84,13 +88,14 @@ public class SpreadingGasGridRenderer
             LongEventHandler.ExecuteWhenFinished(delegate
             {
                 meshProperties.Dispose();
-                indexedAlphas.Dispose();
+                indexedDensities.Dispose();
 
                 bufferMinColors?.Dispose();
                 bufferMaxColors?.Dispose();
+                bufferMaxDensities?.Dispose();
 
                 bufferMeshData?.Dispose();
-                bufferIndexedAlphas?.Dispose();
+                bufferIndexedDensities?.Dispose();
                 bufferArguments?.Dispose();
             });
         }
@@ -110,17 +115,23 @@ public class SpreadingGasGridRenderer
                     TLog.Error($"Cannot find {nameof(AtmosContent.InstancedGas)}!");
                 }
 
-                _material = MaterialPool.MatFrom("Things/Gas/GasCloudThickA", AtmosContent.InstancedGas, 3170);
+                _material = MaterialPool.MatFrom("Sprites/Gas", AtmosContent.InstancedGas, 3170);
                 _material.SetInt(PropertyTypeCount, SpreadingGasGrid.GasDefsCount);
-                _material.enableInstancing = true;
+
             }
             return _material;
         }
     }
     
-    [TweakValue("Atmospheric", 0, 1000)] 
+    [TweakValue("Atmospheric", 0, 1000)]
     private static float _RotSpeed = 100;
 
+    [TweakValue("Atmospheric", 0, 1)]
+    private static float _MaxAlpha = 1;
+    
+    [TweakValue("Atmospheric", 0, 1)]
+    private static float _MinAlpha = 0.0625f;
+    
     public void UpdateGPUData()
     {
         //Set Mesh Data
@@ -129,6 +140,8 @@ public class SpreadingGasGridRenderer
 
         //Set Speed
         Material.SetFloat(PropertyRotSpeed, _RotSpeed);
+        Material.SetFloat("_MinAlpha", _MinAlpha);
+        Material.SetFloat("_MaxAlpha", _MaxAlpha);
     }
 
     //
@@ -136,8 +149,9 @@ public class SpreadingGasGridRenderer
     {
         internalMatrices = new NativeArray<Matrix4x4>(bufferSize, Allocator.Persistent); //new Matrix4x4[bufferSize];
         internalMatricesPtr = (Matrix4x4*)internalMatrices.GetUnsafePtr();
-        
-        Vector3 size = new(4.0f, 0f, 4.0f);
+
+        var rad = Rand.Range(2.75f, 3.75f);
+        Vector3 size = new(rad, 0f, rad);
         for (int i = 0; i < bufferSize; i++)
         {
             Rand.PushState(i);
@@ -152,17 +166,17 @@ public class SpreadingGasGridRenderer
 
     private void InitColorBuffers()
     {
-        bufferMinColors = new ComputeBuffer(SpreadingGasGrid.GasDefsCount, Marshal.SizeOf<Color>(), ComputeBufferType.Constant, ComputeBufferMode.Immutable);
-        bufferMaxColors = new ComputeBuffer(SpreadingGasGrid.GasDefsCount, Marshal.SizeOf<Color>(), ComputeBufferType.Constant, ComputeBufferMode.Immutable);
+        bufferMinColors = new ComputeBuffer(SpreadingGasGrid.GasDefsCount, Marshal.SizeOf<Color>());
+        bufferMaxColors = new ComputeBuffer(SpreadingGasGrid.GasDefsCount, Marshal.SizeOf<Color>());
+        bufferMaxDensities = new ComputeBuffer(SpreadingGasGrid.GasDefsCount, sizeof(uint));
 
         bufferMinColors.SetData(grid.minColors);
         bufferMaxColors.SetData(grid.maxColors);
-        
-        TLog.Message($"MinColors: {grid.minColors.ToStringSafeEnumerable()}");
-        TLog.Message($"MaxColors: {grid.maxColors.ToStringSafeEnumerable()}");
-        
+        bufferMaxDensities.SetData(grid.maxDensities);
+
         Material.SetBuffer(PropertyBufferMinColors, bufferMinColors);
         Material.SetBuffer(PropertyBufferMaxColors, bufferMaxColors);
+        Material.SetBuffer("_MaxDensities", bufferMaxDensities);
     }
     
     private unsafe void InitRenderData()
@@ -172,20 +186,20 @@ public class SpreadingGasGridRenderer
         
         //
         meshProperties = new NativeArray<GasMeshProperties>(bufferSize, Allocator.Persistent);
-        indexedAlphas = new NativeArray<float>(bufferSize * SpreadingGasGrid.GasDefsCount, Allocator.Persistent);
+        indexedDensities = new NativeArray<uint>(bufferSize * SpreadingGasGrid.GasDefsCount, Allocator.Persistent);
 
         meshPropsPtr = (GasMeshProperties*)meshProperties.GetUnsafePtr();
-        indexedAlphasPtr = (float*)indexedAlphas.GetUnsafePtr();
+        indexedDensitiesPtr = (uint*)indexedDensities.GetUnsafePtr();
         
         //
         bufferMeshData = new ComputeBuffer(bufferSize, GasMeshProperties.Size(), ComputeBufferType.Structured);
-        bufferIndexedAlphas = new ComputeBuffer(indexedAlphas.Length, sizeof(float), ComputeBufferType.Structured);
+        bufferIndexedDensities = new ComputeBuffer(indexedDensities.Length, sizeof(uint), ComputeBufferType.Structured);
         bufferArguments = new ComputeBuffer(1, shaderArguments.Length * sizeof(uint), ComputeBufferType.IndirectArguments);
 
         //
         Material.SetFloat(PropertyMaxAlpha, 1.0f);
         Material.SetBuffer(PropertyBufferMeshProps, bufferMeshData);
-        Material.SetBuffer(PropertyBufferAlphas, bufferIndexedAlphas);
+        Material.SetBuffer("_IndexedDensities", bufferIndexedDensities);
     }
 
     private void UpdateArguments()
@@ -194,7 +208,6 @@ public class SpreadingGasGridRenderer
         shaderArguments[1] = grid.TotalGasCount;
         shaderArguments[2] = MeshPool.plane10.GetIndexStart(0);
         shaderArguments[3] = 0;
-        TLog.Message($"Pushing arguments: {shaderArguments[0]}; {shaderArguments[1]}; {shaderArguments[2]}; {shaderArguments[3]}; ");
         bufferArguments.SetData(shaderArguments);
     }
 
@@ -202,7 +215,7 @@ public class SpreadingGasGridRenderer
     {
         //Fill
         int j = 0;
-        for (var i = 0; i < grid.GasGrid.Length; i++)
+        for (uint i = 0; i < grid.GasGrid.Length; i++)
         {
             if (!grid.AnyGasAt(i)) continue;
             
@@ -219,7 +232,7 @@ public class SpreadingGasGridRenderer
             
             //
             meshPropsPtr[i] = meshProps;
-            grid.AddPercentages(indexedAlphasPtr, i);
+            grid.AddDensities(indexedDensitiesPtr, i);
             
             j++;
         }
@@ -227,7 +240,7 @@ public class SpreadingGasGridRenderer
         //TLog.Message($"{indexedAlphas.ToStringSafeEnumerable()}");
         
         bufferMeshData.SetData(meshProperties);
-        bufferIndexedAlphas.SetData(indexedAlphas);
+        bufferIndexedDensities.SetData(indexedDensities);
     }
     
     //

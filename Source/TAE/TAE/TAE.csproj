@@ -32,13 +32,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Krafs.Rimworld.Ref" Version="1.4.3520-beta" GeneratePathProperty="true" />
+    <PackageReference Include="Krafs.Rimworld.Ref" Version="1.4.3523-beta" GeneratePathProperty="true" />
     <PackageReference Include="Lib.Harmony" Version="2.2.2" ExcludeAssets="runtime" />
     <PackageReference Include="TaskPubliciser" Version="1.0.3" />
 
     <PackageReference Include="Microsoft.NETCore.Platforms" Version="7.0.0-rc.2.22472.3" />
 
-    <PackageReference Include="TeleCore" Version="1.4.6">
+    <PackageReference Include="TeleCore" Version="1.5.1">
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
     <PackageReference Include="UnlimitedHugs.Rimworld.HugsLib" Version="9.0.1" ExcludeAssets="runtime" />

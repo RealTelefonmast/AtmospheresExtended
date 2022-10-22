@@ -17,6 +17,8 @@ public unsafe class SpreadingGasGrid : MapInformation
 {
     internal static SpreadingGasTypeDef[] GasDefsArr;
     internal static int GasDefsCount;
+    internal const int AlphaCurvePoints = 8;
+    internal const int AlphaCurvePointsData = AlphaCurvePoints + 1; //TODO use a n+1th position to set max size to not have comparisions against "empty" curve points
     
     //
     private SpreadingGasGridRenderer renderer;
@@ -28,6 +30,7 @@ public unsafe class SpreadingGasGrid : MapInformation
     //
     public readonly Color[] minColors;
     public readonly Color[] maxColors;
+    public readonly uint[] maxDensities;
     
     //
     private NativeArray<GasCellStack> gasGridData;
@@ -42,7 +45,7 @@ public unsafe class SpreadingGasGrid : MapInformation
     //Spreading And Dissipation
     private int workingIndex = 0;
     private readonly int workingCellCount;
-    private readonly int[] randomSpreadDirs;
+    private readonly byte[] randomSpreadDirs;
     //private readonly IntVec3[] randomSpreadCells;
 
     //
@@ -71,15 +74,22 @@ public unsafe class SpreadingGasGrid : MapInformation
             GasDefsArr = DefDatabase<SpreadingGasTypeDef>.AllDefsListForReading.ToArray();
             GasDefsCount = GasDefsArr.Length;
         }
-
+        
         minColors = new Color[GasDefsCount];
         maxColors = new Color[GasDefsCount];
+        maxDensities = new uint[GasDefsCount];
         
         for (int i = 0; i < GasDefsCount; i++)
         {
             minColors[i] = GasDefsArr[i].colorMin;
             maxColors[i] = GasDefsArr[i].colorMax;
+            maxDensities[i] = (uint)GasDefsArr[i].maxDensityPerCell;
         }
+        
+        //
+        TLog.Message($"{minColors.ToStringSafeEnumerable()}");
+        TLog.Message($"{maxColors.ToStringSafeEnumerable()}");
+        TLog.Message($"{maxDensities.ToStringSafeEnumerable()}");
         
         //
         renderer = new SpreadingGasGridRenderer(this, map);
@@ -96,7 +106,7 @@ public unsafe class SpreadingGasGrid : MapInformation
         totalSubGasValue = new int[GasDefsCount];
         
         //
-        randomSpreadDirs = new[] {0, 1, 2, 3};
+        randomSpreadDirs = new byte[] {0, 1, 2, 3};
         randomSpreadDirs.Shuffle();
         //randomSpreadCells = GenAdj.CardinalDirections.ToArray();
         //randomSpreadCells.Shuffle();
@@ -159,12 +169,12 @@ public unsafe class SpreadingGasGrid : MapInformation
     {
         return gasGridPtr[index][defID].overflow;
     }
-
-    internal void AddPercentages(float* alphas, int startIndex)
+    
+    internal void AddDensities(uint* densities, uint startIndex)
     {
         for (int id = 0; id < GasDefsCount; id++)
         {
-            alphas[((startIndex*GasDefsCount)) + id] = (float) gasGridPtr[startIndex][id].value / GasDefsArr[id].maxDensityPerCell;
+            densities[startIndex * GasDefsCount + id] = gasGridPtr[startIndex][id].value; /// GasDefsArr[id].maxDensityPerCell;
         }
     }
 
@@ -179,7 +189,7 @@ public unsafe class SpreadingGasGrid : MapInformation
         return gasGridPtr[cell.Index(map)].HasAnyGas;
     }
 
-    public bool AnyGasAt(int index)
+    public bool AnyGasAt(uint index)
     {
         return gasGridPtr[index].HasAnyGas;
     }

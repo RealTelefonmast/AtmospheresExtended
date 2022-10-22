@@ -30,9 +30,9 @@ public class DynamicDataCacheInfo : MapInformation
         LightPassGrid.ThreadSafeInit();
         EdificeGrid.ThreadSafeInit();
 
-        AtmosphericPassGrid.UpdateCPUData();
-        LightPassGrid.UpdateCPUData();
-        EdificeGrid.UpdateCPUData();
+        AtmosphericPassGrid.UpdateBuffer();
+        LightPassGrid.UpdateBuffer();
+        EdificeGrid.UpdateBuffer();
     }
 
     /*
@@ -66,11 +66,11 @@ public class DynamicDataCacheInfo : MapInformation
             if (isBuilding)
             {
                 //
-                AtmosphericPassGrid.SetValue(pos, AtmosphericTransferWorker.DefaultAtmosphericPassPercent(thing));
+                AtmosphericPassGrid.SetValue_Array(pos, AtmosphericTransferWorker.DefaultAtmosphericPassPercent(thing));
                 if (thing.def.IsEdifice())
-                    EdificeGrid.SetValue(pos, 1);
+                    EdificeGrid.SetValue_Array(pos, 1);
                 if (thing.def.blockLight)
-                    LightPassGrid.SetValue(pos, 0);
+                    LightPassGrid.SetValue_Array(pos, 0);
             }
         }
     }
@@ -87,10 +87,11 @@ public class DynamicDataCacheInfo : MapInformation
         {
             if (thing is Building b)
             {
-                AtmosphericPassGrid.ResetValue(pos, 1f);
-                if (b.def.IsEdifice())
+                if(AtmosphericPassGrid.IsReady)
+                    AtmosphericPassGrid.ResetValue(pos, 1f);
+                if (b.def.IsEdifice() && EdificeGrid.IsReady)
                     EdificeGrid.ResetValue(pos);
-                if (b.def.blockLight)
+                if (b.def.blockLight && LightPassGrid.IsReady)
                     LightPassGrid.ResetValue(pos, 1f);
             }
         }
