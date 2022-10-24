@@ -5,16 +5,21 @@
 		<defName>Gas_TestGas</defName>
 		<label>Test Gas</label>
 		
-		<texPath>VisualFX/Natural/TiberiumGas/TiberiumGas</texPath>
-		<shaderType>MoteGlow</shaderType>
-		<colorMin>(0,0,0)</colorMin>
+		<colorMin>(0.2,0,0)</colorMin>
 		<colorMax>(1,0,0)</colorMax>
 		
 		<maxDensityPerCell>100</maxDensityPerCell>
-		<expireSeconds>30~60</expireSeconds>
+		<minDissipationDensity>10</minDissipationDensity>
+		<minSpreadDensity>2</minSpreadDensity>
+		<dissipationAmount>1</dissipationAmount>
+		<spreadViscosity>0</spreadViscosity>
+		
 		<rotationSpeeds>10~20</rotationSpeeds>
 		<blockTurretTracking>true</blockTurretTracking>
 		<accuracyPenalty>0.3</accuracyPenalty>
+		
+		<dissipateTo IsNull="True"/>
+		
 	</TAE.SpreadingGasTypeDef>
 
 </Defs>

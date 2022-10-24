@@ -396,10 +396,17 @@ public unsafe class SpreadingGasGrid : MapInformation
     }
     
     //
+    private bool CanSpreadToFast(IntVec3 cell, SpreadingGasTypeDef def)
+    {
+        if (gasGridPtr[cell.Index(map)][def].value >= def.maxDensityPerCell) return false;
+        return CacheInfo.AtmosphericPassGrid[cell] > 0;
+    }
+    
     private bool CanSpreadTo(int otherIndex, SpreadingGasTypeDef forDef, out float passPct)
     {
         passPct = 0f;
         if (OutOfBounds(otherIndex)) return false;
+        if (gasGridPtr[otherIndex][forDef].value >= forDef.maxDensityPerCell) return false;
         passPct = CacheInfo.AtmosphericPassGrid[otherIndex]; // DynamicDataCacheInfo forDef.TransferWorker.GetBaseTransferRate(other.GetFirstBuilding(map));
         return passPct > 0;
     }
@@ -434,12 +441,20 @@ public unsafe class SpreadingGasGrid : MapInformation
         SetCellStackAt(cell.Index(map), GasCellStack.Max);
     }
 
-    internal void Debug_PushTypeRadial(IntVec3 cell, SpreadingGasTypeDef def)
+    internal void Debug_PushTypeRadial(IntVec3 root, SpreadingGasTypeDef def)
     {
-        foreach (var subCell in GenRadial.RadialCellsAround(cell, 6, true))
+        foreach (var subCell in GenRadial.RadialCellsAround(root, 6, true))
         {
             TryAddGasAt_Internal(subCell, def, (ushort)def.maxDensityPerCell, true);
         }
+    }
+
+    internal void Debug_PushRadialAdjacent(IntVec3 root, SpreadingGasTypeDef def)
+    {
+        AdjacentCellFiller.FillAdjacentCellsAround(root, map, 128, vec3 =>
+        {
+            TryAddGasAt_Internal(vec3, def, (ushort)def.maxDensityPerCell, true);
+        }, vec3 => CanSpreadToFast(vec3, def), vec3 => CellValueAt(vec3.Index(map), def).value > 0);
     }
     
     //

@@ -67,7 +67,7 @@
 	
 	<ThingDef ParentName="Tele_StationBase">
 		<defName>AtmosphericVentIn</defName>
-		<label>pollution vent (intake)</label>
+		<label>atmospheric vent (intake)</label>
 		<description>.</description>
 		<thingCategories Inherit="false" />
 		<altitudeLayer>Building</altitudeLayer>
@@ -163,7 +163,7 @@
 	
 	<ThingDef ParentName="Tele_StationBase">
 		<defName>AtmosphericVentOut</defName>
-		<label>pollution vent (out)</label>
+		<label>atmospheric vent (out)</label>
 		<description>.</description>
 		<thingCategories Inherit="false" />
 		<altitudeLayer>Building</altitudeLayer>

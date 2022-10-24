@@ -36,7 +36,7 @@ namespace TAE
         
         public AtmosphericContainer OutsideContainer => AtmosphericInfo.MapContainer;
         public AtmosphericContainer RoomContainer => container;
-        public AtmosphericContainer CurrentContainer => IsOutdoors ? OutsideContainer : RoomContainer;
+        public AtmosphericContainer CurrentContainer => IsOutdoors ? OutsideContainer : (IsConnector ? selfPortal[0].CurrentContainer : RoomContainer);
 
         //
         //private IEnumerable<Thing> PhysicalGas => Parent.ListerThings.AllThings.Where(t => t is SpreadingGas);
@@ -207,6 +207,7 @@ namespace TAE
         {
             base.CompTick();
             
+            /*
             foreach (var portal in Parent.RoomPortals)
             {
                 var portalComp = portal.PortalRoom.GetRoomComp<RoomComponent_Atmospheric>();
@@ -219,6 +220,7 @@ namespace TAE
                     AtmosMath.TryEqualize(eqRoom, portalCont, atmosDef);
                 }
             }
+            */
         }
 
         /*
@@ -268,7 +270,7 @@ namespace TAE
 
             var innerRect = new Rect(0, 0, rect.width, rect.height);
 
-            DrawAtmosContainerReadout(innerRect, RoomContainer, OutsideContainer);
+            DrawAtmosContainerReadout(innerRect, CurrentContainer, OutsideContainer);
 
             TWidgets.DoTinyLabel(innerRect.RightPartPixels(100).BottomPartPixels(20), $"[{Room.ID}][{AdjacentComps.Count}]|[{Parent.RoomPortals.Count}]:[{Parent.AdjacentTrackers.Count}]");
 
@@ -283,7 +285,7 @@ namespace TAE
             }
             if (Widgets.ButtonText(new Rect(addRect.xMax, addRect.y, addRect.width, addRect.height), "Clear"))
             {
-                RoomContainer.Data_Clear();
+                CurrentContainer.Data_Clear();
                 //TryAddValue(DefDatabase<AtmosphericDef>.GetNamed("Oxygen"), 100, out _);
             }
 

@@ -38,7 +38,7 @@ namespace TAE
         public AtmosphericMapInfo(Map map) : base(map)
         {
             _cache = new AtmosphericCache(map);
-            mapContainer = new AtmosphericContainer(null);
+            mapContainer = new AtmosphericContainer(null, true);
 
             //
             compByRoom = new Dictionary<Room, RoomComponent_Atmospheric>();
@@ -111,13 +111,6 @@ namespace TAE
             //Equalize between rooms
             if (tick % 10 == 0)
             {
-                /*
-                foreach (var pollutionComp in AllComps)
-                {
-                    pollutionComp.Equalize();
-                }
-                */
-
                 foreach (var connector in allConnections)
                 {
                     connector.TryEqualize();
@@ -311,7 +304,7 @@ namespace TAE
         }
         
         //
-        public bool TrySpawnGasAt(IntVec3 cell, SpreadingGasTypeDef gasType, int value)
+        public bool TrySpawnGasAt(IntVec3 cell, SpreadingGasTypeDef gasType, float value)
         {
             return false;
             /*

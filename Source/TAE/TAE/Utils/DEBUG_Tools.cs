@@ -16,6 +16,23 @@ internal static class DEBUG_Tools
 
     private static bool Holding_Button;
 
+    [DebugAction("General", "[TAE]Fill Gas (AdjacentFill)", false, false, false, 0, false,
+        actionType = DebugActionType.Action, allowedGameStates = AllowedGameStates.PlayingOnMap,
+        displayPriority = -1000)]
+    private static List<DebugActionNode> TeleCore_FillAllGasClickAdjacent()
+    {
+        List<DebugActionNode> list = new List<DebugActionNode>();
+        foreach (var def in DefDatabase<SpreadingGasTypeDef>.AllDefsListForReading)
+        {
+            list.Add(new DebugActionNode(def.LabelCap, DebugActionType.ToolMap, delegate()
+            {
+                Find.CurrentMap.GetMapInfo<SpreadingGasGrid>().Debug_PushRadialAdjacent(UI.MouseCell(), def);
+            }));
+        }
+
+        return list;
+    }
+
     [DebugAction("General", "[TAE]Fill Gas (Smooth)", false, false, false, 0, false,
         actionType = DebugActionType.Action, allowedGameStates = AllowedGameStates.PlayingOnMap,
         displayPriority = -1000)]

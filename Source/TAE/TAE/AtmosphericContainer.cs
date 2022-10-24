@@ -30,6 +30,9 @@ namespace TAE
         public bool HasParentRoom => parentComp != null;
         public bool IsSourceContainer => mapSourceTypes.Count > 0;
 
+        private bool isOutdoorsContainer;
+        public bool IsOutdoors => isOutdoorsContainer || (HasParentRoom && Parent.IsOutdoors);
+
         //Dynamic State Getters
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float CapacityOf(AtmosphericDef def)
@@ -73,9 +76,10 @@ namespace TAE
             }
         }
 
-        public AtmosphericContainer(RoomComponent_Atmospheric parent)
+        public AtmosphericContainer(RoomComponent_Atmospheric parent, bool isOutdoor = false)
         {
             this.parentComp = parent;
+            this.isOutdoorsContainer = isOutdoor;
             storedValues = new Dictionary<AtmosphericDef, float>();
             storedTypeCache = new HashSet<AtmosphericDef>();
             mapSourceTypes = new HashSet<AtmosphericDef>();

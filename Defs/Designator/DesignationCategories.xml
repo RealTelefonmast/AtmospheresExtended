@@ -1,12 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Defs>
 
-	<TeleCore.SubMenuDesignator>
+	<TeleCore.SubMenuDesignationCategoryDef>
 		<defName>Atmospheric</defName>
 		<label>atmospheric</label>
 		<order>1</order>
 		<menuDef>AtmosphericMenu</menuDef>
-	</TeleCore.SubMenuDesignator>
+	</TeleCore.SubMenuDesignationCategoryDef>
 	
 	<TeleCore.SubBuildMenuDef>
 		<defName>AtmosphericMenu</defName>

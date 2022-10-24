@@ -17,7 +17,7 @@ public static class AtmosMath
 {
     //
     internal const int CELL_CAPACITY = 128;
-    internal const int CELL_MINEQ = 2;
+    internal const float CELL_MINEQ = 2;
 
     public static float GetCellCap(int maxDensity)
     {
@@ -29,7 +29,7 @@ public static class AtmosMath
     {
         flow = AtmosPortalFlow.None;
         diffPct = 0f;
-        if (roomA.Parent.IsOutdoors && roomB.Parent.IsOutdoors) return false;
+        if (roomA.IsOutdoors && roomB.IsOutdoors) return false;
         var fromTotal = roomA.TotalStoredOf(def);
         var toTotal = roomB.TotalStoredOf(def);
 
@@ -46,13 +46,13 @@ public static class AtmosMath
             _ => AtmosPortalFlow.None
         };
         diffPct = Mathf.Abs(diffPct);
-        if (diffPct <= 0.01f) return false;
-        return diffPct > 0 && totalDiff >= minDiffMargin;
+        if (diffPct <= 0.0078125f) return false;
+        return totalDiff >= minDiffMargin;
     }
     
     public static FlowResult TryEqualizeVia(AtmosphericPortal portal, AtmosphericTransferWorker worker, AtmosphericContainer from, AtmosphericContainer to, AtmosphericDef atmosDef)
     {
-        if (!NeedsEqualizing(from, to, atmosDef, 2, out var flow, out var diffAbs))
+        if (!NeedsEqualizing(from, to, atmosDef, CELL_MINEQ, out var flow, out var diffAbs))
         {
             return FlowResult.None;
         }
@@ -89,7 +89,7 @@ public static class AtmosMath
     
     public static void TryEqualize(AtmosphericContainer roomA, AtmosphericContainer roomB, AtmosphericDef atmosDef)
     {
-        if (!NeedsEqualizing(roomA, roomB, atmosDef, 2, out var flow, out var diffPct))
+        if (!NeedsEqualizing(roomA, roomB, atmosDef, CELL_MINEQ, out var flow, out var diffPct))
         {
             return;
         }
