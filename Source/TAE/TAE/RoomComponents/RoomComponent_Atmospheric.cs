@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using HarmonyLib;
+using HotSwap;
+using RimWorld;
 using TeleCore;
 using UnityEngine;
 using Verse;
 
 namespace TAE
 {
+    [HotSwappable]
     public class RoomComponent_Atmospheric : RoomComponent
     {
         private int dirtyMarks;
@@ -24,7 +28,7 @@ namespace TAE
         //
         public bool IsOutdoors => Parent.IsOutside;
         public bool IsDirty => dirtyMarks > 0;
-        public bool IsConnector => selfPortal.IsValid;
+        public bool IsConnector => selfPortal != null;
 
         public int ConnectorCount => IsOutdoors ? AtmosphericInfo.ConnectorCount : portals.Count;
         
@@ -46,22 +50,39 @@ namespace TAE
             if (thing is not Building b) return;
             if (!AtmosphericTransferWorker.IsPassBuilding(b)) return;
 
-            //Generate Portal
-            var otherRoom = b.NeighborRoomOf(Room);
-            if (otherRoom == null) return;
-
-            var portal = new AtmosphericPortal(b, this, otherRoom.GetRoomComp<RoomComponent_Atmospheric>());
-            
-            //If Portal Region - Add Portal as self
-            if (Room.FirstRegion.type == RegionType.Portal)
+            var bRoom = b.GetRoom();
+            if (bRoom != null)
             {
-                selfPortal = portal;
-                return;
-            }
+                var bAtmos = bRoom.GetRoomComp<RoomComponent_Atmospheric>();
+                if (bAtmos != null)
+                {
+                    if (bAtmos.Portal?.IsValid ?? false)
+                    {
+                        portals.Add(bAtmos.Portal);
+                        AtmosphericInfo.Notify_NewPortal(bAtmos.Portal);
+                    }
+                    else
+                    {
+                        var otherRoom = b.NeighborRoomOf(Room);
+                        if (otherRoom == null) return;
 
-            //Otherwise add portal to border list
-            portals.Add(portal);
-            AtmosphericInfo.Notify_NewPortal(portal, this);
+                        var portal = new AtmosphericPortal(b, this, otherRoom.GetRoomComp<RoomComponent_Atmospheric>());
+                        bAtmos.Noitfy_SetSelfPortal(portal);
+                        
+                        /*
+                         * //If Portal Region - Add Portal as self
+                        if (Room.FirstRegion.type == RegionType.Portal)
+                        {
+                            selfPortal = portal;
+                            return;
+                        }
+                        */
+
+                        portals.Add(portal);
+                        AtmosphericInfo.Notify_NewPortal(portal);
+                    }
+                }
+            }
         }
 
         public override void Create(RoomTracker parent)
@@ -75,8 +96,11 @@ namespace TAE
 
         public override void Disband(RoomTracker parent, Map map)
         {
-            base.Disband(parent, map);
             AtmosphericInfo.Notify_DisbandedComp(this);
+            foreach (var portal in portals)
+            {
+                portal.MarkInvalid();
+            }
         }
 
         public override void Reset()
@@ -90,7 +114,6 @@ namespace TAE
 
         public override void FinalizeApply()
         {
-            base.FinalizeApply();
             CreateContainer();
             MarkDirty();
 
@@ -112,8 +135,6 @@ namespace TAE
 
         public override void Notify_RoofClosed()
         {
-            base.Notify_RoofClosed();
-            
             AtmosphericInfo.RegenerateMapInfo();
             Data_GetCachedRegionalAtmosphere();
             //Data_CaptureOutsideAtmosphere();
@@ -125,16 +146,6 @@ namespace TAE
             {
                 RoomContainer.TransferAllTo(OutsideContainer);
             }
-        }
-
-        public override void Notify_RoofChanged()
-        {
-            base.Notify_RoofChanged();
-        }
-
-        private void MarkDirty()
-        {
-            dirtyMarks = Mathf.Clamp(dirtyMarks + 1, 0, Int32.MaxValue);
         }
 
         public override void Notify_PawnEnteredRoom(Pawn pawn)
@@ -150,7 +161,22 @@ namespace TAE
             if (tracker == null) return;
             tracker.Notify_Clear();
         }
+        
+        private void Noitfy_SetSelfPortal(AtmosphericPortal portal)
+        {
+            selfPortal = portal;
+        }
 
+        public override void Notify_RoofChanged()
+        {
+            base.Notify_RoofChanged();
+        }
+
+        private void MarkDirty()
+        {
+            dirtyMarks = Mathf.Clamp(dirtyMarks + 1, 0, Int32.MaxValue);
+        }
+        
         //Value Manipulation
         public bool TryAddValueToRoom(AtmosphericDef def, float amount, out float actualAmount)
         {
@@ -205,8 +231,6 @@ namespace TAE
 
         public override void CompTick()
         {
-            base.CompTick();
-            
             /*
             foreach (var portal in Parent.RoomPortals)
             {
@@ -245,52 +269,107 @@ namespace TAE
         private bool openColorPicker = false;
         public override void OnGUI()
         {
-            if (Find.CameraDriver.CurrentZoom == CameraZoomRange.Closest && !IsOutdoors && !IsConnector)
+            if (!IsOutdoors)
             {
                 if (Room.CellCount <= 0) return;
                 var cell = Room.Cells.First();
-                DrawMenu(cell);
-                if (openColorPicker)
+                if (Find.CameraDriver.CurrentZoom <= CameraZoomRange.Close)
                 {
-                    DrawColorPicker(cell);
+                    DrawMenu(cell);
+                    if (openColorPicker)
+                    {
+                        DrawColorPicker(cell);
+                    }
+                }
+                else
+                {
+                    var v = DrawPosFor(cell);
+                    var driver = Find.CameraDriver;
+                    var width = 2f * driver.CellSizePixels;
+                    var height = 1f * driver.CellSizePixels;
+                    var rect = new Rect(v.x - width, v.y - height, width, height);
+                    TWidgets.DrawColoredBox(rect, new Color(1, 1, 1, 0.125f), Color.white, 1);
+                }
+                
+                
+                if (renderWindow)
+                {
+                    var immRect = new Rect(100, 100, 220, 400);
+                    var newR = immRect.AtZero();
+                    Find.WindowStack.ImmediateWindow(1453564359, immRect, WindowLayer.GameUI, delegate
+                    {
+                        TWidgets.DrawColoredBox(newR, TColor.White025, Color.white, 1);
+                        Text.Font = GameFont.Tiny;
+                        Text.Anchor = TextAnchor.UpperLeft;
+                        float height = 5;
+                        foreach (var type in OutsideContainer.AllStoredTypes)
+                        {
+                            Rect typeRect = new Rect(5, height, 220, 10);
+                            var pct = OutsideContainer.StoredPercentOf(type);
+                            WidgetRow row = new WidgetRow(typeRect.x, typeRect.y, UIDirection.RightThenDown);
+                            row.Label(type.defName, 100);
+                            row.FillableBar(100,20, 1f, pct.ToStringPercent(), BaseContent.YellowTex, BaseContent.BlackTex);
+                            height += 10 + 2;
+                        }
+
+                        Text.Font = default;
+                        Text.Anchor = default;
+                   
+                    }, false);
                 }
             }
         }
 
+
+        private bool renderWindow = false;
         private void DrawMenu(IntVec3 pos)
         {
-            var v = DrawPosFor(pos) - new Vector2(0, 92);
+            var v = DrawPosFor(pos);
+            
+            var driver = Find.CameraDriver;
+            var width = 5 *  driver.CellSizePixels;
+            var height = 2 *  driver.CellSizePixels;
+            var rect = new Rect(v.x - width, v.y - height, width, height);
+            var scale = ((driver.CellSizePixels / 46)); //+ (1 - ((UI.CurUICellSize() / 46)));
 
-            //46 - approx cell size when zoomed in
-            var rect = new Rect(v.x, v.y, 230, 92);
+            //var rect = new Rect(v.x, v.y, 230, 92);
             TWidgets.DrawColoredBox(rect, new Color(1, 1, 1, 0.125f), Color.white, 1);
-
-            rect = rect.ContractedBy(5);
+            rect = rect.ContractedBy(5*scale);
             Widgets.BeginGroup(rect);
-
-            var innerRect = new Rect(0, 0, rect.width, rect.height);
-
-            DrawAtmosContainerReadout(innerRect, CurrentContainer, OutsideContainer);
-
-            TWidgets.DoTinyLabel(innerRect.RightPartPixels(100).BottomPartPixels(20), $"[{Room.ID}][{AdjacentComps.Count}]|[{Parent.RoomPortals.Count}]:[{Parent.AdjacentTrackers.Count}]");
-
-            var addRect = innerRect.BottomPartPixels(20).LeftPartPixels(40);
-            if (Widgets.ButtonText(addRect, "Add"))
             {
-                FloatMenu floatMenu = new FloatMenu(
-                    DefDatabase<AtmosphericDef>.AllDefsListForReading.Select(d => new FloatMenuOption(d.defName, 
-                        delegate { TryAddValueToRoom(d, container.Capacity * 0.25f, out _); })).ToList());
+                TWidgets.DrawColoredBox(rect.AtZero(), Color.clear, Color.black, 1);
+                var innerRect = new Rect(0, 0, rect.width, rect.height);
+                DrawAtmosContainerReadout(innerRect, new Vector2(scale, scale), CurrentContainer, OutsideContainer);
+                var text = $"[{AdjacentComps.Count}]|[{Parent.RoomPortals.Count}]:[{Parent.AdjacentTrackers.Count}]";
+                var textPortal = selfPortal != null ? $"{selfPortal[0]}--{selfPortal[1]}" : "";
+                TWidgets.DoTinyLabel(innerRect.RightPart(0.65f).BottomPart(0.25f), $"[{Room.ID}]{(IsConnector ? textPortal : text)}");
+                var addRect = innerRect.BottomPart(0.2f).LeftPart(0.2f);
+                
+                WidgetRow row = new WidgetRow(addRect.x, addRect.y, UIDirection.RightThenDown);
+                if (row.ButtonText("Add"))
+                {
+                    FloatMenu floatMenu = new FloatMenu(DefDatabase<AtmosphericDef>.AllDefsListForReading.Select(d => 
+                        new FloatMenuOption(d.defName, delegate
+                        {
+                            TryAddValueToRoom(d, container.CapacityOf(d) * 0.25f, out _); 
+                            
+                        })).ToList());
+                    Find.WindowStack.Add(floatMenu);
+                }
+                if (row.ButtonText("Clear"))
+                { 
+                    CurrentContainer.Data_Clear();
+                }
 
-                Find.WindowStack.Add(floatMenu);
+                if (row.ButtonText("Map"))
+                {
+                    renderWindow = !renderWindow;
+                }
+
+                row.Label(textPortal);
             }
-            if (Widgets.ButtonText(new Rect(addRect.xMax, addRect.y, addRect.width, addRect.height), "Clear"))
-            {
-                CurrentContainer.Data_Clear();
-                //TryAddValue(DefDatabase<AtmosphericDef>.GetNamed("Oxygen"), 100, out _);
-            }
-
-
             Widgets.EndGroup();
+
         }
 
         private static float cellsize = 46;
@@ -322,27 +401,45 @@ namespace TAE
         }
         */
 
-        private void DrawAtmosContainerReadout(Rect rect, AtmosphericContainer container, AtmosphericContainer outside)
+        private void DrawAtmosContainerReadout(Rect rect, Vector2 scale, AtmosphericContainer container, AtmosphericContainer outside)
         {
             float height = 5;
             Widgets.BeginGroup(rect);
-            Text.Font = GameFont.Tiny;
-            Text.Anchor = TextAnchor.UpperLeft;
-            foreach (var type in container.AllStoredTypes)
             {
-                string label = $"{type.labelShort}: {container.TotalStoredOf(type)}({container.StoredPercentOf(type)}) | {outside.TotalStoredOf(type)}({outside.StoredPercentOf(type).ToStringPercent()})";
-                Rect typeRect = new Rect(5, height, 10, 10);
-                Vector2 typeSize = Text.CalcSize(label);
-                Rect typeLabelRect = new Rect(20, height - 2, typeSize.x, typeSize.y);
-                Widgets.DrawBoxSolid(typeRect, type.valueColor);
-                Widgets.Label(typeLabelRect, label);
-                height += 10 + 2;
+                Text.Font = GameFont.Tiny;
+                Text.Anchor = TextAnchor.UpperLeft;
+                foreach (var type in container.AllStoredTypes)
+                {
+                    string label = $"{type.labelShort}: {container.TotalStoredOf(type)}({container.StoredPercentOf(type).ToStringPercent()}) | {outside.TotalStoredOf(type)}({outside.StoredPercentOf(type).ToStringPercent()})";
+
+                    ScaleRender(rect.AtZero(), scale, delegate
+                    {
+                        Rect typeRect = new Rect(5, height, 10, 10);
+                        Vector2 typeSize = Text.CalcSize(label);
+                        Rect typeLabelRect = new Rect(20, height - 2, typeSize.x, typeSize.y);
+                        Widgets.DrawBoxSolid(typeRect, type.valueColor);
+                        Widgets.Label(typeLabelRect, label);
+                    });
+                    
+                    height += 10 + 2;
+                }
+
+                Text.Font = default;
+                Text.Anchor = default;
             }
-            Text.Font = default;
-            Text.Anchor = default;
             Widgets.EndGroup();
         }
 
+        private void ScaleRender(Rect inRect, Vector2 scale, Action renderAction)
+        {
+            var previousMatrix = GUI.matrix;
+            GUIUtility.ScaleAroundPivot(scale, inRect.position);
+
+            renderAction.Invoke();
+
+            GUI.matrix = previousMatrix;
+        }
+        
         private Vector2 DrawPosFor(IntVec3 pos)
         {
             Vector3 position = new Vector3((float)pos.x, (float)pos.y + AltitudeLayer.MetaOverlays.AltitudeFor(), (float)pos.z);
@@ -363,14 +460,39 @@ namespace TAE
                     renderer.DrawFor(renderDef, Parent.DrawPos, value);
                 }
             }
-
-            if(selfPortal.IsValid)
+            
+            if (selfPortal?.IsValid ?? false)
+            {
                 GenDraw.DrawTargetingHighlight_Cell(selfPortal.Thing.Position);
+                if (Find.Selector.IsSelected(selfPortal.Thing))
+                {
+                    selfPortal.DrawDebug();
+                }
+            }
+            
+            //
+            GenDraw.FillableBarRequest r = default(GenDraw.FillableBarRequest);
+            r.center = Parent.MinMaxCorners[0].ToVector3() + new Vector3(0.25f, 0, 0.75f);
+            r.size = new Vector2(1.5f, 0.5f);
+            r.fillPercent = container.TotalStoredPercent;
+            r.filledMat = FilledMat;
+            r.unfilledMat = UnFilledMat;
+            r.margin = 0f;
+            r.rotation = Rot4.East;
+            GenDraw.DrawFillableBar(r);
         }
-
+        
+        private static readonly Material FilledMat = SolidColorMaterials.NewSolidColorMaterial(Color.green, ShaderDatabase.MetaOverlay);
+        private static readonly Material UnFilledMat = SolidColorMaterials.NewSolidColorMaterial(TColor.LightBlack, ShaderDatabase.MetaOverlay);
+        
         public void Notify_AddedContainerValue(AtmosphericDef def, float value)
         {
             renderer.TryRegisterNewOverlayPart(def);
+        }
+
+        public override string ToString()
+        {
+            return $"[{Room.ID}]";
         }
     }
 }

@@ -3,14 +3,14 @@ using System.Runtime.InteropServices;
 
 namespace TAE;
 
-[StructLayout(LayoutKind.Explicit, Size = 48)]
+[StructLayout(LayoutKind.Explicit, Size = 6)]
 public unsafe struct GasCellValue
 {
     [FieldOffset(0)] public ushort defID = 0;
 
-    [FieldOffset(16)] public readonly uint totalBitVal = 0;
-    [FieldOffset(16)] public ushort value = 0;
-    [FieldOffset(32)] public ushort overflow = 0;
+    [FieldOffset(2)] public readonly uint totalBitVal = 0;
+    [FieldOffset(2)] public ushort value = 0;
+    [FieldOffset(4)] public ushort overflow = 0;
 
     public GasCellValue(ushort defID, ushort value)
     {

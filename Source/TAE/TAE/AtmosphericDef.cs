@@ -17,16 +17,11 @@ namespace TAE
         SpecificBiome
     }
 
-    public class AtmosphericDef : Def
+    public class AtmosphericDef : FlowValueDef
     {
         //
         private AtmosphericTransferWorker workerInt;
         public Type transferWorker = typeof(AtmosphericTransferWorker);
-
-        //Maximum saturation relative to the room's capacity
-        public int maxSaturation = 1;
-        //The rate at which gas flows between rooms
-        public float viscosity = 1;
 
         //
         public string labelShort;
@@ -34,8 +29,9 @@ namespace TAE
 
         //The corresponding network value (if available)
         public NetworkValueDef networkValue;
-
-        //Interaction Rules
+        public SpreadingGasTypeDef dissipationGasDef;
+        
+        //Interaction Rules On Transfer (when going outside)
         public bool dissipatesIntoAir;
         public bool dissipatesIntoTerrain;
 
@@ -47,10 +43,7 @@ namespace TAE
         public NaturalOverlayProperties naturalOverlay;
         public RoomOverlayProperties roomOverlay;
         public bool useRenderLayer = false;
-
-        //Runtime
-        public float FlowRate => 1f / viscosity;
-
+        
         public AtmosphericTransferWorker TransferWorker => workerInt ??= (AtmosphericTransferWorker)Activator.CreateInstance(transferWorker, this);
 
         public override void PostLoad()

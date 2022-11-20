@@ -25,6 +25,8 @@ namespace TAE
         public float Capacity => _capacity;
         public float TotalStored => totalStoredCache;
 
+        public float TotalStoredPercent => totalStoredCache / (AllStoredTypes.Sum(CapacityOf));
+        
         public RoomComponent_Atmospheric Parent => parentComp;
         public bool ParentIsDoorWay => Parent?.IsDoorway ?? false;
         public bool HasParentRoom => parentComp != null;
@@ -35,7 +37,7 @@ namespace TAE
 
         //Dynamic State Getters
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public float CapacityOf(AtmosphericDef def)
+        internal float CapacityOf(AtmosphericDef def)
         {
             return _capacity * def.maxSaturation;
         }
@@ -113,6 +115,7 @@ namespace TAE
 
         public void Notify_RoomChanged(RoomComponent_Atmospheric parent, int roomCells)
         {
+            TLog.Message($"[{parent?.Room?.ID}]Room Changed");
             parentComp = parent;
             _capacity = roomCells * AtmosMath.CELL_CAPACITY;
         }
@@ -172,7 +175,7 @@ namespace TAE
             if (storedValues.TryGetValue(valueType) < value) return false;
             return other.TotalStoredOf(valueType) + value <= other.CapacityOf(valueType);
         }
-
+        
         public bool TryTransferTo(AtmosphericContainer other, AtmosphericDef valueType, float value)
         {
             //Attempt to transfer a weight to another container
@@ -188,9 +191,41 @@ namespace TAE
             return false;
         }
 
+        public bool TryReceiveFrom(NetworkContainer networkContainer, AtmosphericDef valueType, int value)
+        {
+            if (valueType.networkValue == null)
+            {
+                TLog.Warning($"AtmosphericDef: {valueType} does not have any NetworkValueDef defined to receive from {networkContainer?.ParentStructure?.NetworkPart?.Network}");
+                return false;
+            }
+
+            if (!networkContainer.AllStoredTypes.Contains(valueType.networkValue))
+            {
+                return false;
+            }
+            if (networkContainer.TryRemoveValue(valueType.networkValue, value, out float actual))
+            {
+                TryAddValue(valueType, actual, out _);
+                return true;
+            }
+
+            return false;
+        }
+
+        
         public bool TryTransferTo(NetworkContainer networkContainer, AtmosphericDef valueType, float value)
         {
-            //TODO....
+            if (valueType.networkValue == null)
+            {
+                TLog.Warning($"AtmosphericDef: {valueType} does not have any NetworkValueDef defined to transfer into {networkContainer?.ParentStructure?.NetworkPart?.Network}");
+                return false;
+            }
+
+            if (TryRemoveValue(valueType, value, out var actual))
+            {
+                networkContainer.TryAddValue(valueType.networkValue, actual, out _);
+                return true;
+            }
             return false;
         }
 

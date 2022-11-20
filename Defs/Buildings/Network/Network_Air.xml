@@ -41,7 +41,9 @@
 							<maxStorage>1000</maxStorage>
 							<dropContents>false</dropContents>
 						</containerProps>
-						<networkDefForValues>AtmosphericNetwork</networkDefForValues>
+						<valueProperties>
+							<fromDef>AtmosphericNetwork</fromDef>	
+						</valueProperties>
 					</li>
 				</networks>
 				<!--<generalIOPattern>++|++</generalIOPattern>-->
@@ -97,7 +99,9 @@
 			<li Class="TAE.CompProperties_ANS_AirVent">
 				<ventMode>Intake</ventMode>
 				<gasThroughPut>10</gasThroughPut>
-				<acceptedAtmosphericTag>Air</acceptedAtmosphericTag>
+				<filter>
+					<acceptedTag>Air</acceptedTag>
+				</filter>
 				<networks>
 					<li>
 						<networkDef>AtmosphericNetwork</networkDef>
@@ -109,7 +113,9 @@
 							<maxStorage>100</maxStorage>
 							<dropContents>false</dropContents>
 						</containerProps>
-						<networkDefForValues>AtmosphericNetwork</networkDefForValues>
+						<valueProperties>
+							<fromDef>AtmosphericNetwork</fromDef>	
+						</valueProperties>
 					</li>
 				</networks>
 				<generalIOPattern>I</generalIOPattern>
@@ -191,7 +197,9 @@
 			<li Class="TAE.CompProperties_ANS_AirVent">
 				<ventMode>Output</ventMode>
 				<gasThroughPut>10</gasThroughPut>
-				<acceptedAtmosphericTag>Air</acceptedAtmosphericTag>
+				<filter>
+					<acceptedTag>Air</acceptedTag>
+				</filter>
 				<networks>
 					<li>
 						<networkDef>AtmosphericNetwork</networkDef>
@@ -203,7 +211,9 @@
 							<maxStorage>100</maxStorage>
 							<dropContents>false</dropContents>
 						</containerProps>
-						<networkDefForValues>AtmosphericNetwork</networkDefForValues>
+						<valueProperties>
+							<fromDef>AtmosphericNetwork</fromDef>	
+						</valueProperties>
 					</li>
 				</networks>
 				<generalIOPattern>+</generalIOPattern>
@@ -219,6 +229,85 @@
 		<rotatable>true</rotatable>			
 		<surfaceType>Item</surfaceType>
 		<modExtensions>
+			<li Class="TeleCore.SubMenuExtension">
+				<groupDef>TestGroup</groupDef>
+				<category>Structure</category>
+			</li>
+		</modExtensions>
+	</ThingDef>
+	
+	
+	<!-- Passive Atmospheric Exchange -->
+	<ThingDef ParentName="Tele_BuildingBaseOverBuildings">
+		<defName>TAE_PassiveVent</defName>
+		<label>passive atmospheric vent</label>
+		<description>.</description>
+		<thingClass>Building</thingClass>
+		<tickerType>Normal</tickerType>
+		<designationCategory>Atmospheric</designationCategory>
+		<altitudeLayer>BuildingOnTop</altitudeLayer>
+		<costList>
+			<Steel>30</Steel>
+		</costList>
+		<statBases>
+			<WorkToBuild>400</WorkToBuild>
+			<MaxHitPoints>100</MaxHitPoints>
+			<Flammability>1.0</Flammability>
+		</statBases>
+		<graphicData>
+			<texPath>Buildings/Network/PassiveVent/Vent</texPath>
+			<graphicClass>TeleCore.Graphic_MultiWithAlt</graphicClass>
+			<damageData>
+				<cornerTL>Damage/Corner</cornerTL>
+				<cornerTR>Damage/Corner</cornerTR>
+				<cornerBL>Damage/Corner</cornerBL>
+				<cornerBR>Damage/Corner</cornerBR>
+			</damageData>
+		</graphicData>
+		<comps>
+			<li Class="TAE.CompProperties_ANS_PassiveVent">
+				<compClass>TAE.Comp_ANS_PassiveVent</compClass>
+				<ventMode>Dynamic</ventMode>
+				<gasThroughPut>10</gasThroughPut>
+				<filter>
+					<acceptedTag>Air</acceptedTag>
+				</filter>
+				<networks>
+					<li>
+						<networkDef>AtmosphericNetwork</networkDef>
+						<requiresController>false</requiresController>
+						<networkRoles>
+							<li>Transmitter</li>
+							<li>Storage</li>
+						</networkRoles>
+						<containerProps>
+							<maxStorage>200</maxStorage>
+							<dropContents>false</dropContents>
+							<storeEvenly>true</storeEvenly>
+						</containerProps>
+						<valueProperties>
+							<fromDef>AtmosphericNetwork</fromDef>	
+						</valueProperties>
+					</li>
+				</networks>
+				<generalIOPattern>+</generalIOPattern>
+			</li>
+			<li Class="CompProperties_Flickable">
+				<commandTexture>UI/Commands/Vent</commandTexture>
+				<commandLabelKey>CommandDesignateOpenCloseVentLabel</commandLabelKey>
+				<commandDescKey>CommandDesignateOpenCloseVentDesc</commandDescKey>
+			</li>
+		</comps>
+		<inspectorTabs>
+			<li>TeleCore.ITab_NetworkDebug</li>
+		</inspectorTabs>
+		<placeWorkers>
+			<li>TAE.PlaceWorker_PassiveVent</li>
+		</placeWorkers>
+		<modExtensions>
+			<li Class="TeleCore.TeleDefExtension">
+				<graphicAlternateWorkerType>TeleCore.GraphicAlternateWorker_WallOnSouth</graphicAlternateWorkerType>
+			</li>
 			<li Class="TeleCore.SubMenuExtension">
 				<groupDef>TestGroup</groupDef>
 				<category>Structure</category>

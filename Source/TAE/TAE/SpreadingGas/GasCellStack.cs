@@ -18,8 +18,6 @@ public unsafe struct GasCellStack
     public bool HasAnyGas => totalValue > 0;
     public int Length => stackData.Length;
     
-    //public static implicit operator NativeArray<GasCellValue>(GasCellStack stack) => stack.stackData;
-    
     public GasCellValue this[SpreadingGasTypeDef def] => stackPtr[def.IDReference];
     public GasCellValue this[int idx]
     {
@@ -36,7 +34,7 @@ public unsafe struct GasCellStack
     public GasCellStack()
     {
         var allDefs = DefDatabase<SpreadingGasTypeDef>.AllDefsListForReading;
-        stackData = new NativeArray<GasCellValue>(allDefs.Count, Allocator.Persistent); //new GasCellValue[allDefs.Count];
+        stackData = new NativeArray<GasCellValue>(allDefs.Count, Allocator.Persistent);
         stackPtr = (GasCellValue*) stackData.GetUnsafePtr();
         totalValue = 0;
         

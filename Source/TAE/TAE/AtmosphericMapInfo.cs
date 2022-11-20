@@ -93,6 +93,7 @@ namespace TAE
 
         public void RegenerateMapInfo()
         {
+            TLog.Message("Regenerating map info...");
             var totalCells = Map.cellIndices.NumGridCells; //AllComps.Where(c => c.IsOutdoors).Sum(c => c.Room.CellCount) 
             MapContainer.Notify_RoomChanged(null, totalCells);
         }
@@ -271,7 +272,7 @@ namespace TAE
         }
 
         // -- Portal Data
-        public void Notify_NewPortal(AtmosphericPortal connection, RoomComponent viaRoom)
+        public void Notify_NewPortal(AtmosphericPortal connection)
         {
             if (allConnections.Any(p => p.Thing == connection.Thing))
             {
@@ -287,9 +288,18 @@ namespace TAE
         public override void Update()
         {
             base.Update();
-            if (allConnections != null)
-                GenDraw.DrawFieldEdges(allConnections.Select(p => p.Thing.Position).ToList(), Color.cyan);
-            
+            if (!allConnections.NullOrEmpty())
+            {
+                List<IntVec3> list = new List<IntVec3>();
+                foreach (var p in allConnections)
+                {
+                    if(p?.Thing != null)
+                        list.Add(p.Thing.Position);
+                }
+
+                GenDraw.DrawFieldEdges(list, Color.blue);
+            }
+
             //
             renderer.AtmosphereDrawerUpdate();
         }

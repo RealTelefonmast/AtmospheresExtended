@@ -35,6 +35,12 @@
 			<Flammability>0.0</Flammability>
 		</statBases>
 		<constructionSkillPrerequisite>6</constructionSkillPrerequisite>
+		<modExtensions>
+			<li Class="TeleCore.SubMenuExtension">
+				<groupDef>TestGroup</groupDef>
+				<category>Structure</category>
+			</li>
+		</modExtensions>
 	</ThingDef>
 	
 </Defs>

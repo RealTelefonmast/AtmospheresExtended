@@ -12,8 +12,8 @@ namespace TAE
     {
         private RoomComponent_Atmospheric atmosphericInt;
 
-        public NetworkSubPart AtmosphericComp => this[AtmosDefOf.AtmosphericNetwork];
-
+        //
+        public NetworkSubPart AtmosphericComp { get; private set; }
         public RoomComponent_Atmospheric Atmospheric
         {
             get
@@ -24,6 +24,12 @@ namespace TAE
                 }
                 return atmosphericInt;
             }
+        }
+
+        public override void PostSpawnSetup(bool respawningAfterLoad)
+        {
+            base.PostSpawnSetup(respawningAfterLoad);
+            AtmosphericComp = this[AtmosDefOf.AtmosphericNetwork];
         }
 
         public override void CompTick()

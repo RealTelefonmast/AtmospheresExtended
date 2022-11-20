@@ -9,14 +9,16 @@ namespace TAE;
 
 public static class AtmosphereUtility
 {
-    public static readonly int SampleNumCells = GenRadial.NumCellsInRadius(8.9f);
-    
-    public static List<IntVec3> relevantCells = new List<IntVec3>();
-    private static List<Room> visibleRooms = new List<Room>();
+    private static readonly int SampleNumCells = GenRadial.NumCellsInRadius(8.9f);
+    private static readonly List<IntVec3> relevantCells = new ();
+    private static readonly List<Room> visibleRooms = new ();
 
     public static void DrawSpreadingGasAroundMouse()
     {
         if (!AtmosphereMod.Mod.Settings.DrawAtmosphereAroundMouse) return;
+        MenuOnGUI();
+        
+        /*
         FillAtmosphereRelevantCells(UI.MouseCell(), Find.CurrentMap);
         for (int i = 0; i < relevantCells.Count; i++)
         {
@@ -32,12 +34,10 @@ public static class AtmosphereUtility
             
             GenMapUI.DrawThingLabel(GenMapUI.LabelDrawPosFor(intVec), stackLabel, Color.white);
         }
-
-        //
-        OnGUI();
+        */
     }
 
-    public static void OnGUI()
+    private static void MenuOnGUI()
     {
         if (!UI.MouseCell().InBounds(Find.CurrentMap)) return;
         
@@ -108,8 +108,8 @@ public static class AtmosphereUtility
             }
         }
     }
-    
-    public static void FillAtmosphereRelevantCells(IntVec3 root, Map map)
+
+    private static void FillAtmosphereRelevantCells(IntVec3 root, Map map)
     {
         relevantCells.Clear();
         Room room = root.GetRoom(map);
@@ -157,8 +157,8 @@ public static class AtmosphereUtility
         }
         visibleRooms.Clear();
     }
-    
-    public static float CellAtmosphere(IntVec3 c, Map map, out Color color)
+
+    private static float CellAtmosphere(IntVec3 c, Map map, out Color color)
     {
         var mapInfo = map.GetMapInfo<AtmosphericMapInfo>();
         color = mapInfo.Renderer.CellBoolDrawerGetExtraColorInt(c.Index(map), AtmosDefOf.Oxygen);

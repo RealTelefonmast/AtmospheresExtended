@@ -8,7 +8,7 @@ namespace TAE;
 public class SpreadingGasTypeDef : Def
 {
     private static ushort _masterID;
-    private static Dictionary<int, SpreadingGasTypeDef> _defByID = new();
+    private static readonly Dictionary<int, SpreadingGasTypeDef> _defByID = new();
     
     [Unsaved]
     private AtmosphericTransferWorker workerInt;

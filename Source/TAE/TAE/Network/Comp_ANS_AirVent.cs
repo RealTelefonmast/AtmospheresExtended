@@ -107,7 +107,12 @@ namespace TAE
                         if (AtmosphericComp.Container.TryConsume(def.networkValue, totalThroughput))
                         {
                             //Atmospheric.RoomContainer.TryAddValue(def, 1, out _);
-                            parent.Map.GetMapInfo<AtmosphericMapInfo>().TrySpawnGasAt(parent.Position, Props.spawnedGasType, totalThroughput * Props.spawnedGasType.maxDensityPerCell);
+                            if (def.dissipationGasDef != null)
+                            {
+                                parent.Map.GetMapInfo<AtmosphericMapInfo>().TrySpawnGasAt(parent.Position,
+                                    def.dissipationGasDef, totalThroughput * def.dissipationGasDef.maxDensityPerCell);
+                            }
+
                             return true;
                         }
 
@@ -144,41 +149,8 @@ namespace TAE
         }
     }
 
-    public class CompProperties_ANS_AirVent : CompProperties_ANS
+    public class CompProperties_ANS_AirVent : CompProperties_ANS_PassiveVent
     {
-        [Unsaved()]
-        private List<AtmosphericDef> allowedValuesInt;
-        
-        //
-        public AtmosphericVentMode ventMode = AtmosphericVentMode.Intake;
-        public int gasThroughPut = 1;
-
-        public string acceptedAtmosphericTag;
-        private List<AtmosphericDef> acceptedAtmospheres;
-        public List<DefValue<AtmosphericDef, float>> upkeepLevels;
-        public SpreadingGasTypeDef spawnedGasType;
-
-        public List<AtmosphericDef> AllowedValues
-        {
-            get
-            {
-                if (allowedValuesInt == null)
-                {
-                    var list = new List<AtmosphericDef>();
-                    if (acceptedAtmosphericTag != null)
-                    {
-                        list.AddRange(AtmosphericReferenceCache.AtmospheresOfTag(acceptedAtmosphericTag));
-                    }
-                    if (!acceptedAtmospheres.NullOrEmpty())
-                    {
-                        list.AddRange(acceptedAtmospheres);
-                    }
-                    allowedValuesInt = list.Distinct().ToList();
-                }
-                return allowedValuesInt;
-            }
-        }
-        
         public CompProperties_ANS_AirVent()
         {
             compClass = typeof(Comp_ANS_AirVent);

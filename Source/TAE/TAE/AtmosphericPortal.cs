@@ -8,25 +8,18 @@ using Verse;
 
 namespace TAE
 {
-    public enum AtmosPortalFlow
+    public class AtmosphericPortal
     {
-        None,
-        Positive,
-        Negative,
-    }
-    
-    public struct AtmosphericPortal
-    {
-        private readonly Building connector;
+        private Building connector;
         private readonly RoomComponent_Atmospheric[] connections;
         private readonly Rot4[] connectionDirections;
-
-        private Dictionary<AtmosphericDef, FlowResult> lastResultByDef = new();
+        
+        private readonly Dictionary<AtmosphericDef, FlowResult> lastResultByDef = new();
 
         public bool ConnectsToOutside => connections[0].IsOutdoors || connections[1].IsOutdoors;
         public bool ConnectsToSame => connections[0].IsOutdoors && connections[1].IsOutdoors || connections[0] == connections[1];
-
-        public bool IsValid => connector != null;
+        public bool IsValid => connector != null; // && connections[0] != null && connections[1] != null;
+        
         public Thing Thing => connector;
 
         public RoomComponent_Atmospheric this[int i] => connections[i];
@@ -48,6 +41,10 @@ namespace TAE
                 if (roomB.Room == room)
                     connectionDirections[1] = cell.Rot4Relative(building.Position);
             }
+            
+            TLog.Message($"Making portal with {building}");
+            TLog.Message($"Portal: {connections[0]} --> {connections[1]}");
+            TLog.Message($"Directions: {connectionDirections[0].ToStringWord()} --> {connectionDirections[1].ToStringWord()}");
         }
 
         private bool PreventFlowBack(AtmosphericDef ofDef, RoomComponent_Atmospheric to)
@@ -74,8 +71,8 @@ namespace TAE
             var tempTypes = from.AllStoredTypes.Union(to.AllStoredTypes);//.ToArray();
             foreach (var atmosDef in tempTypes)
             {
-                if(PreventFlowBack(atmosDef, connections[1])) continue;
-                
+                if (PreventFlowBack(atmosDef, connections[1])) continue;
+
                 var transferWorker = atmosDef.TransferWorker;
                 var flowResult = AtmosMath.TryEqualizeVia(this, transferWorker, from, to, atmosDef);
                 if (flowResult.FlowsToOther)
@@ -84,7 +81,8 @@ namespace TAE
 
                     if (flowResult.ToIndex < 0) continue;
                     var connDir = connectionDirections[flowResult.ToIndex];
-                    transferWorker.ProcessFlow(connDir, Thing.Position + connDir.FacingCell, connections[flowResult.ToIndex]);
+                    transferWorker.ProcessFlow(connDir, Thing.Position + connDir.FacingCell,
+                        connections[flowResult.ToIndex]);
                 }
             }
         }
@@ -117,6 +115,18 @@ namespace TAE
         public override string ToString()
         {
             return $"{connections[0].Room.ID} -[{Thing}]-> {connections[1].Room.ID}";
+        }
+
+        internal void DrawDebug()
+        {
+            GenDraw.DrawFieldEdges(connections[0].Room.Cells.ToList(), Color.cyan);
+            GenDraw.DrawFieldEdges(connections[1].Room.Cells.ToList(), Color.magenta);
+        }
+
+        internal void MarkInvalid()
+        {
+            TLog.Message($"Marking invalid: {connector}");
+            connector = null;
         }
     }
 }
