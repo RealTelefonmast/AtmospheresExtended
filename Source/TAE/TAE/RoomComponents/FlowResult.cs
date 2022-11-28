@@ -1,11 +1,14 @@
-﻿namespace TAE;
+﻿using TeleCore;
 
+namespace TAE;
+
+/*
 public struct FlowResult
 {
     private bool hadFlow = false;
     private bool flowToOther = false;
     private bool isVoided = false;
-    private AtmosPortalFlow flowDirection = AtmosPortalFlow.None;
+    private ValueFlowDirection flowDirection = ValueFlowDirection.None;
 
     public bool NoFlow => !hadFlow;
     public bool FlowsToOther => flowToOther;
@@ -15,10 +18,11 @@ public struct FlowResult
     {
         get
         {
+            flowres
             return flowDirection switch
             {
-                AtmosPortalFlow.Positive => 0,
-                AtmosPortalFlow.Negative => 1,
+                ValueFlowDirection.Positive => 0,
+                ValueFlowDirection.Negative => 1,
                 _ => -1
             };
         }
@@ -30,8 +34,8 @@ public struct FlowResult
         {
             return flowDirection switch
             {
-                AtmosPortalFlow.Positive => 1,
-                AtmosPortalFlow.Negative => 0,
+                ValueFlowDirection.Positive => 1,
+                ValueFlowDirection.Negative => 0,
                 _ => -1
             };
         }
@@ -39,13 +43,13 @@ public struct FlowResult
 
     public FlowResult() { }
 
-    public FlowResult(AtmosPortalFlow flowDir)
+    public FlowResult(ValueFlowDirection flowDir)
     {
         hadFlow = flowToOther = true;
         flowDirection = flowDir;
     }
     
-    public void SetFlow(AtmosPortalFlow flowDir)
+    public void SetFlow(ValueFlowDirection flowDir)
     {
         hadFlow = flowToOther = true;
         this.flowDirection = flowDir;
@@ -60,3 +64,4 @@ public struct FlowResult
         return $"HadFlow: {hadFlow}; FlowToOther: {flowToOther}; IsVoided: {isVoided}; FlowDir: {flowDirection} [{FromIndex} -> {ToIndex}]";
     }
 }
+*/
