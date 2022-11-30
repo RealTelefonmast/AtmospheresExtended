@@ -57,7 +57,7 @@ public class Comp_ANS_PassiveVent : Comp_AtmosphericNetworkStructure
         {
             //Get percentage of atmosDef
             var roomValuePct = roomCOntainer.StoredPercentOf(atmosphericDef);
-            var ventValuePct = networkComp.Container.PercentOf(atmosphericDef.networkValue);
+            var ventValuePct = networkComp.Container.StoredPercentOf(atmosphericDef.networkValue);
             var pctDiff = roomValuePct - ventValuePct;
 
             TLog.Debug($"(Room){roomValuePct.ToStringPercent()} - (Vent){ventValuePct.ToStringPercent()} = pctDiff: {pctDiff.ToStringPercent()}");
@@ -81,7 +81,7 @@ public class Comp_ANS_PassiveVent : Comp_AtmosphericNetworkStructure
                 //Push From Vent Into Room
                 case < -0.0078125f:
                 {
-                    var value = (networkComp.Container.ValueForType(atmosphericDef.networkValue)) * 0.5f;
+                    var value = (networkComp.Container.TotalStoredOf(atmosphericDef.networkValue)) * 0.5f;
                     value = Mathf.Clamp(value, 0, Props.gasThroughPut * tickRate);
                     var flowAmount = value * atmosphericDef.FlowRate;
 

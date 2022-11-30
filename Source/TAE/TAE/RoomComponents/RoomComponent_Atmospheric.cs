@@ -180,7 +180,7 @@ namespace TAE
         //Value Manipulation
         public bool TryAddValueToRoom(AtmosphericDef def, float amount, out float actualAmount)
         {
-            if (!AtmosMath.TryAddValueTo(CurrentContainer, def, amount, out actualAmount)) return false;
+            if (!CurrentContainer.TryAddValue(def, amount, out actualAmount)) return false;
             Notify_AddedContainerValue(def, actualAmount);
             return true;
         }
@@ -351,7 +351,7 @@ namespace TAE
                     FloatMenu floatMenu = new FloatMenu(DefDatabase<AtmosphericDef>.AllDefsListForReading.Select(d => 
                         new FloatMenuOption(d.defName, delegate
                         {
-                            TryAddValueToRoom(d, container.CapacityOf(d) * 0.25f, out _); 
+                            TryAddValueToRoom(d, container.TotalStoredOf(d) * 0.25f, out _); 
                             
                         })).ToList());
                     Find.WindowStack.Add(floatMenu);
@@ -474,7 +474,7 @@ namespace TAE
             GenDraw.FillableBarRequest r = default(GenDraw.FillableBarRequest);
             r.center = Parent.MinMaxCorners[0].ToVector3() + new Vector3(0.25f, 0, 0.75f);
             r.size = new Vector2(1.5f, 0.5f);
-            r.fillPercent = container.TotalStoredPercent;
+            r.fillPercent = container.StoredPercent;
             r.filledMat = FilledMat;
             r.unfilledMat = UnFilledMat;
             r.margin = 0f;

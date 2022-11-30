@@ -95,7 +95,8 @@ namespace TAE
         {
             TLog.Message($"[{parent?.Room?.ID}]Room Changed");
             parentComp = parent;
-            _capacity = roomCells * AtmosMath.CELL_CAPACITY;
+            
+            Data_ChangeCapacity(roomCells * AtmosMath.CELL_CAPACITY);
         }
         
         //

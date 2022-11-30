@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using TeleCore;
+using TeleCore.Static.Utilities;
+using UnityEngine;
 
 namespace TAE;
 
@@ -17,7 +19,8 @@ public static class AtmosMath
 {
     //
     internal const int CELL_CAPACITY = 128;
-
+    public const float MIN_EQ_VAL = 2;
+    
     public static float GetCellCap(int maxDensity)
     {
         return Mathf.Pow(2, maxDensity) * CELL_CAPACITY;
@@ -25,15 +28,15 @@ public static class AtmosMath
     
     public static FlowResult TryEqualizeVia(AtmosphericPortal portal, AtmosphericTransferWorker worker, AtmosphericContainer from, AtmosphericContainer to, AtmosphericDef atmosDef)
     {
-        if (!NeedsEqualizing(from, to, atmosDef, CELL_MINEQ, out var flow, out var diffAbs))
+        if (!ContainerTransferUtility.NeedsEqualizing(from, to, atmosDef, MIN_EQ_VAL, out var flow, out var diffAbs))
         {
             return FlowResult.None;
         }
         FlowResult flowResult = new FlowResult(flow);
 
         //
-        var sender = flow == AtmosPortalFlow.Positive ? from : to;
-        var receiver = flow == AtmosPortalFlow.Positive ? to : from;
+        var sender = flow == ValueFlowDirection.Positive ? from : to;
+        var receiver = flow == ValueFlowDirection.Positive ? to : from;
 
         //Get base transfer part
         var value = (sender.TotalStoredOf(atmosDef) / portal[flowResult.FromIndex].ConnectorCount) * 0.5f;
