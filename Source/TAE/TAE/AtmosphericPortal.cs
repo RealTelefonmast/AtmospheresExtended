@@ -18,7 +18,7 @@ namespace TAE
 
         public bool ConnectsToOutside => connections[0].IsOutdoors || connections[1].IsOutdoors;
         public bool ConnectsToSame => connections[0].IsOutdoors && connections[1].IsOutdoors || connections[0] == connections[1];
-        public bool IsValid => connector != null; // && connections[0] != null && connections[1] != null;
+        public bool IsValid => connector is {Spawned: true}; // && connections[0] != null && connections[1] != null;
         
         public Thing Thing => connector;
 

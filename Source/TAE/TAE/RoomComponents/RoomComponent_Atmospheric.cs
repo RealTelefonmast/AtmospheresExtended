@@ -10,18 +10,23 @@ using Verse;
 
 namespace TAE
 {
-    [HotSwappable]
-    public class RoomComponent_Atmospheric : RoomComponent
+    [StaticConstructorOnStartup]
+    public class RoomComponent_Atmospheric : RoomComponent, IContainerHolderRoom<AtmosphericDef>
     {
+        //
+        private static readonly Material FilledMat = SolidColorMaterials.NewSolidColorMaterial(Color.green, ShaderDatabase.MetaOverlay);
+        private static readonly Material UnFilledMat = SolidColorMaterials.NewSolidColorMaterial(TColor.LightBlack, ShaderDatabase.MetaOverlay);
+        
+        //
         private int dirtyMarks;
-
+        
         //
         private AtmosphericContainer container;
         private List<AtmosphericPortal> portals;
         private AtmosphericPortal selfPortal;
-
+        
         private RoomOverlay_Atmospheric renderer;
-
+        
         //
         public bool IsDoorway => Room.IsDoorway;
         
@@ -43,15 +48,42 @@ namespace TAE
         public AtmosphericContainer CurrentContainer => IsOutdoors ? OutsideContainer : (IsConnector ? selfPortal[0].CurrentContainer : RoomContainer);
 
         //
+        public string ContainerTitle => "Atmosphers be here";
+        public ContainerProperties ContainerProps { get; }
+        public BaseContainer<AtmosphericDef> Container => container;
+        public RoomComponent RoomComponent => this; 
+        
+        
+        
+        
         //private IEnumerable<Thing> PhysicalGas => Parent.ListerThings.AllThings.Where(t => t is SpreadingGas);
         public override void Notify_BorderThingAdded(Thing thing)
         {
             //Add any non 100% filled building
             if (thing is not Building b) return;
-            if (!AtmosphericTransferWorker.IsPassBuilding(b)) return;
+            ProcessPotentialPortal(b);
+        }
+
+        private void ProcessPotentialPortal(Building b)
+        {
+            //If blocked by impassible (wall, etc), skip
+            var cacheInfo = b.Map.GetMapInfo<DynamicDataCacheMapInfo>();
+            if (cacheInfo.AtmosphericPassGrid[b.Position] <= 0) return;
+            
+            //Otherwise register the structure as a portal (TODO: maybe group multiple portal-structures into single portal struct)
+            if (!AtmosphereUtility.IsPassBuilding(b)) return;
 
             var bRoom = b.GetRoom();
-            if (bRoom != null)
+            if (bRoom == null)
+            {
+                var otherRoom = b.NeighborRoomOf(Room);
+                if (otherRoom == null) return;
+                
+                var portal = new AtmosphericPortal(b, this, otherRoom.GetRoomComp<RoomComponent_Atmospheric>());
+                portals.Add(portal);
+                AtmosphericInfo.Notify_NewPortal(portal);
+            }
+            else
             {
                 var bAtmos = bRoom.GetRoomComp<RoomComponent_Atmospheric>();
                 if (bAtmos != null)
@@ -68,15 +100,6 @@ namespace TAE
 
                         var portal = new AtmosphericPortal(b, this, otherRoom.GetRoomComp<RoomComponent_Atmospheric>());
                         bAtmos.Noitfy_SetSelfPortal(portal);
-                        
-                        /*
-                         * //If Portal Region - Add Portal as self
-                        if (Room.FirstRegion.type == RegionType.Portal)
-                        {
-                            selfPortal = portal;
-                            return;
-                        }
-                        */
 
                         portals.Add(portal);
                         AtmosphericInfo.Notify_NewPortal(portal);
@@ -351,7 +374,7 @@ namespace TAE
                     FloatMenu floatMenu = new FloatMenu(DefDatabase<AtmosphericDef>.AllDefsListForReading.Select(d => 
                         new FloatMenuOption(d.defName, delegate
                         {
-                            TryAddValueToRoom(d, container.TotalStoredOf(d) * 0.25f, out _); 
+                            TryAddValueToRoom(d, container.Capacity * 0.25f, out _); 
                             
                         })).ToList());
                     Find.WindowStack.Add(floatMenu);
@@ -481,10 +504,15 @@ namespace TAE
             r.rotation = Rot4.East;
             GenDraw.DrawFillableBar(r);
         }
-        
-        private static readonly Material FilledMat = SolidColorMaterials.NewSolidColorMaterial(Color.green, ShaderDatabase.MetaOverlay);
-        private static readonly Material UnFilledMat = SolidColorMaterials.NewSolidColorMaterial(TColor.LightBlack, ShaderDatabase.MetaOverlay);
-        
+
+        public void Notify_ContainerFull()
+        {
+        }
+
+        public void Notify_ContainerStateChanged()
+        {
+        }
+
         public void Notify_AddedContainerValue(AtmosphericDef def, float value)
         {
             renderer.TryRegisterNewOverlayPart(def);
@@ -494,5 +522,6 @@ namespace TAE
         {
             return $"[{Room.ID}]";
         }
+        
     }
 }

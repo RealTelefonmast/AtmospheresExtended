@@ -3,6 +3,7 @@ using System.Linq;
 using RimWorld;
 using TAE.Static;
 using TeleCore;
+using TeleCore.Static.Utilities;
 using UnityEngine;
 using Verse;
 
@@ -50,50 +51,60 @@ public class Comp_ANS_PassiveVent : Comp_AtmosphericNetworkStructure
     private void Tick(int tickRate = 1)
     {
         var roomComp = Atmos;
-        var roomCOntainer = roomComp.CurrentContainer;
+        var roomContainer = roomComp.CurrentContainer;
         var networkComp = AtmosphericComp;
 
         foreach (var atmosphericDef in Props.AllowedValues)
         {
             //Get percentage of atmosDef
+            /*
             var roomValuePct = roomCOntainer.StoredPercentOf(atmosphericDef);
             var ventValuePct = networkComp.Container.StoredPercentOf(atmosphericDef.networkValue);
             var pctDiff = roomValuePct - ventValuePct;
-
-            TLog.Debug($"(Room){roomValuePct.ToStringPercent()} - (Vent){ventValuePct.ToStringPercent()} = pctDiff: {pctDiff.ToStringPercent()}");
-
-            switch (pctDiff)
+            */
+            if (ContainerTransferUtility.NeedsEqualizing(roomContainer, networkComp.Container, out var flowDir, out var diffPct))
             {
-                //Push Room Into Vent
-                case > 0.0078125f:
+                TLog.Debug($"Equalizing {roomComp.Room.ID} <=> {networkComp} | FlowDir: {flowDir} | Diff: {diffPct.ToStringPercent()}");   
+                switch (flowDir)
                 {
-                    var value = (roomCOntainer.TotalStoredOf(atmosphericDef) / Props.AllowedValues.Count) * 0.5f;
-                    value = Mathf.Clamp(value, 0, networkComp.Container.Capacity / Props.AllowedValues.Count);
-                    var flowAmount = value * atmosphericDef.FlowRate;
-                    TLog.Debug($"Pushing Into Vent: {value} => {flowAmount} => {Mathf.Round(flowAmount)}");
-                    if (roomCOntainer.TryTransferTo(networkComp.Container, atmosphericDef, Mathf.Round(flowAmount)))
+                    case ValueFlowDirection.Positive:
                     {
-                        //...
+                        //var value = (roomContainer.TotalStoredOf(atmosphericDef) / Props.AllowedValues.Count) * 0.5f;
+                        //value = Mathf.Clamp(value, 0, networkComp.Container.Capacity / Props.AllowedValues.Count);
+                        //var flowAmount = value * atmosphericDef.FlowRate;
+                        
+                        //
+                        var value = roomContainer.TotalStoredOf(atmosphericDef) * 0.5f;
+                        //TODO: Fix to unbroken getmaxtransfer
+                        var flowAmount = networkComp.Container.GetMaxTransferRateTo(networkComp.Container, atmosphericDef.networkValue, Mathf.CeilToInt(value * diffPct * atmosphericDef.networkValue.FlowRate));
+                        
+                        TLog.Debug($"Pushing Into Vent: {value} => {flowAmount} => {Mathf.Round(flowAmount)}");
+                        if (roomContainer.TryTransferTo(networkComp.Container, atmosphericDef, Mathf.Round(flowAmount)))
+                        {
+                            
+                        }
+
+                        break;
                     }
-
-                    break;
-                }
-                //Push From Vent Into Room
-                case < -0.0078125f:
-                {
-                    var value = (networkComp.Container.TotalStoredOf(atmosphericDef.networkValue)) * 0.5f;
-                    value = Mathf.Clamp(value, 0, Props.gasThroughPut * tickRate);
-                    var flowAmount = value * atmosphericDef.FlowRate;
-
-                    TLog.Debug($"Pushing Into Room: {value} => {flowAmount} => {Mathf.RoundToInt(flowAmount)}");
-                    if (roomCOntainer.TryReceiveFrom(networkComp.Container, atmosphericDef,
-                            Mathf.RoundToInt(flowAmount)))
+                    //Push From Vent Into Room
+                    case ValueFlowDirection.Negative:
                     {
-                        //...
-                    }
+                        //var value = (networkComp.Container.TotalStoredOf(atmosphericDef.networkValue)) * 0.5f;
+                        //value = Mathf.Clamp(value, 0, Props.gasThroughPut * tickRate);
+                        //var flowAmount = value * atmosphericDef.FlowRate;
 
-                    break;
-                }
+                        var value = (networkComp.Container.TotalStoredOf(atmosphericDef.networkValue)) * 0.5f;
+                        var flowAmount = networkComp.Container.GetMaxTransferRateTo(networkComp.Container, atmosphericDef.networkValue, Mathf.CeilToInt(value * diffPct * atmosphericDef.networkValue.FlowRate));
+
+                        TLog.Debug($"Pushing Into Room: {value} => {flowAmount} => {Mathf.RoundToInt(flowAmount)}");
+                        if (roomContainer.TryReceiveFrom(networkComp.Container, atmosphericDef, Mathf.RoundToInt(flowAmount)))
+                        {
+                            //...
+                        }
+
+                        break;
+                    }
+                }   
             }
         }
     }

@@ -5,7 +5,7 @@ using Verse;
 
 namespace TAE;
 
-public class DynamicDataCacheInfo : MapInformation
+public class DynamicDataCacheMapInfo : MapInformation
 {
     //Grid data
     public ComputeGrid<float> AtmosphericPassGrid { get; }
@@ -16,7 +16,7 @@ public class DynamicDataCacheInfo : MapInformation
     public ComputeBuffer LightPassBuffer => LightPassGrid.DataBuffer;
     public ComputeBuffer EdificeBuffer => EdificeGrid.DataBuffer;
 
-    public DynamicDataCacheInfo(Map map) : base(map)
+    public DynamicDataCacheMapInfo(Map map) : base(map)
     {
         AtmosphericPassGrid = new ComputeGrid<float>(map, _ => 1f);
         LightPassGrid = new ComputeGrid<float>(map, _ => 1f);
@@ -63,19 +63,18 @@ public class DynamicDataCacheInfo : MapInformation
         var isBuilding = thing is Building;
         foreach (var pos in thing.OccupiedRect())
         {
-            if (isBuilding)
-            {
-                //
-                AtmosphericPassGrid.SetValue_Array(pos, AtmosphericTransferWorker.DefaultAtmosphericPassPercent(thing));
-                if (thing.def.IsEdifice())
-                    EdificeGrid.SetValue_Array(pos, 1);
-                if (thing.def.blockLight)
-                    LightPassGrid.SetValue_Array(pos, 0);
-            }
+            if (!isBuilding) continue;
+            
+            //
+            AtmosphericPassGrid.SetValue_Array(pos, AtmosphereUtility.DefaultAtmosphericPassPercentAtCell(pos, map));
+            if (thing.def.IsEdifice())
+                EdificeGrid.SetValue_Array(pos, 1);
+            if (thing.def.blockLight)
+                LightPassGrid.SetValue_Array(pos, 0);
         }
     }
 
-    internal void Notify_ThingSpawned(Thing thing)
+    internal void Notify_ThingSpawned(Thing thing) 
     {
         Notify_UpdateThingState(thing);
         //UpdateGraphics();
@@ -100,30 +99,30 @@ public class DynamicDataCacheInfo : MapInformation
 
 public class DynamicDataTracker : ThingTrackerComp
 {
-    private DynamicDataCacheInfo cacheInfo;
+    private DynamicDataCacheMapInfo cacheMapInfo;
 
-    private DynamicDataCacheInfo CacheInfo(Map map)
+    private DynamicDataCacheMapInfo CacheInfo(Map map)
     {
-        if (cacheInfo == null)
+        if (cacheMapInfo == null)
         {
-            cacheInfo = map.GetMapInfo<DynamicDataCacheInfo>();
+            cacheMapInfo = map.GetMapInfo<DynamicDataCacheMapInfo>();
         }
-        return cacheInfo;
+        return cacheMapInfo;
     }
 
     //TODO: Update to use protected parent later
-    public DynamicDataTracker(ThingTrackerInfo parent) : base(parent)
+    public DynamicDataTracker(ThingTrackerMapInfo parent) : base(parent)
     {
     }
 
     public override void Notify_ThingRegistered(Thing thing)
     {
-        thing.Map.GetMapInfo<DynamicDataCacheInfo>().Notify_ThingSpawned(thing);
+        thing.Map.GetMapInfo<DynamicDataCacheMapInfo>().Notify_ThingSpawned(thing);
     }
 
     public override void Notify_ThingDeregistered(Thing thing)
     {
-        thing.Map.GetMapInfo<DynamicDataCacheInfo>().Notify_ThingDespawned(thing);
+        thing.Map.GetMapInfo<DynamicDataCacheMapInfo>().Notify_ThingDespawned(thing);
     }
 
     public override void Notify_ThingStateChanged(Thing thing, string compSignal = null)
@@ -139,7 +138,7 @@ public class DynamicDataTracker : ThingTrackerComp
             case "DoorOpened":
             case "DoorClosed":
             {
-                thing.Map.GetMapInfo<DynamicDataCacheInfo>().Notify_UpdateThingState(thing);
+                thing.Map.GetMapInfo<DynamicDataCacheMapInfo>().Notify_UpdateThingState(thing);
             }
             break;
         }

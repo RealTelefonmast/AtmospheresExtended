@@ -7,7 +7,7 @@ using Verse;
 
 namespace TAE
 {
-    public class AtmosphericMapInfo : MapInformation
+    public class AtmosphericMapInfo : MapInformation, IContainerHolder<AtmosphericDef>
     {
         //
         private AtmosphericCache _cache;
@@ -34,10 +34,20 @@ namespace TAE
         public AtmosphericCache Cache => _cache;
         public int ConnectorCount => allConnections.Count; //{ get; set; }
         public AtmosphereRenderer Renderer => renderer;
-
+        
+        //Container
+        public string ContainerTitle { get; }
+        public ContainerProperties ContainerProps { get; }
+        public BaseContainer<AtmosphericDef> Container { get; }
+        
         public AtmosphericMapInfo(Map map) : base(map)
         {
             _cache = new AtmosphericCache(map);
+
+            ContainerProps = new ContainerProperties()
+            {
+                    
+            };
             mapContainer = new AtmosphericContainer(null, true);
 
             //
@@ -149,8 +159,7 @@ namespace TAE
                 MapContainer.TryAddValue(atmosphere.Def, diff, out _);
             }
         }
-
-
+        
         private void GenerateNaturalAtmospheres()
         {
             if (!naturalAtmospheres.NullOrEmpty()) return;
@@ -241,7 +250,7 @@ namespace TAE
             lastPollutionInt = Pollution;
             */
         }
-
+        
         //Data
         // -- RoomComponents
         public void Notify_NewComp(RoomComponent_Atmospheric comp)
@@ -255,8 +264,11 @@ namespace TAE
             allComps.Remove(comp);
             compByRoom.Remove(comp.Room);
 
-            //Remove Portals
-            allConnections.RemoveAll(p => p.Connects(comp));
+            //Remove Portals - check for validity after despawning
+            GenData.EnqueueActionForMainThread(delegate
+            {
+                allConnections.RemoveAll(p => !p.IsValid); 
+            });
         }
 
         // -- Atmosphere Sources
@@ -328,5 +340,18 @@ namespace TAE
                return true;
            */
         }
+
+        //
+        public void Notify_ContainerFull()
+        {
+        }
+
+        public void Notify_ContainerStateChanged()
+        {
+        }
+        public void Notify_AddedContainerValue(AtmosphericDef def, float value)
+        {
+        }
+        
     }
 }

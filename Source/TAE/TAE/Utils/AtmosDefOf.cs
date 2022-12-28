@@ -17,7 +17,7 @@ namespace TAE
         
         //
         public static NetworkDef AtmosphericNetwork;
-        public static AtmosphericDef Oxygen;
+        public static AtmosphericDef Atmosphere_Oxygen;
         
     }
 }

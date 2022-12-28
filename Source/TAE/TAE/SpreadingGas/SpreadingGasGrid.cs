@@ -22,7 +22,7 @@ public unsafe class SpreadingGasGrid : MapInformation
     
     //
     private SpreadingGasGridRenderer renderer;
-    private DynamicDataCacheInfo cacheInfo;
+    private DynamicDataCacheMapInfo cacheMapInfo;
     
     //Map Data
     private int gridSize;
@@ -58,7 +58,7 @@ public unsafe class SpreadingGasGrid : MapInformation
     public uint TotalGasCount => totalGasCount;
     public long TotalGasValue => totalGasValue;
     
-    private DynamicDataCacheInfo CacheInfo => cacheInfo ??= Map.GetMapInfo<DynamicDataCacheInfo>();
+    private DynamicDataCacheMapInfo CacheMapInfo => cacheMapInfo ??= Map.GetMapInfo<DynamicDataCacheMapInfo>();
     
     //
     public bool HasAnyGas => totalGasCount > 0;
@@ -85,12 +85,7 @@ public unsafe class SpreadingGasGrid : MapInformation
             maxColors[i] = GasDefsArr[i].colorMax;
             maxDensities[i] = (uint)GasDefsArr[i].maxDensityPerCell;
         }
-        
-        //
-        TLog.Message($"{minColors.ToStringSafeEnumerable()}");
-        TLog.Message($"{maxColors.ToStringSafeEnumerable()}");
-        TLog.Message($"{maxDensities.ToStringSafeEnumerable()}");
-        
+
         //
         renderer = new SpreadingGasGridRenderer(this, map);
 
@@ -399,7 +394,7 @@ public unsafe class SpreadingGasGrid : MapInformation
     private bool CanSpreadToFast(IntVec3 cell, SpreadingGasTypeDef def)
     {
         if (gasGridPtr[cell.Index(map)][def].value >= def.maxDensityPerCell) return false;
-        return CacheInfo.AtmosphericPassGrid[cell] > 0;
+        return CacheMapInfo.AtmosphericPassGrid[cell] > 0;
     }
     
     private bool CanSpreadTo(int otherIndex, SpreadingGasTypeDef forDef, out float passPct)
@@ -407,7 +402,7 @@ public unsafe class SpreadingGasGrid : MapInformation
         passPct = 0f;
         if (OutOfBounds(otherIndex)) return false;
         if (gasGridPtr[otherIndex][forDef].value >= forDef.maxDensityPerCell) return false;
-        passPct = CacheInfo.AtmosphericPassGrid[otherIndex]; // DynamicDataCacheInfo forDef.TransferWorker.GetBaseTransferRate(other.GetFirstBuilding(map));
+        passPct = CacheMapInfo.AtmosphericPassGrid[otherIndex]; // DynamicDataCacheInfo forDef.TransferWorker.GetBaseTransferRate(other.GetFirstBuilding(map));
         return passPct > 0;
     }
     
@@ -419,12 +414,13 @@ public unsafe class SpreadingGasGrid : MapInformation
 
     public override void UpdateOnGUI()
     {
-        AtmosphereUtility.DrawSpreadingGasAroundMouse();
+        //AtmosphereUtility.DrawSpreadingGasAroundMouse();
     }
 
     public override void TeleUpdate()
     {
         renderer.Draw();
+        AtmosphereUtility.DrawPassPercentCells();
     }
 
     //Debug Options

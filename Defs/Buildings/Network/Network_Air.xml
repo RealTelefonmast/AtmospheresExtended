@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Defs>
 
-	<ThingDef ParentName="Tele_BuildingBase">
+	<ThingDef ParentName="Tele_StationBase">
 		<defName>AtmosphericPump</defName>
 		<label>Atmospheric Pump</label>
 		<description>.</description>
@@ -41,9 +41,9 @@
 							<maxStorage>1000</maxStorage>
 							<dropContents>false</dropContents>
 						</containerProps>
-						<valueProperties>
+						<defFilter>
 							<fromDef>AtmosphericNetwork</fromDef>	
-						</valueProperties>
+						</defFilter>
 					</li>
 				</networks>
 				<!--<generalIOPattern>++|++</generalIOPattern>-->
@@ -113,9 +113,9 @@
 							<maxStorage>100</maxStorage>
 							<dropContents>false</dropContents>
 						</containerProps>
-						<valueProperties>
+						<defFilter>
 							<fromDef>AtmosphericNetwork</fromDef>	
-						</valueProperties>
+						</defFilter>
 					</li>
 				</networks>
 				<generalIOPattern>I</generalIOPattern>
@@ -211,9 +211,9 @@
 							<maxStorage>100</maxStorage>
 							<dropContents>false</dropContents>
 						</containerProps>
-						<valueProperties>
+						<defFilter>
 							<fromDef>AtmosphericNetwork</fromDef>	
-						</valueProperties>
+						</defFilter>
 					</li>
 				</networks>
 				<generalIOPattern>+</generalIOPattern>
@@ -285,9 +285,9 @@
 							<dropContents>false</dropContents>
 							<storeEvenly>true</storeEvenly>
 						</containerProps>
-						<valueProperties>
+						<defFilter>
 							<fromDef>AtmosphericNetwork</fromDef>	
-						</valueProperties>
+						</defFilter>
 					</li>
 				</networks>
 				<generalIOPattern>+</generalIOPattern>
@@ -298,9 +298,6 @@
 				<commandDescKey>CommandDesignateOpenCloseVentDesc</commandDescKey>
 			</li>
 		</comps>
-		<inspectorTabs>
-			<li>TeleCore.ITab_NetworkDebug</li>
-		</inspectorTabs>
 		<placeWorkers>
 			<li>TAE.PlaceWorker_PassiveVent</li>
 		</placeWorkers>

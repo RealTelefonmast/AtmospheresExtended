@@ -13,8 +13,8 @@ namespace TAE
         private bool isOutdoorsContainer;
         private readonly HashSet<AtmosphericDef> _mapSourceTypes;
 
-        public RoomComponent_Atmospheric AtmosParent => RoomParent.Room as RoomComponent_Atmospheric;
-        public bool ParentIsDoorWay => RoomParent?.Room.IsDoorway ?? false;
+        public RoomComponent_Atmospheric AtmosParent => RoomParent.RoomComponent as RoomComponent_Atmospheric;
+        public bool ParentIsDoorWay => RoomParent?.RoomComponent.IsDoorway ?? false;
         public bool HasParentRoom => parentComp != null;
         public bool IsSourceContainer => _mapSourceTypes.Count > 0;
         
@@ -25,13 +25,18 @@ namespace TAE
             return _mapSourceTypes.Contains(def);
         }
         
-        public AtmosphericContainer(RoomComponent_Atmospheric parent, bool isOutdoor = false)
+        public AtmosphericContainer(RoomComponent_Atmospheric parent, bool isOutdoor = false) : base(parent)
         {
             parentComp = parent;
             isOutdoorsContainer = isOutdoor;
             _mapSourceTypes = new HashSet<AtmosphericDef>();
         }
-        
+
+        public override bool AcceptsValue(AtmosphericDef valueType)
+        {
+            return true;
+        }
+
         public override bool CanAccept(AtmosphericDef def)
         {
             if (!base.CanAccept(def)) return false;
@@ -71,18 +76,14 @@ namespace TAE
 
         protected override bool ShouldRemoveValue(AtmosphericDef valueType, float wantedValue)
         {
-            if (_mapSourceTypes.Contains(valueType))
-            {
-                return true;
-            }
-            return false;
+            return true;
         }
 
         //
         public override void UpdateContainerState(bool updateMetaData = false)
         {
             base.UpdateContainerState(updateMetaData);
-            RoomParent?.Room.Map?.GetMapInfo<AtmosphericMapInfo>()?.Renderer?.Drawer_SetDirty();
+            RoomParent?.RoomComponent.Map?.GetMapInfo<AtmosphericMapInfo>()?.Renderer?.Drawer_SetDirty();
         }
 
         //
@@ -95,7 +96,6 @@ namespace TAE
         {
             TLog.Message($"[{parent?.Room?.ID}]Room Changed");
             parentComp = parent;
-            
             Data_ChangeCapacity(roomCells * AtmosMath.CELL_CAPACITY);
         }
         
