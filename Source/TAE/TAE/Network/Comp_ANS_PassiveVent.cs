@@ -25,12 +25,12 @@ public class Comp_ANS_PassiveVent : Comp_AtmosphericNetworkStructure
     {
         base.PostSpawnSetup(respawningAfterLoad);
         flickableComp = parent.GetComp<CompFlickable>();
-        _intakeCell = IntakePos(parent.Position, parent.Rotation);
+        _intakeCell = GetIntakePos(parent.Position, parent.Rotation);
         
         TLog.Message($"Vent for types: {Props.AllowedValues.ToStringSafeEnumerable()}");
     }
 
-    internal static IntVec3 IntakePos(IntVec3 basePos, Rot4 rotation)
+    internal static IntVec3 GetIntakePos(IntVec3 basePos, Rot4 rotation)
     {
         return basePos + IntVec3.South.RotatedBy(rotation);
     }
@@ -47,7 +47,7 @@ public class Comp_ANS_PassiveVent : Comp_AtmosphericNetworkStructure
     public override void CompTickRare()
     {
     }
-
+    
     private void Tick(int tickRate = 1)
     {
         var roomComp = Atmos;
@@ -56,34 +56,27 @@ public class Comp_ANS_PassiveVent : Comp_AtmosphericNetworkStructure
 
         foreach (var atmosphericDef in Props.AllowedValues)
         {
-            //Get percentage of atmosDef
-            /*
-            var roomValuePct = roomCOntainer.StoredPercentOf(atmosphericDef);
-            var ventValuePct = networkComp.Container.StoredPercentOf(atmosphericDef.networkValue);
-            var pctDiff = roomValuePct - ventValuePct;
-            */
+            //var roomValuePct = roomCOntainer.StoredPercentOf(atmosphericDef);
+            //var ventValuePct = networkComp.Container.StoredPercentOf(atmosphericDef.networkValue);
+            //var pctDiff = roomValuePct - ventValuePct;
             if (ContainerTransferUtility.NeedsEqualizing(roomContainer, networkComp.Container, out var flowDir, out var diffPct))
             {
+                diffPct = Mathf.Abs(diffPct);
                 TLog.Debug($"Equalizing {roomComp.Room.ID} <=> {networkComp} | FlowDir: {flowDir} | Diff: {diffPct.ToStringPercent()}");   
                 switch (flowDir)
                 {
+                    //Push From Room Into Vent
                     case ValueFlowDirection.Positive:
                     {
                         //var value = (roomContainer.TotalStoredOf(atmosphericDef) / Props.AllowedValues.Count) * 0.5f;
                         //value = Mathf.Clamp(value, 0, networkComp.Container.Capacity / Props.AllowedValues.Count);
                         //var flowAmount = value * atmosphericDef.FlowRate;
-                        
-                        //
                         var value = roomContainer.TotalStoredOf(atmosphericDef) * 0.5f;
-                        //TODO: Fix to unbroken getmaxtransfer
-                        var flowAmount = networkComp.Container.GetMaxTransferRateTo(networkComp.Container, atmosphericDef.networkValue, Mathf.CeilToInt(value * diffPct * atmosphericDef.networkValue.FlowRate));
-                        
-                        TLog.Debug($"Pushing Into Vent: {value} => {flowAmount} => {Mathf.Round(flowAmount)}");
+                        var flowAmount = networkComp.Container.GetMaxTransferRate(atmosphericDef.networkValue, Mathf.CeilToInt(value * diffPct * atmosphericDef.networkValue.FlowRate));
                         if (roomContainer.TryTransferTo(networkComp.Container, atmosphericDef, Mathf.Round(flowAmount)))
                         {
-                            
+                            //...
                         }
-
                         break;
                     }
                     //Push From Vent Into Room
@@ -92,16 +85,14 @@ public class Comp_ANS_PassiveVent : Comp_AtmosphericNetworkStructure
                         //var value = (networkComp.Container.TotalStoredOf(atmosphericDef.networkValue)) * 0.5f;
                         //value = Mathf.Clamp(value, 0, Props.gasThroughPut * tickRate);
                         //var flowAmount = value * atmosphericDef.FlowRate;
-
+                        if (ConnectedToLowPressure()) return;
+                        
                         var value = (networkComp.Container.TotalStoredOf(atmosphericDef.networkValue)) * 0.5f;
-                        var flowAmount = networkComp.Container.GetMaxTransferRateTo(networkComp.Container, atmosphericDef.networkValue, Mathf.CeilToInt(value * diffPct * atmosphericDef.networkValue.FlowRate));
-
-                        TLog.Debug($"Pushing Into Room: {value} => {flowAmount} => {Mathf.RoundToInt(flowAmount)}");
+                        var flowAmount = networkComp.Container.GetMaxTransferRate(atmosphericDef.networkValue, Mathf.CeilToInt(value * diffPct * atmosphericDef.networkValue.FlowRate));
                         if (roomContainer.TryReceiveFrom(networkComp.Container, atmosphericDef, Mathf.RoundToInt(flowAmount)))
                         {
                             //...
                         }
-
                         break;
                     }
                 }   
@@ -109,10 +100,31 @@ public class Comp_ANS_PassiveVent : Comp_AtmosphericNetworkStructure
         }
     }
 
+    public override bool CanInteractWith(INetworkSubPart interactor, INetworkSubPart otherPart)
+    {
+        var interactorPVent = interactor.Parent as Comp_ANS_PassiveVent;
+        var otherPVent = otherPart.Parent as Comp_ANS_PassiveVent;
+        return otherPVent?.NeedsToReceiveFrom(interactorPVent) ?? false;
+    }
+    
     public override void NetworkPartProcessorTick(INetworkSubPart netPart)
     {
         base.NetworkPartProcessorTick(netPart);
     }
+    
+    //Helpers
+    private bool NeedsToReceiveFrom(Comp_ANS_PassiveVent other)
+    {
+        return Atmos.Container.StoredPercent < other.Atmos.Container.StoredPercent;
+    }
+
+    private bool ConnectedToLowPressure()
+    {
+        var adjacencyList = AtmosphericComp.Network.Graph.GetAdjacencyList(AtmosphericComp);
+        if (adjacencyList == null || !adjacencyList.Any()) return false;
+        return adjacencyList.Any(c => c.Parent is Comp_ANS_PassiveVent pvent && pvent.NeedsToReceiveFrom(this));
+    }
+
 }
 
 public class CompProperties_ANS_PassiveVent : CompProperties_ANS
