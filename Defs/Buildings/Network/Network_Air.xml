@@ -281,7 +281,7 @@
 							<li>Storage</li>
 						</networkRoles>
 						<containerProps>
-							<maxStorage>200</maxStorage>
+							<maxStorage>400</maxStorage>
 							<dropContents>false</dropContents>
 							<storeEvenly>true</storeEvenly>
 						</containerProps>

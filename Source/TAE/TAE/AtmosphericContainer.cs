@@ -58,7 +58,7 @@ namespace TAE
         public override void Notify_AddedValue(AtmosphericDef def, float value)
         {
             base.Notify_AddedValue(def, value);
-            Parent?.Notify_AddedContainerValue(def, value);
+            //Parent?.Notify_AddedContainerValue(def, value);
 
             //Tag Processing
             if (def.displaceTags != null)

@@ -29,7 +29,7 @@ public class SpreadingGasTypeDef : Def
     public AtmosphericDef dissipateTo;
     public Type transferWorker = typeof(AtmosphericTransferWorker);
 
-    public FloatRange rotationSpeeds = new FloatRange(100,100);
+    public FloatRange rotationSpeeds = new FloatRange(-100,100);
     public float accuracyPenalty;
     public bool blockTurretTracking;
     public bool roofBlocksDissipation = true;

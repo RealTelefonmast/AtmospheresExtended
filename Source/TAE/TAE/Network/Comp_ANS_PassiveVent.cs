@@ -26,8 +26,6 @@ public class Comp_ANS_PassiveVent : Comp_AtmosphericNetworkStructure
         base.PostSpawnSetup(respawningAfterLoad);
         flickableComp = parent.GetComp<CompFlickable>();
         _intakeCell = GetIntakePos(parent.Position, parent.Rotation);
-        
-        TLog.Message($"Vent for types: {Props.AllowedValues.ToStringSafeEnumerable()}");
     }
 
     internal static IntVec3 GetIntakePos(IntVec3 basePos, Rot4 rotation)
@@ -62,7 +60,7 @@ public class Comp_ANS_PassiveVent : Comp_AtmosphericNetworkStructure
             if (ContainerTransferUtility.NeedsEqualizing(roomContainer, networkComp.Container, out var flowDir, out var diffPct))
             {
                 diffPct = Mathf.Abs(diffPct);
-                TLog.Debug($"Equalizing {roomComp.Room.ID} <=> {networkComp} | FlowDir: {flowDir} | Diff: {diffPct.ToStringPercent()}");   
+                //TLog.Debug($"Equalizing {roomComp.Room.ID} <=> {networkComp} | FlowDir: {flowDir} | Diff: {diffPct.ToStringPercent()}");   
                 switch (flowDir)
                 {
                     //Push From Room Into Vent

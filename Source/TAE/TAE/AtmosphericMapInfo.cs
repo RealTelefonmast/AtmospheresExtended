@@ -24,7 +24,7 @@ namespace TAE
         private readonly List<SkyOverlay> naturalOverlays = new();
 
         private readonly List<AtmosphericPortal> allConnections;
-        private List<AtmosphericPortal> allConnectionsToOutside;
+        //private List<AtmosphericPortal> allConnectionsToOutside;
 
         //public int TotalMapPollution => OutsideContainer.Atmospheric + AllComps.Sum(c => c.PollutionContainer.Atmospheric);
 
@@ -56,7 +56,7 @@ namespace TAE
 
             allSources = new List<IAtmosphericSource>();
             allConnections = new List<AtmosphericPortal>();
-            allConnectionsToOutside = new List<AtmosphericPortal>();
+            //allConnectionsToOutside = new List<AtmosphericPortal>();
             
             //
             renderer = new AtmosphereRenderer(map);
@@ -180,10 +180,8 @@ namespace TAE
             {
                 foreach (var ruleSet in DefDatabase<TAE_RulesetDef>.AllDefs)
                 {
-                    TLog.Message($"Found Ruleset: {ruleSet}");
                     if (ruleSet.occurence == AtmosphericOccurence.AnyBiome)
                     {
-                        TLog.Message("Any Biome --");
                         naturalAtmospheres.AddRange(ruleSet.atmospheres);
                         continue;
                     }
@@ -300,6 +298,7 @@ namespace TAE
         public override void Update()
         {
             base.Update();
+            /*
             if (!allConnections.NullOrEmpty())
             {
                 List<IntVec3> list = new List<IntVec3>();
@@ -311,6 +310,7 @@ namespace TAE
 
                 GenDraw.DrawFieldEdges(list, Color.blue);
             }
+            */
 
             //
             renderer.AtmosphereDrawerUpdate();
@@ -328,6 +328,7 @@ namespace TAE
         //
         public bool TrySpawnGasAt(IntVec3 cell, SpreadingGasTypeDef gasType, float value)
         {
+            Map.GetMapInfo<SpreadingGasGrid>().Notify_SpawnGasAt(cell, gasType, value);
             return false;
             /*
                if (!ComponentAt(cell).CanHaveTangibleGas) return false;

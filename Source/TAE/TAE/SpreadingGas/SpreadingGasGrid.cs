@@ -13,6 +13,8 @@ using Verse;
 
 namespace TAE;
 
+
+//TODO: Make rule based sprading and dissipation: ie: if a gas cell is surrounded by gas of the same type, it spreads less than a cell with free neighbours => viscosity simulation
 public unsafe class SpreadingGasGrid : MapInformation
 {
     internal static SpreadingGasTypeDef[] GasDefsArr;
@@ -129,7 +131,7 @@ public unsafe class SpreadingGasGrid : MapInformation
         return gasGridPtr[index].stackPtr[defID];
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    //[MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void SetCellValueAt(int index, GasCellValue value)
     {
         DetectValueChange(value.defID, gasGridPtr[index][value.defID].value, value.value);
@@ -259,37 +261,43 @@ public unsafe class SpreadingGasGrid : MapInformation
 
             for (int id = 0; id < GasDefsCount; ++id)
             {
-                Dissipate(cell.Index(map), cell , id);
                 TrySpreadGas(cell, id);
+                Dissipate(cell.Index(map), cell , id);
             }
             workingIndex++;
         }
     }
 
-    void Dissipate(int index, IntVec3 cell, int defID)
+    private void Dissipate(int index, IntVec3 cell, int defID)
     {
-        //
-        if(((SpreadingGasTypeDef)defID).roofBlocksDissipation && cell.Roofed(map)) return;
-        
         //No gas at index, return
         if (index < 0 || index >= Length || defID >= GasDefsCount)
         {
             TLog.Warning($"Index for gasGrid cell is out of bound: {index} | {defID}");
             return;
-        } 
-        if (gasGridPtr[index][defID].totalBitVal == 0) return;
+        }
+        
+        var cellValue = gasGridPtr[index][defID];
+        if (cellValue.totalBitVal == 0) return;
+        if (cellValue.value == 0) return;
         var def = ((SpreadingGasTypeDef)defID);
-        //if (totalGasGrid[index] == 0) return;
 
-        ushort densityValue = DensityAt(index, defID);
-        if (densityValue == 0) return;
-        
-        //TODO:
-        //if (densityValue > def.minDissipationDensity) return;
-        
-        densityValue = (ushort)Math.Max(densityValue - def.dissipationAmount, 0);
-        
-        SetDensity_Direct(index, defID, densityValue);
+        //Dissipate Into Room
+        if (((SpreadingGasTypeDef) defID).roofBlocksDissipation && cell.Roofed(map))
+        {
+            if (def.dissipateTo != null)
+            {
+                var room = cell.GetRoomFast(map);
+                if (room is {ProperRoom: true} && room.GetRoomComp<RoomComponent_Atmospheric>().Notify_SpradingGasDissipating(def, def.dissipationAmount, out var actual))
+                {
+                    SetDensity_Direct(index, defID, (ushort)Math.Max(cellValue.value - actual, 0));
+                }
+            }
+            return;
+        }
+
+        cellValue.value = (ushort)Math.Max(cellValue.value - def.dissipationAmount, 0);
+        SetDensity_Direct(index, defID, cellValue.value);
     }
     
     void TrySpreadGas(IntVec3 pos, int defID)
@@ -360,7 +368,7 @@ public unsafe class SpreadingGasGrid : MapInformation
         float diff = (gasCellA.value - gasCellB.value);
         if (diff <= 0) return false;
         
-        var diffShort = (ushort)(Mathf.Abs(diff * passPct) * 0.125f * def.ViscosityMultiplier);
+        var diffShort = (ushort)(Mathf.Abs(diff * passPct) * 0.35 * def.ViscosityMultiplier);
         
         gasCellA -= diffShort;
         gasCellB += diffShort;
@@ -473,5 +481,32 @@ public unsafe class SpreadingGasGrid : MapInformation
             cellValue.overflow = 0;
         
         SetCellValueAt(index, cellValue);
+    }
+
+    internal void Notify_ThingSpawned(Thing thing)
+    {
+        var ind = thing.Position.Index(map);
+        switch (thing.def.Fillage)
+        {
+            case FillCategory.Full:
+                SetCellStackAt(ind, new GasCellStack());
+                return;
+            case FillCategory.Partial:
+            {
+                for (var i = 0; i < GasDefsArr.Length; i++)
+                {
+                    var def = GasDefsArr[i];
+                    var value = gasGridPtr[ind][def];
+                    AdjustSaturation(ref value, def, (int)(-(float)(value.value + value.overflow) * thing.def.fillPercent), out _);
+                    SetCellValueAt(ind, value);
+                }
+                break;
+            }
+        }
+    }
+
+    public void Notify_SpawnGasAt(IntVec3 cell, SpreadingGasTypeDef gasType, float value)
+    {
+        TryAddGasAt_Internal(cell, gasType, (ushort)value);
     }
 }

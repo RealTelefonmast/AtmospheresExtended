@@ -118,6 +118,7 @@ public class DynamicDataTracker : ThingTrackerComp
     public override void Notify_ThingRegistered(Thing thing)
     {
         thing.Map.GetMapInfo<DynamicDataCacheMapInfo>().Notify_ThingSpawned(thing);
+        thing.Map.GetMapInfo<SpreadingGasGrid>().Notify_ThingSpawned(thing);
     }
 
     public override void Notify_ThingDeregistered(Thing thing)
