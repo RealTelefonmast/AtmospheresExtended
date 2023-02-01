@@ -60,6 +60,8 @@ namespace TAE
             base.Notify_AddedValue(def, value);
             //Parent?.Notify_AddedContainerValue(def, value);
 
+            //TODO: Check displacement between gasses
+            //TODO: Figure out liquid behaviours
             //Tag Processing
             if (def.displaceTags != null)
             {

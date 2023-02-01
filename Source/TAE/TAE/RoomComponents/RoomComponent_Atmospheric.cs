@@ -338,8 +338,7 @@ public class RoomComponent_Atmospheric : RoomComponent, IContainerHolderRoom<Atm
                         var pct = OutsideContainer.StoredPercentOf(type);
                         WidgetRow row = new WidgetRow(typeRect.x, typeRect.y, UIDirection.RightThenDown);
                         row.Label(type.defName, 100);
-                        row.FillableBar(100, 20, 1f, pct.ToStringPercent(), BaseContent.YellowTex,
-                            BaseContent.BlackTex);
+                        row.FillableBar(100, 20, 1f, pct.ToStringPercent(), BaseContent.YellowTex, BaseContent.BlackTex);
                         height += 10 + 2;
                     }
 
