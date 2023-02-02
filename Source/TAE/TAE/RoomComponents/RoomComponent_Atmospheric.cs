@@ -14,11 +14,8 @@ namespace TAE;
 public class RoomComponent_Atmospheric : RoomComponent, IContainerHolderRoom<AtmosphericDef>
 {
     //
-    private static readonly Material FilledMat =
-        SolidColorMaterials.NewSolidColorMaterial(Color.green, ShaderDatabase.MetaOverlay);
-
-    private static readonly Material UnFilledMat =
-        SolidColorMaterials.NewSolidColorMaterial(TColor.LightBlack, ShaderDatabase.MetaOverlay);
+    private static readonly Material FilledMat = SolidColorMaterials.NewSolidColorMaterial(Color.green, ShaderDatabase.MetaOverlay);
+    private static readonly Material UnFilledMat = SolidColorMaterials.NewSolidColorMaterial(TColor.LightBlack, ShaderDatabase.MetaOverlay);
 
     //
     private int dirtyMarks;

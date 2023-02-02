@@ -305,7 +305,14 @@ public unsafe class SpreadingGasGrid : MapInformation
         var index = pos.Index(map);
         var def = ((SpreadingGasTypeDef)defID);
         var cellValue = CellValueAt(index, defID);
-        
+
+        if (cellValue.overflow > 0)
+        {
+            var extra = (ushort) Mathf.Clamp(cellValue.overflow, 0, def.maxDensityPerCell);
+            cellValue.value += extra;
+            cellValue.overflow -= extra;
+        }
+
         //
         if (cellValue.value == 0) return;
         if (cellValue.value < def.minSpreadDensity) return;
@@ -368,6 +375,7 @@ public unsafe class SpreadingGasGrid : MapInformation
         float diff = (gasCellA.value - gasCellB.value);
         if (diff <= 0) return false;
         
+        //TODO: Viscosity needs to be directly settable, not a hardcoded value like 0.35
         var diffShort = (ushort)(Mathf.Abs(diff * passPct) * 0.35 * def.ViscosityMultiplier);
         
         gasCellA -= diffShort;
@@ -379,12 +387,6 @@ public unsafe class SpreadingGasGrid : MapInformation
     {
         actualValue = value;
         var val = cellValue.value + value;
-        if (cellValue.overflow > 0 && val < def.maxDensityPerCell)
-        {
-            var extra = (ushort) Mathf.Clamp(def.maxDensityPerCell - val, 0, cellValue.overflow);
-            val += extra;
-            cellValue.overflow -= extra;
-        }
         cellValue.value = (ushort)Mathf.Clamp(val, 0, def.maxDensityPerCell);
         if (val < 0)
         {
