@@ -114,21 +114,21 @@ public class DynamicDataTracker : ThingTrackerComp
     public DynamicDataTracker(ThingTrackerMapInfo parent) : base(parent)
     {
     }
-
-    public override void Notify_ThingRegistered(Thing thing)
+    
+    public override void Notify_ThingRegistered(ThingStateChangedEventArgs args)
     {
-        thing.Map.GetMapInfo<DynamicDataCacheMapInfo>().Notify_ThingSpawned(thing);
-        thing.Map.GetMapInfo<SpreadingGasGrid>().Notify_ThingSpawned(thing);
+        args.Thing.Map.GetMapInfo<DynamicDataCacheMapInfo>().Notify_ThingSpawned(args.Thing);
+        args.Thing.Map.GetMapInfo<SpreadingGasGrid>().Notify_ThingSpawned(args.Thing);
     }
 
-    public override void Notify_ThingDeregistered(Thing thing)
+    public override void Notify_ThingDeregistered(ThingStateChangedEventArgs args)
     {
-        thing.Map.GetMapInfo<DynamicDataCacheMapInfo>().Notify_ThingDespawned(thing);
+        args.Thing.Map.GetMapInfo<DynamicDataCacheMapInfo>().Notify_ThingDespawned(args.Thing);
     }
 
-    public override void Notify_ThingStateChanged(Thing thing, string compSignal = null)
+    public override void Notify_ThingSentSignal(ThingStateChangedEventArgs args)
     {
-        switch (compSignal)
+        switch (args.CompSignal)
         {
             case KnownCompSignals.FlickedOn:
             case KnownCompSignals.FlickedOff:
@@ -139,9 +139,9 @@ public class DynamicDataTracker : ThingTrackerComp
             case "DoorOpened":
             case "DoorClosed":
             {
-                thing.Map.GetMapInfo<DynamicDataCacheMapInfo>().Notify_UpdateThingState(thing);
+                args.Thing.Map.GetMapInfo<DynamicDataCacheMapInfo>().Notify_UpdateThingState(args.Thing);
             }
-            break;
+                break;
         }
     }
 }

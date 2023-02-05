@@ -39,7 +39,7 @@ namespace TAE
 
         //Conditions
         public bool IsFunctional => (!IsAirLock || CanVent);
-        public bool IsClean => Atmospheric.CurrentContainer.TotalStored <= 0 && Atmospheric.PhysicalGas.NullOrEmpty();
+        public bool IsClean => Atmospheric.CurrentContainer.TotalStored <= 0; //TODO: Add gas && Atmospheric.PhysicalGas.NullOrEmpty();
         public bool IsBeingCleaned => !IsClean && CanVent;
 
         public bool CanVent => IsActiveAirLock && AirVentComps.All(c => c.CanVent);
