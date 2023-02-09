@@ -121,17 +121,16 @@
 				<generalIOPattern>I</generalIOPattern>
 			</li>
 			<li Class="TeleCore.CompProperties_FX"> 
-				<overlays>
-					<li><skip>true</skip></li>
-					<li><skip>true</skip></li>
+				<fxLayers>
 					<li>
-						<data>
+						<layerTag>AirVentRotationLayer</layerTag>
+						<fxMode>Dynamic</fxMode>
+						<graphicData>
 							<texPath>Buildings/Network/Intake/fan</texPath>
 							<graphicClass>Graphic_Single</graphicClass>
 							<drawSize>(1.25,1.25)</drawSize>
 							<drawOffset>(0,0,0.1)</drawOffset>
-						</data>
-						<mode>Dynamic</mode>
+						</graphicData>
 						<rotate>
 							<rotationSpeed>75</rotationSpeed>
 						</rotate>
@@ -139,15 +138,15 @@
 						<needsPower>false</needsPower>
 					</li>
 					<li>
-						<data>
+						<graphicData>
 							<texPath>Buildings/Network/Intake/top</texPath>
 							<graphicClass>Graphic_Single</graphicClass>
 							<drawSize>(1.25,1.25)</drawSize>
 							<drawOffset>(0,0,0.1)</drawOffset>
-						</data>
+						</graphicData>
 						<needsPower>false</needsPower>
 					</li>
-				</overlays>
+				</fxLayers>
 			</li>
 			<li Class="CompProperties_Power">
 				<compClass>CompPowerTrader</compClass>

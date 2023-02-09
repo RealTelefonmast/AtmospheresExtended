@@ -31,11 +31,12 @@ namespace TAE
             }
         }
 
-        public override float? FX_GetRotationSpeedAt(int index)
+
+        public override float? FX_GetRotation(FXLayerArgs args)
         {
-            return index switch
+            return args.layerTag switch
             {
-                2 => speedControl.OutputValue,
+                "AirVentRotationLayer" => speedControl.OutputValue,
                 _ => null
             };
         }
