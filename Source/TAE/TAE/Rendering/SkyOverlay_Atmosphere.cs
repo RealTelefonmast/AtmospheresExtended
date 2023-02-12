@@ -79,7 +79,7 @@ namespace TAE
 
         public override void TickOverlay(Map map)
         {
-            base.TickOverlay(map);
+            //base.TickOverlay(map);
             SetScale(new Vector2(Tiling, Tiling));
             SetBlendMode((BlendMode)SrcMode, (BlendMode)DstMode);
             //var color = materialInt.GetColor("_Color");
