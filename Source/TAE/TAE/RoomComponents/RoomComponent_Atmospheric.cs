@@ -5,13 +5,15 @@ using HarmonyLib;
 using HotSwap;
 using RimWorld;
 using TeleCore;
+using TeleCore.FlowCore;
+using TeleCore.FlowCore.Implementations;
 using UnityEngine;
 using Verse;
 
 namespace TAE;
 
 [StaticConstructorOnStartup]
-public class RoomComponent_Atmospheric : RoomComponent, IContainerHolderRoom<AtmosphericDef>
+public class RoomComponent_Atmospheric : RoomComponent, IContainerHolderRoom<AtmosphericDef>, IContainerImplementer<AtmosphericDef, IContainerHolderRoom<AtmosphericDef>, AtmosphericContainer>
 {
     //
     private static readonly Material FilledMat = SolidColorMaterials.NewSolidColorMaterial(Color.green, ShaderDatabase.MetaOverlay);
@@ -44,19 +46,20 @@ public class RoomComponent_Atmospheric : RoomComponent, IContainerHolderRoom<Atm
     public AtmosphericMapInfo AtmosphericInfo => Map.GetMapInfo<AtmosphericMapInfo>();
 
     public AtmosphericContainer OutsideContainer => AtmosphericInfo.MapContainer;
-    public AtmosphericContainer RoomContainer => container;
+    
+    public AtmosphericContainer Container => container;
 
     public AtmosphericContainer CurrentContainer =>
-        IsOutdoors ? OutsideContainer : (IsConnector ? selfPortal[0].CurrentContainer : RoomContainer);
+        IsOutdoors ? OutsideContainer : (IsConnector ? selfPortal[0].CurrentContainer : Container);
 
     //
+    public void Notify_ContainerStateChanged(NotifyContainerChangedArgs<AtmosphericDef> args)
+    {
+        throw new NotImplementedException();
+    }
+
     public string ContainerTitle => "Atmosphers be here";
-    public ContainerProperties ContainerProps { get; }
-    public BaseContainer<AtmosphericDef> Container => CurrentContainer;
     public RoomComponent RoomComponent => this;
-
-
-
 
     //private IEnumerable<Thing> PhysicalGas => Parent.ListerThings.AllThings.Where(t => t is SpreadingGas);
     public override void Notify_BorderThingAdded(Thing thing)
@@ -166,12 +169,14 @@ public class RoomComponent_Atmospheric : RoomComponent, IContainerHolderRoom<Atm
         //Data_CaptureOutsideAtmosphere();
     }
 
+    /// <summary>
+    /// Push any Room-Atmosphere into the Map-Atmosphere
+    /// </summary>
     public override void Notify_RoofOpened()
     {
-        if (RoomContainer.TotalStored > 0)
-        {
-            RoomContainer.TransferAllTo(OutsideContainer);
-        }
+        //TODO: Figure out event-chain when roof opens in room
+        //eg. what to do when an oxygen rich room is open under water?
+        Container.Clear();
     }
 
     public override void Notify_PawnEnteredRoom(Pawn pawn)
@@ -230,7 +235,7 @@ public class RoomComponent_Atmospheric : RoomComponent, IContainerHolderRoom<Atm
         //Assign starting atmosphere based on position
         if (AtmosphericInfo.Cache.TryGetAtmosphericValuesForRoom(Room, out var stack))
         {
-            RoomContainer.Data_LoadFromStack(stack);
+            Container.LoadFromStack(stack);
             foreach (var atmosphericDef in stack.AllTypes)
             {
                 renderer.TryRegisterNewOverlayPart(atmosphericDef);
@@ -251,7 +256,17 @@ public class RoomComponent_Atmospheric : RoomComponent, IContainerHolderRoom<Atm
 
     private void CreateContainer()
     {
-        container = new AtmosphericContainer(this);
+        container = new AtmosphericContainer(this, new ContainerConfig
+        {
+            containerClass = typeof(AtmosphericContainer),
+            baseCapacity = Parent.CellCount * AtmosMath.CELL_CAPACITY,
+            containerLabel = "mm yes air",
+            storeEvenly = true,
+            dropContents = false,
+            leaveContainer = false,
+            valueDefs = null,
+            explosionProps = null
+        });
         container.Notify_RoomChanged(this, Parent.CellCount);
     }
 
@@ -349,6 +364,7 @@ public class RoomComponent_Atmospheric : RoomComponent, IContainerHolderRoom<Atm
 
 
     private bool renderWindow = false;
+    private AtmosphericContainer container1;
 
     private void DrawMenu(IntVec3 pos)
     {
@@ -385,7 +401,7 @@ public class RoomComponent_Atmospheric : RoomComponent, IContainerHolderRoom<Atm
 
             if (row.ButtonText("Clear"))
             {
-                CurrentContainer.Data_Clear();
+                CurrentContainer.Clear();
             }
 
             if (row.ButtonText("Map"))
@@ -440,7 +456,7 @@ public class RoomComponent_Atmospheric : RoomComponent, IContainerHolderRoom<Atm
             foreach (var type in container.AllStoredTypes)
             {
                 string label =
-                    $"{type.labelShort}: {container.TotalStoredOf(type)}({container.StoredPercentOf(type).ToStringPercent()}) | {outside.TotalStoredOf(type)}({outside.StoredPercentOf(type).ToStringPercent()})";
+                    $"{type.labelShort}: {container.StoredValueOf(type)}({container.StoredPercentOf(type).ToStringPercent()}) | {outside.StoredValueOf(type)}({outside.StoredPercentOf(type).ToStringPercent()})";
 
                 ScaleRender(rect.AtZero(), scale, delegate
                 {
@@ -486,7 +502,7 @@ public class RoomComponent_Atmospheric : RoomComponent, IContainerHolderRoom<Atm
             renderer.UpdateTick();
             foreach (var renderDef in renderer.Defs)
             {
-                var value = RoomContainer.StoredPercentOf(renderDef);
+                var value = Container.StoredPercentOf(renderDef);
                 if (value <= 0) continue;
                 renderer.DrawFor(renderDef, Parent.DrawPos, value);
             }
@@ -535,5 +551,7 @@ public class RoomComponent_Atmospheric : RoomComponent, IContainerHolderRoom<Atm
     {
         return TryAddValueToRoom(def.dissipateTo, dissipatedAmount, out actual);
     }
+
+    AtmosphericContainer IContainerImplementer<AtmosphericDef, IContainerHolderRoom<AtmosphericDef>, AtmosphericContainer>.Container => container1;
 }
 

@@ -45,7 +45,7 @@ namespace TAE
 
         public bool IsInAtmosphere(AtmosphericDef def)
         {
-            return Container.TotalStoredOf(def) > 0;
+            return Container.StoredValueOf(def) > 0;
         }
 
         //

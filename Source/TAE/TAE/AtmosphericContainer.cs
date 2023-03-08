@@ -2,19 +2,21 @@
 using System.Linq;
 using System.Runtime.CompilerServices;
 using TeleCore;
+using TeleCore.FlowCore;
+using TeleCore.FlowCore.Implementations;
 using UnityEngine;
 using Verse;
 
 namespace TAE
 {
-    public class AtmosphericContainer : BaseContainer<AtmosphericDef>
+    public class AtmosphericContainer : ValueContainer<AtmosphericDef, IContainerHolderRoom<AtmosphericDef>>
     {
         private RoomComponent_Atmospheric parentComp;
         private bool isOutdoorsContainer;
         private readonly HashSet<AtmosphericDef> _mapSourceTypes;
 
-        public RoomComponent_Atmospheric AtmosParent => RoomParent.RoomComponent as RoomComponent_Atmospheric;
-        public bool ParentIsDoorWay => RoomParent?.RoomComponent.IsDoorway ?? false;
+        public RoomComponent_Atmospheric AtmosParent => Holder.RoomComponent as RoomComponent_Atmospheric;
+        public bool ParentIsDoorWay => Holder?.RoomComponent.IsDoorway ?? false;
         public bool HasParentRoom => parentComp != null;
         public bool IsSourceContainer => _mapSourceTypes.Count > 0;
         
@@ -25,27 +27,22 @@ namespace TAE
             return _mapSourceTypes.Contains(def);
         }
         
-        public AtmosphericContainer(RoomComponent_Atmospheric parent, bool isOutdoor = false) : base(parent)
+        public AtmosphericContainer(RoomComponent_Atmospheric parent, ContainerConfig config, bool isOutdoor = false) : base(config, parent)
         {
             parentComp = parent;
             isOutdoorsContainer = isOutdoor;
             _mapSourceTypes = new HashSet<AtmosphericDef>();
         }
-
-        public override bool AcceptsValue(AtmosphericDef valueType)
+        
+        public override bool CanReceiveValue(AtmosphericDef valueDef)
         {
-            return true;
-        }
-
-        public override bool CanAccept(AtmosphericDef def)
-        {
-            if (!base.CanAccept(def)) return false;
+            if (!base.CanReceiveValue(valueDef)) return false;
             
-            var totalPct = StoredPercentOf(def);
-            foreach (var value in _storedValues)
+            var totalPct = StoredPercentOf(valueDef);
+            foreach (var value in storedValues)
             {
                 var valDef = value.Key;
-                if (valDef.displaceTags != null && valDef.displaceTags.Contains(def.atmosphericTag))
+                if (valDef.displaceTags != null && valDef.displaceTags.Contains(valueDef.atmosphericTag))
                 {
                     var valPct = value.Value / Capacity;
                     return (1 - valPct) > totalPct;
@@ -53,7 +50,7 @@ namespace TAE
             }
             return true;
         }
-        
+
         //
         public override void Notify_AddedValue(AtmosphericDef def, float value)
         {
@@ -66,26 +63,21 @@ namespace TAE
             if (def.displaceTags != null)
             {
                 var newPct = StoredPercentOf(def);
-                var fittingTypes = AllStoredTypes.Where(t => def.displaceTags.Contains(t.atmosphericTag)).ToArray();
+                var fittingTypes = StoredDefs.Where(t => def.displaceTags.Contains(t.atmosphericTag)).ToArray();
                 for (var i = 0; i < fittingTypes.Length; i++)
                 {
                     //var valPct = StoredPercentOf(fittingTypes[i]);
                     if (StoredPercentOf(fittingTypes[i]) > 1 - newPct)
-                        TryRemoveValue(fittingTypes[i], value / fittingTypes.Length, out _);
+                       _ = TryRemoveValue(fittingTypes[i], value / fittingTypes.Length);
                 }
             }
         }
 
-        protected override bool ShouldRemoveValue(AtmosphericDef valueType, float wantedValue)
-        {
-            return true;
-        }
-
         //
-        public override void UpdateContainerState(bool updateMetaData = false)
+        public override void Notify_ContainerStateChanged(NotifyContainerChangedArgs<AtmosphericDef> stateChangeArgs)
         {
-            base.UpdateContainerState(updateMetaData);
-            RoomParent?.RoomComponent.Map?.GetMapInfo<AtmosphericMapInfo>()?.Renderer?.Drawer_SetDirty();
+            base.Notify_ContainerStateChanged(stateChangeArgs);
+            Holder.RoomComponent.Map?.GetMapInfo<AtmosphericMapInfo>()?.Renderer?.Drawer_SetDirty();
         }
 
         //
@@ -98,7 +90,7 @@ namespace TAE
         {
             TLog.Message($"[{parent?.Room?.ID}]Room Changed");
             parentComp = parent;
-            Data_ChangeCapacity(roomCells * AtmosMath.CELL_CAPACITY);
+            ChangeCapacity(roomCells * AtmosMath.CELL_CAPACITY);
         }
         
         //
@@ -106,7 +98,7 @@ namespace TAE
         {
             if (valueType.networkValue == null)
             {
-                TLog.Warning($"AtmosphericDef: {valueType} does not have any NetworkValueDef defined to receive from {networkContainer?.ParentNetworkPart?.NetworkPart?.Network}");
+                TLog.Warning($"AtmosphericDef: {valueType} does not have any NetworkValueDef defined to receive from {networkContainer?.Holder?.NetworkPart?.Network}");
                 return false;
             }
 
@@ -128,7 +120,7 @@ namespace TAE
         {
             if (valueType.networkValue == null)
             {
-                TLog.Warning($"AtmosphericDef: {valueType} does not have any NetworkValueDef defined to transfer into {networkContainer?.ParentNetworkPart?.NetworkPart?.Network}");
+                TLog.Warning($"AtmosphericDef: {valueType} does not have any NetworkValueDef defined to transfer into {networkContainer?.Holder?.NetworkPart?.Network}");
                 return false;
             }
 

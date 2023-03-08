@@ -57,11 +57,11 @@ namespace TAE
                     switch (Props.ventMode)
                     {
                         case AtmosphericVentMode.Intake:
-                            if (Atmospheric.RoomContainer.TotalStoredOf(def) <= 0) return false;
+                            if (Atmospheric.Container.StoredValueOf(def) <= 0) return false;
                             if (AtmosphericComp.Container.Full) return false;
                             break;
                         case AtmosphericVentMode.Output:
-                            if (Atmospheric.RoomContainer.StoredPercentOf(def) >= 1) return false;
+                            if (Atmospheric.Container.StoredValueOf(def) >= 1) return false;
                             if (AtmosphericComp.Container.Empty) return false;
                             break;
                         case AtmosphericVentMode.Dynamic:
@@ -97,7 +97,7 @@ namespace TAE
                 switch (Props.ventMode)
                 {
                     case AtmosphericVentMode.Intake:
-                        if (Atmospheric.RoomContainer.TryTransferTo(AtmosphericComp.Container, def, totalThroughput))
+                        if (Atmospheric.Container.TryTransferTo(AtmosphericComp.Container, def, totalThroughput))
                         {
                             return true;
                         }

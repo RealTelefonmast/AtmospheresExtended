@@ -63,14 +63,16 @@ namespace TAE.Caching
                 //If already processed or not a room, ignore
                 if (cachedInfo.numCells <= 0 || processedRooms.Contains(cachedInfo.roomID) || cachedInfo.stack.Empty) continue;
                 processedRooms.Add(cachedInfo.roomID);
-                foreach (var value in cachedInfo.stack.values)
+                foreach (var value in cachedInfo.stack.Values)
                 {
                     float addedValue = value.Value;
                     if (cachedInfo.numCells > r.CellCount)
                     {
                         addedValue = value.Value * (r.CellCount / (float)cachedInfo.numCells);
                     }
-                    result.PushNew(value.Def, Mathf.Round(addedValue));
+                    
+                    //
+                    result += (value.Def, Mathf.Round(addedValue));
                 }
             }
             processedRooms.Clear();

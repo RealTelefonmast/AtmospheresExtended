@@ -57,7 +57,7 @@ public class Comp_ANS_PassiveVent : Comp_AtmosphericNetworkStructure
             //var roomValuePct = roomCOntainer.StoredPercentOf(atmosphericDef);
             //var ventValuePct = networkComp.Container.StoredPercentOf(atmosphericDef.networkValue);
             //var pctDiff = roomValuePct - ventValuePct;
-            if (ContainerTransferUtility.NeedsEqualizing(roomContainer, networkComp.Container, out var flowDir, out var diffPct))
+            if (FlowValueUtils.NeedsEqualizing(roomContainer, networkComp.Container, out var flowDir, out var diffPct))
             {
                 diffPct = Mathf.Abs(diffPct);
                 //TLog.Debug($"Equalizing {roomComp.Room.ID} <=> {networkComp} | FlowDir: {flowDir} | Diff: {diffPct.ToStringPercent()}");   
@@ -69,7 +69,7 @@ public class Comp_ANS_PassiveVent : Comp_AtmosphericNetworkStructure
                         //var value = (roomContainer.TotalStoredOf(atmosphericDef) / Props.AllowedValues.Count) * 0.5f;
                         //value = Mathf.Clamp(value, 0, networkComp.Container.Capacity / Props.AllowedValues.Count);
                         //var flowAmount = value * atmosphericDef.FlowRate;
-                        var value = roomContainer.TotalStoredOf(atmosphericDef) * 0.5f;
+                        var value = roomContainer.StoredValueOf(atmosphericDef) * 0.5f;
                         var flowAmount = networkComp.Container.GetMaxTransferRate(atmosphericDef.networkValue, Mathf.CeilToInt(value * diffPct * atmosphericDef.networkValue.FlowRate));
                         if (roomContainer.TryTransferTo(networkComp.Container, atmosphericDef, Mathf.Round(flowAmount)))
                         {
@@ -85,7 +85,7 @@ public class Comp_ANS_PassiveVent : Comp_AtmosphericNetworkStructure
                         //var flowAmount = value * atmosphericDef.FlowRate;
                         if (ConnectedToLowPressure()) return;
                         
-                        var value = (networkComp.Container.TotalStoredOf(atmosphericDef.networkValue)) * 0.5f;
+                        var value = (networkComp.Container.StoredValueOf(atmosphericDef.networkValue)) * 0.5f;
                         var flowAmount = networkComp.Container.GetMaxTransferRate(atmosphericDef.networkValue, Mathf.CeilToInt(value * diffPct * atmosphericDef.networkValue.FlowRate));
                         if (roomContainer.TryReceiveFrom(networkComp.Container, atmosphericDef, Mathf.RoundToInt(flowAmount)))
                         {

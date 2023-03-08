@@ -31,7 +31,7 @@ namespace TAE.Caching
             var values = atmosphericGrid[map.cellIndices.NumGridCells];
             if (values.IsValid)
             {
-                AtmosphericMapInfo.MapContainer.Data_LoadFromStack(values);
+                AtmosphericMapInfo.MapContainer.LoadFromStack(values);
             }
 
             foreach (var comp in AtmosphericMapInfo.AllAtmosphericRooms)
@@ -40,7 +40,7 @@ namespace TAE.Caching
                 var valueStack = atmosphericGrid[index];
                 if (valueStack.IsValid)
                 {
-                    comp.RoomContainer.Data_LoadFromStack(valueStack);
+                    comp.Container.LoadFromStack(valueStack);
                 }
             }
             
@@ -60,7 +60,7 @@ namespace TAE.Caching
                 foreach (var roomComp in AtmosphericMapInfo.AllAtmosphericRooms)
                 {
                     if (roomComp.IsOutdoors) continue;
-                    var roomAtmosphereStack = roomComp.RoomContainer.ValueStack;
+                    var roomAtmosphereStack = roomComp.Container.ValueStack;
                     foreach (IntVec3 c2 in roomComp.Room.Cells)
                     {
                         temporaryGrid[map.cellIndices.CellToIndex(c2)] = roomAtmosphereStack;
@@ -82,7 +82,7 @@ namespace TAE.Caching
                 if (Scribe.mode == LoadSaveMode.Saving)
                 {
                     //GenSerialization.SerializeFloat(arraySize, (int idx) => temporaryGrid[idx].values?.FirstOrFallback(f => f.Def == type).Value ?? 0);
-                    dataBytes = DataSerializeUtility.SerializeUshort(arraySize, (int idx) => (ushort)(temporaryGrid[idx].values?.FirstOrFallback(f => f.Def == type).Value ?? 0));
+                    dataBytes = DataSerializeUtility.SerializeUshort(arraySize, (int idx) => (ushort)(temporaryGrid[idx].Values?.FirstOrFallback(f => f.Def == type).Value ?? 0));
                     DataExposeUtility.ByteArray(ref dataBytes, $"{type.defName}.atmospheric");
                 }
 

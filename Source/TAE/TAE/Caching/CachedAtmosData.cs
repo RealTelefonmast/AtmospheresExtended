@@ -17,7 +17,7 @@ namespace TAE.Caching
         {
             this.roomID = roomID;
             this.numCells = numCells;
-            this.stack = roomComp.RoomContainer.ValueStack;
+            this.stack = roomComp.Container.ValueStack;
             if (roomComp.IsOutdoors)
             {
                 stack += roomComp.OutsideContainer.ValueStack;
@@ -26,8 +26,8 @@ namespace TAE.Caching
 
         public void Reset()
         {
-            this.roomID = -1;
-            this.numCells = 0;
+            roomID = -1;
+            numCells = 0;
             stack.Reset();
         }
 
