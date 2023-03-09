@@ -209,16 +209,16 @@ public class RoomComponent_Atmospheric : RoomComponent, IContainerHolderRoom<Atm
     }
 
     //Value Manipulation
-    public bool TryAddValueToRoom(AtmosphericDef def, float amount, out float actualAmount)
+    public bool  TryAddValueToRoom(AtmosphericDef def, float amount, out ValueResult<AtmosphericDef> result)
     {
-        if (!CurrentContainer.TryAddValue(def, amount, out actualAmount)) return false;
-        Notify_AddedContainerValue(def, actualAmount);
+        if (!CurrentContainer.TryAddValue(def, amount, out result)) return false;
+        Notify_AddedContainerValue(def, result.ActualAmount);
         return true;
     }
 
-    public bool TryRemoveValue(AtmosphericDef def, float amount, out float actualAmount)
+    public bool TryRemoveValue(AtmosphericDef def, float amount, out ValueResult<AtmosphericDef> result)
     {
-        return CurrentContainer.TryRemoveValue(def, amount, out actualAmount);
+        return CurrentContainer.TryRemoveValue(def, amount, out result);
     }
 
     //RoomComp Generation
@@ -236,7 +236,7 @@ public class RoomComponent_Atmospheric : RoomComponent, IContainerHolderRoom<Atm
         if (AtmosphericInfo.Cache.TryGetAtmosphericValuesForRoom(Room, out var stack))
         {
             Container.LoadFromStack(stack);
-            foreach (var atmosphericDef in stack.AllTypes)
+            foreach (var atmosphericDef in stack.Defs)
             {
                 renderer.TryRegisterNewOverlayPart(atmosphericDef);
             }
@@ -245,7 +245,7 @@ public class RoomComponent_Atmospheric : RoomComponent, IContainerHolderRoom<Atm
 
     private void Data_CaptureOutsideAtmosphere()
     {
-        foreach (var atmosphericDef in OutsideContainer.AllStoredTypes)
+        foreach (var atmosphericDef in OutsideContainer.StoredDefs)
         {
             var pct = OutsideContainer.StoredPercentOf(atmosphericDef);
             var newValue = Mathf.Round(container.Capacity * pct);
@@ -344,7 +344,7 @@ public class RoomComponent_Atmospheric : RoomComponent, IContainerHolderRoom<Atm
                     Text.Font = GameFont.Tiny;
                     Text.Anchor = TextAnchor.UpperLeft;
                     float height = 5;
-                    foreach (var type in OutsideContainer.AllStoredTypes)
+                    foreach (var type in OutsideContainer.StoredDefs)
                     {
                         Rect typeRect = new Rect(5, height, 220, 10);
                         var pct = OutsideContainer.StoredPercentOf(type);
@@ -453,7 +453,7 @@ public class RoomComponent_Atmospheric : RoomComponent, IContainerHolderRoom<Atm
         {
             Text.Font = GameFont.Tiny;
             Text.Anchor = TextAnchor.UpperLeft;
-            foreach (var type in container.AllStoredTypes)
+            foreach (var type in container.StoredDefs)
             {
                 string label =
                     $"{type.labelShort}: {container.StoredValueOf(type)}({container.StoredPercentOf(type).ToStringPercent()}) | {outside.StoredValueOf(type)}({outside.StoredPercentOf(type).ToStringPercent()})";
@@ -547,7 +547,7 @@ public class RoomComponent_Atmospheric : RoomComponent, IContainerHolderRoom<Atm
         return $"[{Room.ID}]";
     }
 
-    public bool Notify_SpradingGasDissipating(SpreadingGasTypeDef def, int dissipatedAmount, out float actual)
+    public bool Notify_SpradingGasDissipating(SpreadingGasTypeDef def, int dissipatedAmount, out ValueResult<AtmosphericDef> actual)
     {
         return TryAddValueToRoom(def.dissipateTo, dissipatedAmount, out actual);
     }

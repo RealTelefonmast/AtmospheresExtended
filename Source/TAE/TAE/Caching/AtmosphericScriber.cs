@@ -91,8 +91,8 @@ namespace TAE.Caching
                     DataExposeUtility.ByteArray(ref dataBytes, $"{type.defName}.atmospheric");
                     DataSerializeUtility.LoadUshort(dataBytes, arraySize, delegate(int idx, ushort idxValue)
                     {
-                        var atmosStack =  new DefValueStack<AtmosphericDef>(type, idxValue);
-                        if (atmosStack.TotalValue > 0)
+                        var atmosStack =  new DefValue<AtmosphericDef, float>(type, idxValue);
+                        if (atmosStack.Value > 0)
                         {
                             atmosphericGrid[idx] += atmosStack;
                         }

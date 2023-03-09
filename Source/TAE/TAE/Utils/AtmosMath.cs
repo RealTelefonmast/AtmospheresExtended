@@ -1,4 +1,5 @@
 ﻿using TeleCore;
+using TeleCore.FlowCore;
 using TeleCore.Static.Utilities;
 using UnityEngine;
 
@@ -28,7 +29,7 @@ public static class AtmosMath
     
     public static FlowResult TryEqualizeVia(AtmosphericPortal portal, AtmosphericTransferWorker worker, AtmosphericContainer from, AtmosphericContainer to, AtmosphericDef atmosDef)
     {
-        if (!ContainerTransferUtility.NeedsEqualizing(from, to, atmosDef, MIN_EQ_VAL, out var flow, out var diffAbs))
+        if (!FlowValueUtils.NeedsEqualizing(from, to, atmosDef, MIN_EQ_VAL, out var flow, out var diffAbs))
         {
             return FlowResult.None;
         }
@@ -39,7 +40,7 @@ public static class AtmosMath
         var receiver = flow == ValueFlowDirection.Positive ? to : from;
 
         //Get base transfer part
-        var value = (sender.TotalStoredOf(atmosDef) / portal[flowResult.FromIndex].ConnectorCount) * 0.5f;
+        var value = (sender.StoredValueOf(atmosDef) / portal[flowResult.FromIndex].ConnectorCount) * 0.5f;
         value = Mathf.Clamp(value, 0, 100);
 
         //

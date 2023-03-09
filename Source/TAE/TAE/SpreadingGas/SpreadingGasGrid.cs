@@ -288,9 +288,10 @@ public unsafe class SpreadingGasGrid : MapInformation
             if (def.dissipateTo != null)
             {
                 var room = cell.GetRoomFast(map);
-                if (room is {ProperRoom: true} && room.GetRoomComp<RoomComponent_Atmospheric>().Notify_SpradingGasDissipating(def, def.dissipationAmount, out var actual))
+                var roomComp = room.GetRoomComp<RoomComponent_Atmospheric>();
+                if (room is {ProperRoom: true} && roomComp.Notify_SpradingGasDissipating(def, def.dissipationAmount, out var actual))
                 {
-                    SetDensity_Direct(index, defID, (ushort)Math.Max(cellValue.value - actual, 0));
+                    SetDensity_Direct(index, defID, (ushort)Math.Max(cellValue.value - actual.ActualAmount, 0));
                 }
             }
             return;
