@@ -102,13 +102,13 @@ namespace TAE
                 return false;
             }
 
-            if (!networkContainer.AllStoredTypes.Contains(valueType.networkValue))
+            if (!networkContainer.StoredDefs.Contains(valueType.networkValue))
             {
                 return false;
             }
-            if (networkContainer.TryRemoveValue(valueType.networkValue, value, out float actual))
+            if (networkContainer.TryRemoveValue(valueType.networkValue, value, out var actual))
             {
-                TryAddValue(valueType, actual, out _);
+                TryAddValue(valueType, actual.ActualAmount, out _);
                 return true;
             }
 
@@ -126,7 +126,7 @@ namespace TAE
 
             if (TryRemoveValue(valueType, value, out var actual))
             {
-                networkContainer.TryAddValue(valueType.networkValue, actual, out _);
+                networkContainer.TryAddValue(valueType.networkValue, actual.ActualAmount, out _);
                 return true;
             }
             return false;

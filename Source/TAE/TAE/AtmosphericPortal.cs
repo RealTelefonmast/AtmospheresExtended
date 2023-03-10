@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using RimWorld;
 using TeleCore;
+using TeleCore.FlowCore;
 using UnityEngine;
 using Verse;
 
@@ -68,7 +69,7 @@ namespace TAE
             var to = connections[1].CurrentContainer;
             
             //Go through all common types
-            var tempTypes = from.AllStoredTypes.Union(to.AllStoredTypes);//.ToArray();
+            var tempTypes = from.StoredDefs.Union(to.StoredDefs);
             foreach (var atmosDef in tempTypes)
             {
                 if (PreventFlowBack(atmosDef, connections[1])) continue;

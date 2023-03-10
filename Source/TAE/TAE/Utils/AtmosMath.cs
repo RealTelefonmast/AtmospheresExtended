@@ -33,14 +33,14 @@ public static class AtmosMath
         {
             return FlowResult.None;
         }
-        FlowResult flowResult = new FlowResult(flow);
+        //FlowResult flowResult = new FlowResult(flow);
 
         //
         var sender = flow == ValueFlowDirection.Positive ? from : to;
         var receiver = flow == ValueFlowDirection.Positive ? to : from;
 
         //Get base transfer part
-        var value = (sender.StoredValueOf(atmosDef) / portal[flowResult.FromIndex].ConnectorCount) * 0.5f;
+        var value = (sender.StoredValueOf(atmosDef) / portal[new FlowResult(flow).FromIndex].ConnectorCount) * 0.5f;
         value = Mathf.Clamp(value, 0, 100);
 
         //
@@ -48,17 +48,17 @@ public static class AtmosMath
         flowAmount = Mathf.Floor(flowAmount);
 
         //
-        if (sender.CanFullyTransferTo(receiver, atmosDef, flowAmount))
+        if (sender.CanTransferAmountTo(receiver, atmosDef, flowAmount))
         {
-            if (sender.TryRemoveValue(atmosDef, flowAmount, out float actualVal))
+            if (sender.TryRemoveValue(atmosDef, flowAmount, out var result))
             {
-                FlowResult result = worker.CustomTransferFunc(sender, receiver, atmosDef, actualVal);
-                if (result.FlowsToOther)
+                FlowResult customFlow = worker.CustomTransferFunc(sender, receiver, atmosDef, result.ActualAmount);
+                if (customFlow.FlowsToOther)
                 {
-                    receiver.TryAddValue(atmosDef, actualVal, out _);
+                    receiver.TryAddValue(atmosDef, result.ActualAmount, out _);
                 }
-                result.SetFlow(flow);
-                return result;
+                customFlow.SetFlow(flow);
+                return customFlow;
             }
         }
         return FlowResult.None;

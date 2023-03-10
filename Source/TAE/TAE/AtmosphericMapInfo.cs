@@ -2,12 +2,14 @@
 using System.Linq;
 using TAE.Caching;
 using TeleCore;
+using TeleCore.FlowCore;
+using TeleCore.FlowCore.Implementations;
 using UnityEngine;
 using Verse;
 
 namespace TAE
 {
-    public class AtmosphericMapInfo : MapInformation, IContainerHolder<AtmosphericDef>
+    public class AtmosphericMapInfo : MapInformation, IContainerHolderRoom<AtmosphericDef>, IContainerImplementer<AtmosphericDef, IContainerHolderRoom<AtmosphericDef>, AtmosphericContainer>
     {
         //
         private AtmosphericCache _cache;
@@ -24,6 +26,8 @@ namespace TAE
         private readonly List<SkyOverlay> naturalOverlays = new();
 
         private readonly List<AtmosphericPortal> allConnections;
+
+        private AtmosphericContainer container;
         //private List<AtmosphericPortal> allConnectionsToOutside;
 
         //public int TotalMapPollution => OutsideContainer.Atmospheric + AllComps.Sum(c => c.PollutionContainer.Atmospheric);
@@ -35,20 +39,26 @@ namespace TAE
         public int ConnectorCount => allConnections.Count; //{ get; set; }
         public AtmosphereRenderer Renderer => renderer;
         
-        //Container
-        public string ContainerTitle { get; }
-        public ContainerProperties ContainerProps { get; }
-        public BaseContainer<AtmosphericDef> Container { get; }
+        public Room Room { get; }
+        public RoomComponent RoomComponent { get; }
         
+        public string ContainerTitle { get; }
+        public AtmosphericContainer Container => container;
+        
+        //Container
+        public void Notify_ContainerStateChanged(NotifyContainerChangedArgs<AtmosphericDef> args)
+        {
+            throw new System.NotImplementedException();
+        }
+
         public AtmosphericMapInfo(Map map) : base(map)
         {
             _cache = new AtmosphericCache(map);
-
-            ContainerProps = new ContainerProperties()
+            
+            mapContainer = new AtmosphericContainer(null, new ContainerConfig()
             {
-                    
-            };
-            mapContainer = new AtmosphericContainer(null, true);
+                
+            });
 
             //
             compByRoom = new Dictionary<Room, RoomComponent_Atmospheric>();
@@ -152,7 +162,7 @@ namespace TAE
             //
             foreach (var atmosphere in naturalAtmospheres)
             {
-                var storedOf = MapContainer.TotalStoredOf(atmosphere.Def);
+                var storedOf = MapContainer.StoredValueOf(atmosphere.Def);
                 var desired = MapContainer.Capacity * atmosphere.Value;
                 var diff = Mathf.Round(desired - storedOf);
                 if(diff <= 0) continue;
@@ -353,6 +363,5 @@ namespace TAE
         public void Notify_AddedContainerValue(AtmosphericDef def, float value)
         {
         }
-        
     }
 }
