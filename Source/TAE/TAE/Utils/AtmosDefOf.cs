@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using RimWorld;
+﻿using RimWorld;
 using TeleCore;
 using Verse;
 
@@ -17,7 +12,6 @@ namespace TAE
         
         //
         public static NetworkDef AtmosphericNetwork;
-        public static AtmosphericDef Atmosphere_Oxygen;
-        
+
     }
 }

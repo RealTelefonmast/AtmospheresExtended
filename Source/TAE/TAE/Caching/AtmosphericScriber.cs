@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Linq;
 using TeleCore;
-using UnityEngine;
 using Verse;
 
 namespace TAE.Caching
@@ -91,7 +86,7 @@ namespace TAE.Caching
                     DataExposeUtility.ByteArray(ref dataBytes, $"{type.defName}.atmospheric");
                     DataSerializeUtility.LoadUshort(dataBytes, arraySize, delegate(int idx, ushort idxValue)
                     {
-                        var atmosStack =  new DefValue<AtmosphericDef, float>(type, idxValue);
+                        var atmosStack =  new DefFloat<AtmosphericDef>(type, idxValue);
                         if (atmosStack.Value > 0)
                         {
                             atmosphericGrid[idx] += atmosStack;

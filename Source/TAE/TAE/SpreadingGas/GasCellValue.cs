@@ -1,5 +1,4 @@
-﻿using System;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
 namespace TAE;
 
@@ -61,6 +60,10 @@ public unsafe struct GasCellValue
     {
         return self.totalBitVal != value;
     }
+
+    //TODO: Add getters
+    public static GasCellValue Invalid { get; }
+    public static GasCellValue Empty { get; }
 
     public override string ToString()
     {

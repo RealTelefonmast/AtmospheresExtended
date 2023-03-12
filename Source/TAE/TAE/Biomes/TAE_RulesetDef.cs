@@ -10,7 +10,7 @@ namespace TAE
     {
         public AtmosphericOccurence occurence = AtmosphericOccurence.AnyBiome;
         public List<BiomeDef> biomes;
-        public List<DefFloat<AtmosphericDef>> atmospheres;
+        public List<DefFloatRef<AtmosphericDef>> atmospheres;
 
         //IncidentRules
         public List<AtmosphericIncidentFilter> incidentFilters;

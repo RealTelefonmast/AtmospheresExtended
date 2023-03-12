@@ -1,6 +1,4 @@
-﻿using TeleCore;
-
-namespace TAE;
+﻿namespace TAE;
 
 /*
 public struct FlowResult

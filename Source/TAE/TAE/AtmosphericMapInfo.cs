@@ -1,9 +1,7 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using TAE.Caching;
 using TeleCore;
 using TeleCore.FlowCore;
-using TeleCore.FlowCore.Implementations;
 using UnityEngine;
 using Verse;
 
@@ -55,9 +53,11 @@ namespace TAE
         {
             _cache = new AtmosphericCache(map);
             
-            mapContainer = new AtmosphericContainer(null, new ContainerConfig()
+            mapContainer = new AtmosphericContainer(null, new ContainerConfig
             {
-                
+                baseCapacity = base.map.cellIndices.NumGridCells *  AtmosMath.CELL_CAPACITY,
+                containerLabel = "map container",
+                valueDefs = new List<FlowValueDef>(DefDatabase<AtmosphericDef>.AllDefsListForReading),
             });
 
             //
@@ -181,7 +181,7 @@ namespace TAE
                 foreach (var atmosphere in extension.uniqueAtmospheres)
                 {
                     naturalAtmospheres.Add(atmosphere);
-                    mapContainer.Data_RegisterSourceType(atmosphere.def);
+                    mapContainer.Data_RegisterSourceType(atmosphere.Def);
                 }
                 useRulesets = false;
             }
@@ -192,7 +192,10 @@ namespace TAE
                 {
                     if (ruleSet.occurence == AtmosphericOccurence.AnyBiome)
                     {
-                        naturalAtmospheres.AddRange(ruleSet.atmospheres);
+                        foreach (var floatRef in ruleSet.atmospheres)
+                        {
+                            naturalAtmospheres.Add(floatRef);   
+                        }
                         continue;
                     }
 
@@ -203,7 +206,7 @@ namespace TAE
                             foreach (var atmosphere in ruleSet.atmospheres)
                             {
                                 naturalAtmospheres.Add(atmosphere);
-                                mapContainer.Data_RegisterSourceType(atmosphere.def);
+                                mapContainer.Data_RegisterSourceType(atmosphere.Def);
                             }
                         }
                     }
@@ -214,7 +217,7 @@ namespace TAE
             {
                 if (atmosphere.Def.naturalOverlay != null)
                 {
-                    TLog.Message($"Adding Natural Overlay: {atmosphere.Def}");
+                    TLog.Debug($"Adding Natural Overlay: {atmosphere.Def}");
                     TeleUpdateManager.Notify_EnqueueNewSingleAction(() =>
                     {
                         var newOverlay = new SkyOverlay_Atmosphere(atmosphere.Def.naturalOverlay);

@@ -1,9 +1,7 @@
-﻿using System.Collections;
-using System.Linq;
+﻿using System.Linq;
 using System.Runtime.InteropServices;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
-using UnityEngine;
 using Verse;
 
 namespace TAE;
@@ -18,14 +16,20 @@ public unsafe struct GasCellStack
     public bool HasAnyGas => totalValue > 0;
     public int Length => stackData.Length;
     
-    public GasCellValue this[SpreadingGasTypeDef def] => stackPtr[def.IDReference];
+    public GasCellValue this[SpreadingGasTypeDef def] => this[def.IDReference];
+
     public GasCellValue this[int idx]
     {
-        get => stackPtr[idx];
+        get
+        {
+            if(idx > 0 || idx < stackData.Length)
+                return stackPtr[idx];
+            return GasCellValue.Empty;
+        }
         //Main Setting Operation
         set
         {
-            //
+            if (idx <= 0 && idx >= stackData.Length) return;
             ChangedValueOf(stackPtr[idx].value, value.value);
             stackPtr[idx] = value;
         }

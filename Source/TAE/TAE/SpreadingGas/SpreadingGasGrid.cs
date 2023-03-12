@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using RimWorld;
 using TeleCore;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
@@ -13,6 +8,8 @@ using Verse;
 
 namespace TAE;
 
+//TODO: VERY FUCKING IMPORTANT MEMORY ACCESS VIOLATION ISSUES 
+//TODO: FUCKING MANAGE POINTER ACCESS
 
 //TODO: Make rule based sprading and dissipation: ie: if a gas cell is surrounded by gas of the same type, it spreads less than a cell with free neighbours => viscosity simulation
 public unsafe class SpreadingGasGrid : MapInformation
@@ -118,19 +115,21 @@ public unsafe class SpreadingGasGrid : MapInformation
         base.ExposeData();
     }
     
+    //TODO: VERY FUCKING IMPORTANT MEMORY ACCESS VIOLATION ISSUES 
+    //TODO: FUCKING MANAGE POINTER ACCESS
     //CellStack / Value
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public GasCellStack CellStackAt(int index)
     {
         return gasGridPtr[index];
     }
-
+    
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private GasCellValue CellValueAt(int index, int defID)
     {
         return gasGridPtr[index].stackPtr[defID];
     }
-
+    
     //[MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void SetCellValueAt(int index, GasCellValue value)
     {
@@ -154,6 +153,8 @@ public unsafe class SpreadingGasGrid : MapInformation
         }
     }
 
+    //TODO: VERY FUCKING IMPORTANT MEMORY ACCESS VIOLATION ISSUES 
+    //TODO: FUCKING MANAGE POINTER ACCESS
     //Access Helpers
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ushort DensityAt(int index, int defID)
@@ -161,6 +162,8 @@ public unsafe class SpreadingGasGrid : MapInformation
         return gasGridPtr[index][defID].value;
     }
     
+    //TODO: VERY FUCKING IMPORTANT MEMORY ACCESS VIOLATION ISSUES 
+    //TODO: FUCKING MANAGE POINTER ACCESS
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ushort OverflowAt(int index, int defID)
     {
@@ -181,21 +184,29 @@ public unsafe class SpreadingGasGrid : MapInformation
     }
     
     //
+    //TODO: VERY FUCKING IMPORTANT MEMORY ACCESS VIOLATION ISSUES 
+    //TODO: FUCKING MANAGE POINTER ACCESS
     public bool AnyGasAt(IntVec3 cell)
     {
         return gasGridPtr[cell.Index(map)].HasAnyGas;
     }
 
+    //TODO: VERY FUCKING IMPORTANT MEMORY ACCESS VIOLATION ISSUES 
+    //TODO: FUCKING MANAGE POINTER ACCESS
     public bool AnyGasAt(uint index)
     {
         return gasGridPtr[index].HasAnyGas;
     }
     
+    //TODO: VERY FUCKING IMPORTANT MEMORY ACCESS VIOLATION ISSUES 
+    //TODO: FUCKING MANAGE POINTER ACCESS
     public ushort TypeDensityAt(IntVec3 cell, SpreadingGasTypeDef gasType)
     {
         return gasGridPtr[cell.Index(map)][gasType].value;
     }
 
+    //TODO: VERY FUCKING IMPORTANT MEMORY ACCESS VIOLATION ISSUES 
+    //TODO: FUCKING MANAGE POINTER ACCESS
     public void SetDensity_Direct(int index, int defID, ushort value)
     {
         var cellValue = gasGridPtr[index][defID];
@@ -233,6 +244,8 @@ public unsafe class SpreadingGasGrid : MapInformation
         }
     }
     
+    //TODO: VERY FUCKING IMPORTANT MEMORY ACCESS VIOLATION ISSUES 
+    //TODO: FUCKING MANAGE POINTER ACCESS
     public void SetOverflow_Direct(int index, int defID, ushort value)
     {
         var cellValue = gasGridPtr[index][defID];

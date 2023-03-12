@@ -4,7 +4,6 @@ using RimWorld;
 using TAE.Static;
 using TeleCore;
 using TeleCore.FlowCore;
-using TeleCore.Static.Utilities;
 using UnityEngine;
 using Verse;
 
@@ -139,7 +138,7 @@ public class CompProperties_ANS_PassiveVent : CompProperties_ANS
     private AtmosphericVentFilter filter;
     
     //
-    public List<DefValue<AtmosphericDef, float>> upkeepLevels;
+    public List<DefFloat<AtmosphericDef>> upkeepLevels;
     
     private class AtmosphericVentFilter
     {

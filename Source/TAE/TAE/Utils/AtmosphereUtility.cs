@@ -120,6 +120,7 @@ public static class AtmosphereUtility
         Text.Anchor = TextAnchor.UpperLeft;
     }
 
+    //TODO: Radial readout was only used for oxygen, kinda useless
     public static void DrawAtmosphereAroundMouse()
     {
         if (!AtmosphereMod.Mod.Settings.DrawAtmosphereAroundMouse) return;
@@ -128,12 +129,11 @@ public static class AtmosphereUtility
         for (int i = 0; i < relevantCells.Count; i++)
         {
             IntVec3 intVec = relevantCells[i];
-            float num = CellAtmosphere(intVec, Find.CurrentMap, out Color color);
-            if (num != 0f)
-            {
-                GenMapUI.DrawThingLabel(GenMapUI.LabelDrawPosFor(intVec), Mathf.RoundToInt(num).ToStringCached(),
-                    color);
-            }
+            // float num = CellAtmosphere(intVec, Find.CurrentMap, out Color color);
+            // if (num != 0f)
+            // {
+            //     GenMapUI.DrawThingLabel(GenMapUI.LabelDrawPosFor(intVec), Mathf.RoundToInt(num).ToStringCached(), color);
+            // }
         }
     }
 
@@ -189,13 +189,6 @@ public static class AtmosphereUtility
         }
 
         visibleRooms.Clear();
-    }
-
-    private static float CellAtmosphere(IntVec3 c, Map map, out Color color)
-    {
-        var mapInfo = map.GetMapInfo<AtmosphericMapInfo>();
-        color = mapInfo.Renderer.CellBoolDrawerGetExtraColorInt(c.Index(map), AtmosDefOf.Atmosphere_Oxygen);
-        return mapInfo.Renderer.CalculateAtmosphereAt(c, AtmosDefOf.Atmosphere_Oxygen);
     }
 
     //
