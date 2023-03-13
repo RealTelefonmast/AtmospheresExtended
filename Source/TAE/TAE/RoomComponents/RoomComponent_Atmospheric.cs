@@ -252,18 +252,7 @@ public class RoomComponent_Atmospheric : RoomComponent, IContainerHolderRoom<Atm
 
     private void CreateContainer()
     {
-        container = new AtmosphericContainer(this, new ContainerConfig
-        {
-            containerClass = typeof(AtmosphericContainer),
-            baseCapacity = Parent.CellCount * AtmosMath.CELL_CAPACITY,
-            containerLabel = "mm yes air",
-            storeEvenly = true,
-            dropContents = false,
-            leaveContainer = false,
-            valueDefs = null,
-            explosionProps = null
-        });
-        container.Notify_RoomChanged(this, Parent.CellCount);
+        container = new AtmosphericContainer(this, AtmosResources.DefaultAtmosConfig(Parent.CellCount));
     }
 
     public override void CompTick()
