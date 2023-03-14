@@ -46,20 +46,14 @@ namespace TAE
         //Container
         public void Notify_ContainerStateChanged(NotifyContainerChangedArgs<AtmosphericDef> args)
         {
-            throw new System.NotImplementedException();
+            
         }
 
         public AtmosphericMapInfo(Map map) : base(map)
         {
             _cache = new AtmosphericCache(map);
+            mapContainer = new AtmosphericContainer(null, AtmosResources.DefaultAtmosConfig(map.cellIndices.NumGridCells));
             
-            mapContainer = new AtmosphericContainer(null, new ContainerConfig
-            {
-                baseCapacity = base.map.cellIndices.NumGridCells *  AtmosMath.CELL_CAPACITY,
-                containerLabel = "map container",
-                valueDefs = new List<FlowValueDef>(DefDatabase<AtmosphericDef>.AllDefsListForReading),
-            });
-
             //
             compByRoom = new Dictionary<Room, RoomComponent_Atmospheric>();
             allComps = new List<RoomComponent_Atmospheric>();

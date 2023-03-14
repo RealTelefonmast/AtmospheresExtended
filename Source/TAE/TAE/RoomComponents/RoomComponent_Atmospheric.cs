@@ -51,7 +51,7 @@ public class RoomComponent_Atmospheric : RoomComponent, IContainerHolderRoom<Atm
     //
     public void Notify_ContainerStateChanged(NotifyContainerChangedArgs<AtmosphericDef> args)
     {
-        throw new NotImplementedException();
+        
     }
 
     public string ContainerTitle => "Atmosphers be here";

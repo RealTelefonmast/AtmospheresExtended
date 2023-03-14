@@ -73,6 +73,16 @@ namespace TAE
         public override void Notify_ContainerStateChanged(NotifyContainerChangedArgs<AtmosphericDef> stateChangeArgs)
         {
             base.Notify_ContainerStateChanged(stateChangeArgs);
+            if (Holder?.RoomComponent?.Map?.GetMapInfo<AtmosphericMapInfo>()?.Renderer == null)
+            {
+                TLog.Warning($"Could not SetDirty AtmosphericMap Renderer because parent chain is null:" +
+                             $"\nHolder: {Holder != null}" +
+                             $"\nRoomComp: {Holder?.RoomComponent != null}" +
+                             $"\nMap: {Holder?.RoomComponent?.Map != null}" +
+                             $"\nMapInfo: {Holder?.RoomComponent?.Map?.GetMapInfo<AtmosphericMapInfo>() != null}" +
+                             $"\nRenderer: {Holder?.RoomComponent?.Map?.GetMapInfo<AtmosphericMapInfo>()?.Renderer != null}");
+                return;
+            }
             Holder.RoomComponent.Map?.GetMapInfo<AtmosphericMapInfo>()?.Renderer?.Drawer_SetDirty();
         }
 
