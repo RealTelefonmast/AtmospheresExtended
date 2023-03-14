@@ -94,7 +94,6 @@ namespace TAE
 
         public void Notify_RoomChanged(RoomComponent_Atmospheric parent, int roomCells)
         {
-            TLog.Message($"[{parent?.Room?.ID}]Room Changed");
             parentComp = parent;
             ChangeCapacity(roomCells * AtmosMath.CELL_CAPACITY);
         }

@@ -17,6 +17,10 @@ namespace TAE
 
         public CompProperties_ANS_AirVent Props => (CompProperties_ANS_AirVent)base.props;
 
+        
+        /// <summary>
+        /// Sus?
+        /// </summary>
         public bool CanVent
         {
             get

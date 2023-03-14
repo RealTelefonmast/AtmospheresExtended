@@ -3,6 +3,7 @@ using Verse;
 
 namespace TAE;
 
+[StaticConstructorOnStartup]
 public static class AtmosphericContent
 {
     public static Texture2D AtmosphereIcon = ContentFinder<Texture2D>.Get("UI/Icons/AtmospherePlaySetting");
