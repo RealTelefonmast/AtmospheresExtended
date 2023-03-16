@@ -43,7 +43,7 @@ namespace TAE
             
             TLog.Message($"Making portal with {building}: {connections[0]},{connectionDirections[0].ToStringWord()} --> {connections[1]}{connectionDirections[1].ToStringWord()} ");
         }
-
+        
         private bool PreventFlowBack(AtmosphericDef ofDef, RoomComponent_Atmospheric to)
         {
             int checkIndex = IndexOf(to);
@@ -65,7 +65,8 @@ namespace TAE
             var to = connections[1].CurrentContainer;
             
             //Go through all common types
-            var tempTypes = from.StoredDefs.Union(to.StoredDefs);
+            var tempTypes = TeleCore.Static.StaticListHolder<AtmosphericDef>.RequestList("tempPortalEqualizer");
+            tempTypes.AddRange(from.StoredDefs.Union(to.StoredDefs));
             foreach (var atmosDef in tempTypes)
             {
                 if (PreventFlowBack(atmosDef, connections[1])) continue;
@@ -82,6 +83,7 @@ namespace TAE
                         connections[flowResult.ToIndex]);
                 }
             }
+            tempTypes.Clear();
         }
 
         private void SetFlowFor(AtmosphericDef def, FlowResult result)
