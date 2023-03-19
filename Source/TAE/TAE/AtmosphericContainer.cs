@@ -23,7 +23,7 @@ namespace TAE
             return _mapSourceTypes.Contains(def);
         }
         
-        public AtmosphericContainer(RoomComponent_Atmospheric parent, ContainerConfig config, bool isOutdoor = false) : base(config, parent)
+        public AtmosphericContainer(RoomComponent_Atmospheric parent, ContainerConfig<AtmosphericDef> config, bool isOutdoor = false) : base(config, parent)
         {
             parentComp = parent;
             isOutdoorsContainer = isOutdoor;
@@ -122,10 +122,11 @@ namespace TAE
                 return false;
             }
 
-            if (TryRemoveValue(valueType, value, out var actual))
+            var result = TryRemoveValue(valueType, value);
+            if (result)
             {
-                networkContainer.TryAddValue(valueType.networkValue, actual.ActualAmount, out _);
-                return true;
+                var addResult = networkContainer.TryAddValue(valueType.networkValue, result.ActualAmount);
+                return addResult;
             }
             return false;
         }

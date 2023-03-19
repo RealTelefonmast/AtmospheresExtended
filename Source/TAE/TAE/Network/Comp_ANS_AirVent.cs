@@ -1,23 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
 using TeleCore;
 using Verse;
 
 namespace TAE
 {
-    public enum AtmosphericVentMode
-    {
-        Intake,
-        Output,
-        Dynamic
-    }
 
-    public class Comp_ANS_AirVent : Comp_AtmosphericNetworkStructure
+    public class Comp_ANS_AirVent : Comp_ANS_VentBase
     {
         private FloatControl speedControl;
 
-        public CompProperties_ANS_AirVent Props => (CompProperties_ANS_AirVent)base.props;
-
-        
         /// <summary>
         /// Sus?
         /// </summary>
@@ -29,9 +22,8 @@ namespace TAE
                 //TODO: return this[TiberiumDefOf.AtmosphericNetwork].ContainerSet[NetworkRole.Controller].Any(c => !c.Full);
             }
         }
-
-
-        public override float? FX_GetRotation(FXLayerArgs args)
+        
+        public override float? FX_GetRotationSpeedOverride(FXLayerArgs args)
         {
             return args.layerTag switch
             {
@@ -45,90 +37,30 @@ namespace TAE
             base.PostSpawnSetup(respawningAfterLoad);
             speedControl = new FloatControl(5, 1);
         }
-
-        private bool CanWork
-        {
-            get
-            {
-                if (!IsPowered) return false;
-                foreach (var def in Props.AllowedValues)
-                {
-                    switch (Props.ventMode)
-                    {
-                        case AtmosphericVentMode.Intake:
-                            if (Atmospheric.Container.StoredValueOf(def) <= 0) return false;
-                            if (AtmosphericComp.Container.Full) return false;
-                            break;
-                        case AtmosphericVentMode.Output:
-                            if (Atmospheric.Container.StoredValueOf(def) >= 1) return false;
-                            if (AtmosphericComp.Container.Empty) return false;
-                            break;
-                        case AtmosphericVentMode.Dynamic:
-                            break;
-                    }
-                }
-                return true;
-            }
-        }
+        
+        public override bool CanManipulateNow => speedControl.ReachedPeak;
 
         public override void CompTick()
         {
-            base.CompTick();
+            if (CanTickNow)
+            {
+                speedControl.Start();
+                return;
+            }
+            speedControl.Stop();
+            
+            //
             speedControl.Tick();
-            if (!Atmospheric.IsOutdoors)
-            {
-                if (CanWork)
-                {
-                    speedControl.Start();
-                    if (speedControl.ReachedPeak)
-                        _ = TryManipulateAtmosphere(1);
-                    return;
-                }
-                speedControl.Stop();
-            }
+            base.CompTick();
         }
 
-        private bool TryManipulateAtmosphere(int tick)
-        {
-            int totalThroughput = Props.gasThroughPut * tick;
-            foreach (var def in Props.AllowedValues)
-            {
-                switch (Props.ventMode)
-                {
-                    case AtmosphericVentMode.Intake:
-                        if (Atmospheric.Container.TryTransferTo(AtmosphericComp.Container, def, totalThroughput))
-                        {
-                            return true;
-                        }
-
-                        break;
-                    case AtmosphericVentMode.Output:
-                        if(def.networkValue == null) continue;
-                        if (AtmosphericComp.Container.TryConsume(def.networkValue, totalThroughput))
-                        {
-                            //Atmospheric.RoomContainer.TryAddValue(def, 1, out _);
-                            if (def.dissipationGasDef != null)
-                            {
-                                parent.Map.GetMapInfo<AtmosphericMapInfo>().TrySpawnGasAt(parent.Position,
-                                    def.dissipationGasDef, totalThroughput * def.dissipationGasDef.maxDensityPerCell);
-                            }
-
-                            return true;
-                        }
-
-                        break;
-                    case AtmosphericVentMode.Dynamic:
-                        break;
-                }
-            }
-
-            return false;
-        }
-        
         public override string CompInspectStringExtra()
         {
+            var sb = new StringBuilder(base.CompInspectStringExtra());
 
-            return base.CompInspectStringExtra();
+            sb.AppendLine($"## Speed Controller ##\n{speedControl}");
+            
+            return sb.ToString().Trim();
         }
 
         public override IEnumerable<Gizmo> CompGetGizmosExtra()
@@ -149,7 +81,7 @@ namespace TAE
         }
     }
 
-    public class CompProperties_ANS_AirVent : CompProperties_ANS_PassiveVent
+    public class CompProperties_ANS_AirVent : CompProperties_ANS_Vent
     {
         public CompProperties_ANS_AirVent()
         {

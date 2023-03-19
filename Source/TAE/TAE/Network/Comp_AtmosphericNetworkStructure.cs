@@ -8,23 +8,25 @@ namespace TAE
         private RoomComponent_Atmospheric atmosphericInt;
 
         //
-        public NetworkSubPart AtmosphericComp { get; private set; }
-        public RoomComponent_Atmospheric Atmospheric
+        public NetworkSubPart AtmosNetwork { get; private set; }
+        public RoomComponent_Atmospheric AtmosRoom
         {
             get
             {
                 if (atmosphericInt == null || atmosphericInt.Parent.IsDisbanded)
                 {
-                    atmosphericInt = parent.GetRoom().GetRoomComp<RoomComponent_Atmospheric>();
+                    atmosphericInt = AtmosphericSource.GetRoomComp<RoomComponent_Atmospheric>();
                 }
                 return atmosphericInt;
             }
         }
+        
+        protected virtual Room AtmosphericSource => parent.GetRoom();
 
         public override void PostSpawnSetup(bool respawningAfterLoad)
         {
             base.PostSpawnSetup(respawningAfterLoad);
-            AtmosphericComp = this[AtmosDefOf.AtmosphericNetwork];
+            AtmosNetwork = this[AtmosDefOf.AtmosphericNetwork];
         }
 
         public override void CompTick()

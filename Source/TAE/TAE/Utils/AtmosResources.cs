@@ -9,9 +9,9 @@ public static class AtmosResources
 {
     public static List<AtmosphericDef> AllAtmosphericDefs => DefDatabase<AtmosphericDef>.AllDefsListForReading;
 
-    public static ContainerConfig DefaultAtmosConfig(int roomSize)
+    public static ContainerConfig<AtmosphericDef> DefaultAtmosConfig(int roomSize)
     {
-        return new ContainerConfig
+        return new ContainerConfig<AtmosphericDef>
         {
             containerClass = typeof(AtmosphericContainer),
             baseCapacity = roomSize * AtmosMath.CELL_CAPACITY,
@@ -20,7 +20,7 @@ public static class AtmosResources
             dropContents = false,
             leaveContainer = false,
             droppedContainerDef = null!,
-            valueDefs = AllAtmosphericDefs.Cast<FlowValueDef>().ToList(),
+            valueDefs = AllAtmosphericDefs.ToList(),
             explosionProps = null!
         };
     }

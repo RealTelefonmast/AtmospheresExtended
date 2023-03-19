@@ -45,6 +45,7 @@ namespace TAE
         public override void PostLoad()
         {
             //
+            base.PostLoad();
             AtmosphericReferenceCache.RegisterDef(this);
         }
     }
