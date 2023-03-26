@@ -27,7 +27,7 @@
 			<ComponentIndustrial>5</ComponentIndustrial>
 		</costList>
 		<comps>
-			<li Class="TeleCore.CompProperties_NetworkStructure">
+			<li Class="TeleCore.CompProperties_Network">
 				<!--<compClass>TiberiumRim.Comp_ANS_Filter</compClass>-->
 				<networks>
 					<li>

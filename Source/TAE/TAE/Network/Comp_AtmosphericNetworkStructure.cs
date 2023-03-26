@@ -3,7 +3,7 @@ using Verse;
 
 namespace TAE
 {
-    public class Comp_AtmosphericNetworkStructure : Comp_NetworkStructure
+    public class Comp_AtmosphericNetworkStructure : Comp_Network
     {
         private RoomComponent_Atmospheric atmosphericInt;
 
@@ -35,7 +35,7 @@ namespace TAE
         }
     }
 
-    public class CompProperties_ANS : CompProperties_NetworkStructure
+    public class CompProperties_ANS : CompProperties_Network
     {
         public CompProperties_ANS()
         {

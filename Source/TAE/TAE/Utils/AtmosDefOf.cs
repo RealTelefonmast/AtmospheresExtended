@@ -5,7 +5,7 @@ using Verse;
 namespace TAE
 {
     [DefOf]
-    internal static class AtmosDefOf
+    public static class AtmosDefOf
     {
         public static RoomRoleDef TAE_AirLockRole;
         //public static GameConditionDef AtmosphericCondition;
