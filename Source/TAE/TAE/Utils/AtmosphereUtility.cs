@@ -93,7 +93,7 @@ public static class AtmosphereUtility
         IntVec3 intVec = UI.MouseCell();
         if (!intVec.InBounds(Find.CurrentMap)) return;
         var gasGrid = Find.CurrentMap.GetMapInfo<SpreadingGasGrid>();
-        var gasStack = gasGrid.CellStackAt(intVec.Index(gasGrid.Map));
+        var gasStack = gasGrid.CellStackAtUnsafe(intVec.Index(gasGrid.Map));
 
         CellInspectorDrawer.DrawHeader("Stack Inspection");
         CellInspectorDrawer.DrawRow("Gas Grid: ", gasGrid.GasGrid.Length.ToString());

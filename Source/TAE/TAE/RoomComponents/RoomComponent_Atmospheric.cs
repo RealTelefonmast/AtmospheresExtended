@@ -302,7 +302,7 @@ public class RoomComponent_Atmospheric : RoomComponent, IContainerHolderRoom<Atm
             var cell = Room.Cells.First();
             if (Find.CameraDriver.CurrentZoom <= CameraZoomRange.Close)
             {
-                DrawMenu(cell);
+                DrawMenuNew(cell);
                 if (openColorPicker)
                 {
                     DrawColorPicker(cell);
@@ -351,6 +351,48 @@ public class RoomComponent_Atmospheric : RoomComponent, IContainerHolderRoom<Atm
     private bool renderWindow = false;
     private AtmosphericContainer container1;
 
+    private void DrawMenuNew(IntVec3 pos)
+    {
+        var v = DrawPosFor(pos);
+
+        var driver = Find.CameraDriver;
+        var width = 1 * driver.CellSizePixels;
+        var height = 2 * driver.CellSizePixels;
+        var rect = new Rect(v.x - width, v.y - height, width, height);
+        var scale = ((driver.CellSizePixels / 46)); //+ (1 - ((UI.CurUICellSize() / 46)));
+        
+        TWidgets.DrawColoredBox(rect, new Color(1, 1, 1, 0.125f), Color.white, 1);
+        rect = rect.ContractedBy(5 * scale);
+        Widgets.BeginGroup(rect);
+        {
+            var innerRect = new Rect(0, 0, rect.width, rect.height);
+            //DrawAtmosContainerReadout(innerRect, new Vector2(scale, scale), CurrentContainer, OutsideContainer);
+            //var text = $"[{AdjacentComps.Count}]|[{Parent.RoomPortals.Count}]:[{Parent.AdjacentTrackers.Count}]";
+            //var textPortal = selfPortal != null ? $"{selfPortal[0]}--{selfPortal[1]}" : "";
+            //TWidgets.DoTinyLabel(innerRect.RightPart(0.65f).BottomPart(0.25f),$"[{Room.ID}]{(IsConnector ? textPortal : text)}");
+
+            WidgetRow row = new WidgetRow(innerRect.x, innerRect.y, UIDirection.RightThenDown, width);
+            if (row.ButtonText("Add"))
+            {
+                FloatMenu floatMenu = new FloatMenu(DefDatabase<AtmosphericDef>.AllDefsListForReading.Select(d =>
+                    new FloatMenuOption(d.defName,
+                        delegate { TryAddValueToRoom(d, container.Capacity * 0.25f, out _); })).ToList());
+                Find.WindowStack.Add(floatMenu);
+            }
+
+            if (row.ButtonText("Clear"))
+            {
+                CurrentContainer.Clear();
+            }
+
+            if (row.ButtonText("Map"))
+            {
+                renderWindow = !renderWindow;
+            }
+        }
+        Widgets.EndGroup();
+    }
+    
     private void DrawMenu(IntVec3 pos)
     {
         var v = DrawPosFor(pos);

@@ -182,7 +182,7 @@ namespace TAE
 
             if (useRulesets)
             {
-                foreach (var ruleSet in DefDatabase<TAE_RulesetDef>.AllDefs)
+                foreach (var ruleSet in DefDatabase<TAERulesetDef>.AllDefs)
                 {
                     if (ruleSet.occurence == AtmosphericOccurence.AnyBiome)
                     {

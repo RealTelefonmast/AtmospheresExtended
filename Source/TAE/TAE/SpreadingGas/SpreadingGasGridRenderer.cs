@@ -215,7 +215,7 @@ public class SpreadingGasGridRenderer
         int j = 0;
         for (uint i = 0; i < grid.GasGrid.Length; i++)
         {
-            if (!grid.AnyGasAt(i)) continue;
+            if (!grid.AnyGasAtUnsafe(i)) continue;
             
             //Map internalIndex j of GPU instance, to mapIndex i
             var forwarded = meshPropsPtr[j];

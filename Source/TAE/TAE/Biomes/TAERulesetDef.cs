@@ -6,7 +6,7 @@ using Verse;
 
 namespace TAE
 {
-    public class TAE_RulesetDef : Def
+    public class TAERulesetDef : Def
     {
         public AtmosphericOccurence occurence = AtmosphericOccurence.AnyBiome;
         public List<BiomeDef> biomes;

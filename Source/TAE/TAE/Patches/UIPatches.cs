@@ -40,9 +40,9 @@ public static class UIPatches
         {
             IntVec3 intVec = UI.MouseCell();
             var gasGrid =  Find.CurrentMap.GetMapInfo<SpreadingGasGrid>();
-            if (gasGrid.AnyGasAt(intVec))
+            if (gasGrid.AnyGasAtUnsafe(intVec))
             {
-                var allGasses = gasGrid.CellStackAt(UI.MouseCell().Index(gasGrid.Map));
+                var allGasses = gasGrid.CellStackAtUnsafe(UI.MouseCell().Index(gasGrid.Map));
                 for (var i = 0; i < allGasses.Length; i++)
                 {
                     var gasCell = allGasses[i];
