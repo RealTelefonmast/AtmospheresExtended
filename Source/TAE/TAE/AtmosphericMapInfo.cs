@@ -270,7 +270,7 @@ namespace TAE
             compByRoom.Remove(comp.Room);
 
             //Remove Portals - check for validity after despawning
-            GenData.EnqueueActionForMainThread(delegate
+            LongTickHandler.EnqueueActionForMainThread(delegate
             {
                 allConnections.RemoveAll(p => !p.IsValid); 
             });

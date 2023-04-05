@@ -41,7 +41,7 @@
 
     <PackageReference Include="Microsoft.NETCore.Platforms" Version="8.0.0-preview.1.23110.8" />
 
-    <PackageReference Include="TeleCore" Version="1.7.9.5">
+    <PackageReference Include="TeleCore" Version="1.8.1.1">
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
     <PackageReference Include="UnlimitedHugs.Rimworld.HugsLib" Version="10.0.1" ExcludeAssets="runtime" />
