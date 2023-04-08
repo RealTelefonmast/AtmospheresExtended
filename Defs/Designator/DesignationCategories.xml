@@ -12,6 +12,7 @@
 		<defName>AtmosphericMenu</defName>
 		<subMenus>
 			<li>TestGroup</li>
+			<li>TAEDebug</li>
 		</subMenus>
 	</TeleCore.SubBuildMenuDef>
 	
@@ -22,6 +23,14 @@
 			<li>Decoration</li>
 			<li>TestCat</li>
 		</subCategories>
+	</TeleCore.SubMenuGroupDef>
+	
+	<TeleCore.SubMenuGroupDef>
+		<defName>TAEDebug</defName>
+		<subCategories>
+			<li>TAEDebugCat</li>
+		</subCategories>
+		<isDevGroup>true</isDevGroup>
 	</TeleCore.SubMenuGroupDef>
 	
 	<TeleCore.SubMenuCategoryDef>
@@ -37,6 +46,11 @@
 	<TeleCore.SubMenuCategoryDef>
 		<defName>TestCat</defName>
 		<label>TestCat</label>
+	</TeleCore.SubMenuCategoryDef>  
+	
+	<TeleCore.SubMenuCategoryDef>
+		<defName>TAEDebugCat</defName>
+		<label>Debug</label>
 	</TeleCore.SubMenuCategoryDef>  
 	
 </Defs>

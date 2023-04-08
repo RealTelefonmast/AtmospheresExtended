@@ -72,7 +72,7 @@ public class RoomComponent_Atmospheric : RoomComponent, IContainerHolderRoom<Atm
         if (cacheInfo.AtmosphericPassGrid[b.Position] <= 0) return;
 
         //Otherwise register the structure as a portal (TODO: maybe group multiple portal-structures into single portal struct)
-        if (!AtmosphereUtility.IsPassBuilding(b)) return;
+        if (!AtmosphereUtility.IsAtmosphericPortal(b)) return;
 
         var bRoom = b.GetRoom();
         if (bRoom == null)
@@ -298,27 +298,6 @@ public class RoomComponent_Atmospheric : RoomComponent, IContainerHolderRoom<Atm
     {
         if (!IsOutdoors)
         {
-            if (Room.CellCount <= 0) return;
-            var cell = Room.Cells.First();
-            if (Find.CameraDriver.CurrentZoom <= CameraZoomRange.Close)
-            {
-                DrawMenuNew(cell);
-                if (openColorPicker)
-                {
-                    DrawColorPicker(cell);
-                }
-            }
-            else
-            {
-                var v = DrawPosFor(cell);
-                var driver = Find.CameraDriver;
-                var width = 2f * driver.CellSizePixels;
-                var height = 1f * driver.CellSizePixels;
-                var rect = new Rect(v.x - width, v.y - height, width, height);
-                TWidgets.DrawColoredBox(rect, new Color(1, 1, 1, 0.125f), Color.white, 1);
-            }
-
-
             if (renderWindow)
             {
                 var immRect = new Rect(100, 100, 220, 400);
@@ -351,48 +330,6 @@ public class RoomComponent_Atmospheric : RoomComponent, IContainerHolderRoom<Atm
     private bool renderWindow = false;
     private AtmosphericContainer container1;
 
-    private void DrawMenuNew(IntVec3 pos)
-    {
-        var v = DrawPosFor(pos);
-
-        var driver = Find.CameraDriver;
-        var width = 1 * driver.CellSizePixels;
-        var height = 2 * driver.CellSizePixels;
-        var rect = new Rect(v.x - width, v.y - height, width, height);
-        var scale = ((driver.CellSizePixels / 46)); //+ (1 - ((UI.CurUICellSize() / 46)));
-        
-        TWidgets.DrawColoredBox(rect, new Color(1, 1, 1, 0.125f), Color.white, 1);
-        rect = rect.ContractedBy(5 * scale);
-        Widgets.BeginGroup(rect);
-        {
-            var innerRect = new Rect(0, 0, rect.width, rect.height);
-            //DrawAtmosContainerReadout(innerRect, new Vector2(scale, scale), CurrentContainer, OutsideContainer);
-            //var text = $"[{AdjacentComps.Count}]|[{Parent.RoomPortals.Count}]:[{Parent.AdjacentTrackers.Count}]";
-            //var textPortal = selfPortal != null ? $"{selfPortal[0]}--{selfPortal[1]}" : "";
-            //TWidgets.DoTinyLabel(innerRect.RightPart(0.65f).BottomPart(0.25f),$"[{Room.ID}]{(IsConnector ? textPortal : text)}");
-
-            WidgetRow row = new WidgetRow(innerRect.x, innerRect.y, UIDirection.RightThenDown, width);
-            if (row.ButtonText("Add"))
-            {
-                FloatMenu floatMenu = new FloatMenu(DefDatabase<AtmosphericDef>.AllDefsListForReading.Select(d =>
-                    new FloatMenuOption(d.defName,
-                        delegate { TryAddValueToRoom(d, container.Capacity * 0.25f, out _); })).ToList());
-                Find.WindowStack.Add(floatMenu);
-            }
-
-            if (row.ButtonText("Clear"))
-            {
-                CurrentContainer.Clear();
-            }
-
-            if (row.ButtonText("Map"))
-            {
-                renderWindow = !renderWindow;
-            }
-        }
-        Widgets.EndGroup();
-    }
-    
     private void DrawMenu(IntVec3 pos)
     {
         var v = DrawPosFor(pos);
@@ -410,7 +347,7 @@ public class RoomComponent_Atmospheric : RoomComponent, IContainerHolderRoom<Atm
         {
             TWidgets.DrawColoredBox(rect.AtZero(), Color.clear, Color.black, 1);
             var innerRect = new Rect(0, 0, rect.width, rect.height);
-            DrawAtmosContainerReadout(innerRect, new Vector2(scale, scale), CurrentContainer, OutsideContainer);
+            //DrawAtmosContainerReadout(innerRect, new Vector2(scale, scale), CurrentContainer, OutsideContainer);
             var text = $"[{AdjacentComps.Count}]|[{Parent.RoomPortals.Count}]:[{Parent.AdjacentTrackers.Count}]";
             var textPortal = selfPortal != null ? $"{selfPortal[0]}--{selfPortal[1]}" : "";
             TWidgets.DoTinyLabel(innerRect.RightPart(0.65f).BottomPart(0.25f),
@@ -456,53 +393,6 @@ public class RoomComponent_Atmospheric : RoomComponent, IContainerHolderRoom<Atm
 
     }
 
-    /*
-    private Texture2D GenColorTex(int width, int height)
-    {
-        if (colorTex != null) return colorTex;
-        for (int x = 0; x < width; x++)
-        {
-            for (int y = 0; y < height; y++)
-            {
-
-            }
-        }
-
-        return colorTex;
-    }
-    */
-
-    private void DrawAtmosContainerReadout(Rect rect, Vector2 scale, AtmosphericContainer container,
-        AtmosphericContainer outside)
-    {
-        float height = 5;
-        Widgets.BeginGroup(rect);
-        {
-            Text.Font = GameFont.Tiny;
-            Text.Anchor = TextAnchor.UpperLeft;
-            foreach (var type in container.StoredDefs)
-            {
-                string label =
-                    $"{type.labelShort}: {container.StoredValueOf(type)}({container.StoredPercentOf(type).ToStringPercent()}) | {outside.StoredValueOf(type)}({outside.StoredPercentOf(type).ToStringPercent()})";
-
-                ScaleRender(rect.AtZero(), scale, delegate
-                {
-                    Rect typeRect = new Rect(5, height, 10, 10);
-                    Vector2 typeSize = Text.CalcSize(label);
-                    Rect typeLabelRect = new Rect(20, height - 2, typeSize.x, typeSize.y);
-                    Widgets.DrawBoxSolid(typeRect, type.valueColor);
-                    Widgets.Label(typeLabelRect, label);
-                });
-
-                height += 10 + 2;
-            }
-
-            Text.Font = default;
-            Text.Anchor = default;
-        }
-        Widgets.EndGroup();
-    }
-
     private void ScaleRender(Rect inRect, Vector2 scale, Action renderAction)
     {
         var previousMatrix = GUI.matrix;
@@ -534,20 +424,11 @@ public class RoomComponent_Atmospheric : RoomComponent, IContainerHolderRoom<Atm
                 renderer.DrawFor(renderDef, Parent.DrawPos, value);
             }
         }
-
-        if (selfPortal?.IsValid ?? false)
-        {
-            GenDraw.DrawTargetingHighlight_Cell(selfPortal.Thing.Position);
-            if (Find.Selector.IsSelected(selfPortal.Thing))
-            {
-                selfPortal.DrawDebug();
-            }
-        }
-
+        
         //
         GenDraw.FillableBarRequest r = default(GenDraw.FillableBarRequest);
-        r.center = Parent.MinMaxCorners[0].ToVector3() + new Vector3(0.25f, 0, 0.75f);
-        r.size = new Vector2(1.5f, 0.5f);
+        r.center = Parent.MinMaxCorners[0].ToVector3() + new Vector3(0.075f, 0, 0.75f);
+        r.size = new Vector2(1.5f, 0.15f);
         r.fillPercent = container.StoredPercent;
         r.filledMat = FilledMat;
         r.unfilledMat = UnFilledMat;

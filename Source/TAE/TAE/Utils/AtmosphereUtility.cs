@@ -38,6 +38,27 @@ public static class AtmosphereUtility
         }
     }
     
+    public static void DrawPassPercentCellsGUI()
+    {
+        if (!AtmosphereMod.Mod.Settings.DrawAtmosphereAroundMouse) return;
+        
+        //
+        var root = UI.MouseCell();
+        var map = Find.CurrentMap;
+        //FillAtmosphereRelevantCells(UI.MouseCell(), Find.CurrentMap);
+        
+        var cacheInfo = Find.CurrentMap.GetMapInfo<DynamicDataCacheMapInfo>();
+        for (int i = 0; i < SampleNumCells; i++)
+        {
+            IntVec3 intVec = root + GenRadial.RadialPattern[i];
+            if (intVec.InBounds(map) && !intVec.Fogged(map))
+            {
+                var value = cacheInfo.AtmosphericPassGrid[intVec];
+                GenMapUI.DrawThingLabel(GenMapUI.LabelDrawPosFor(intVec), value.ToStringPercent(), Color.white);
+            }
+        }
+    }
+    
     public static void DrawSpreadingGasAroundMouse()
     {
         if (!AtmosphereMod.Mod.Settings.DrawAtmosphereAroundMouse) return;
@@ -247,7 +268,7 @@ public static class AtmosphereUtility
         };
     }
 
-    public static bool IsPassBuilding(Building building)
+    public static bool IsAtmosphericPortal(Building building)
     {
         if (building == null) return false;
 
@@ -257,13 +278,13 @@ public static class AtmosphereUtility
             return true;
         }
 
-        var fullFillage = building.def.Fillage == FillCategory.Full;
+        //var fullFillage = building.def.Fillage == FillCategory.Full;
         return building switch
         {
             Building_Door => true,
             Building_Vent => true,
             Building_Cooler => true,
-            { } b => !fullFillage,
+            //{ } b => !fullFillage,
             _ => false
         };
     }

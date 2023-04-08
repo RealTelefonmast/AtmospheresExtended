@@ -19,10 +19,6 @@ namespace TAE
         private AtmosphericTransferWorker workerInt;
         public Type transferWorker = typeof(AtmosphericTransferWorker);
 
-        //
-        public string labelShort;
-        public Color valueColor;
-
         //The corresponding network value (if available)
         public NetworkValueDef networkValue;
         public SpreadingGasTypeDef dissipationGasDef;

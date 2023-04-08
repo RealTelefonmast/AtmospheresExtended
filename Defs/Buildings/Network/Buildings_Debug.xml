@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+
+	<ThingDef ParentName="BuildingNaturalBase">
+		<defName>AtmosphericDebug</defName>
+		<label>Atmospheric Debug</label>
+		<thingClass>TAE.DebugBuilding</thingClass>
+		<statBases>
+			<MaxHitPoints>20000</MaxHitPoints>
+			<Beauty>999</Beauty>
+		</statBases>
+		<graphicData>
+			<graphicClass>Graphic_Single</graphicClass>
+			<shaderType>Transparent</shaderType>
+			<texPath>Things/Building/Power/WoodFiredGenerator</texPath>
+			<drawSize>(1,1)</drawSize>
+		</graphicData>
+		<drawerType>MapMeshAndRealTime</drawerType>
+		<tickerType>Normal</tickerType>
+		<altitudeLayer>Floor</altitudeLayer>
+		<size>(1,1)</size>
+		<fillPercent>0</fillPercent>
+		<inspectorTabs>
+			<li>TAE.ITab_TAEDebug</li>
+		</inspectorTabs>
+		<modExtensions>
+			<li Class="TeleCore.SubMenuExtension">
+				<groupDef>TAEDebug</groupDef>
+				<category>TAEDebugCat</category>
+			</li>
+		</modExtensions>
+	</ThingDef>
+
+</Defs>
