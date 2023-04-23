@@ -66,9 +66,8 @@ namespace TAE
             renderer = new AtmosphereRenderer(map);
         }
 
-        public override void ExposeData()
+        public override void ExposeDataExtra()
         {
-            base.ExposeData();
             Scribe_Deep.Look(ref _cache, "atmosCache", map);
         }
 

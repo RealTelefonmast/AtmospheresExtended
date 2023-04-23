@@ -109,11 +109,9 @@ public class RoomComponent_Atmospheric : RoomComponent, IContainerHolderRoom<Atm
         }
     }
 
-    public override void Create(RoomTracker parent)
+    public override void PostCreate(RoomTracker parent)
     {
-        base.Create(parent);
         portals = new List<AtmosphericPortal>();
-
         AtmosphericInfo.Notify_NewComp(this);
         renderer = new RoomOverlay_Atmospheric();
     }
@@ -127,22 +125,24 @@ public class RoomComponent_Atmospheric : RoomComponent, IContainerHolderRoom<Atm
         }
     }
 
-    public override void Reset()
+    public override void FinalizeMapInit()
     {
+        
     }
 
-    public override void PreApply()
+    public override void Init(RoomTracker[] previous = null)
     {
-        base.PreApply();
+        base.Init(previous);
     }
 
-    public override void FinalizeApply()
+    public override void PostInit(RoomTracker[] previous)
     {
         CreateContainer();
         MarkDirty();
 
         //
-        Regenerate();
+        Regenerate(previous);
+
         if (Parent.IsProper)
         {
             TeleUpdateManager.Notify_EnqueueNewSingleAction(() =>
@@ -151,7 +151,7 @@ public class RoomComponent_Atmospheric : RoomComponent, IContainerHolderRoom<Atm
 
         //--
     }
-
+    
     public override void Notify_Reused()
     {
         base.Notify_Reused();
@@ -161,8 +161,8 @@ public class RoomComponent_Atmospheric : RoomComponent, IContainerHolderRoom<Atm
     public override void Notify_RoofClosed()
     {
         AtmosphericInfo.RegenerateMapInfo();
-        Data_GetCachedRegionalAtmosphere();
-        //Data_CaptureOutsideAtmosphere();
+        //Data_GetCachedRegionalAtmosphere();
+        Data_CaptureOutsideAtmosphere();
     }
 
     /// <summary>
@@ -218,29 +218,40 @@ public class RoomComponent_Atmospheric : RoomComponent, IContainerHolderRoom<Atm
     }
 
     //RoomComp Generation
-    private void Regenerate()
+    private void Regenerate(RoomTracker[] previous)
     {
         if (!IsDirty) return;
-
         container.Notify_RoomChanged(this, Parent.CellCount);
-        Data_GetCachedRegionalAtmosphere();
-    }
 
-    private void Data_GetCachedRegionalAtmosphere()
-    {
-        //Assign starting atmosphere based on position
-        if (AtmosphericInfo.Cache.TryGetAtmosphericValuesForRoom(Room, out var stack))
+        if (previous != null)
         {
-            Container.LoadFromStack(stack);
-            foreach (var atmosphericDef in stack.Defs)
+            foreach (var oldTracker in previous)
             {
-                renderer.TryRegisterNewOverlayPart(atmosphericDef);
+                var comp = oldTracker.GetRoomComp<RoomComponent_Atmospheric>();
+                var container = oldTracker.IsOutside ? comp.OutsideContainer : comp.Container;
+                foreach (var value in container.ValueStack)
+                {
+                    var transferPct = oldTracker.CellCount > Parent.CellCount
+                        ? (oldTracker.CellCount / (float) Parent.CellCount)
+                        : 1;
+                    Container.TryAddValue(value * transferPct);
+                    renderer.TryRegisterNewOverlayPart(value.Def);
+                }
             }
         }
     }
 
     private void Data_CaptureOutsideAtmosphere()
     {
+        var outside = OutsideContainer.ValueStack;
+        var parts = outside.Length;
+        var partSize = Container.Capacity / parts;
+        foreach (var value in outside)
+        {
+            Container.TryAddValue(value.Def, partSize * OutsideContainer.StoredPercent);
+        }
+        
+        /*
         foreach (var atmosphericDef in OutsideContainer.StoredDefs)
         {
             var pct = OutsideContainer.StoredPercentOf(atmosphericDef);
@@ -248,6 +259,7 @@ public class RoomComponent_Atmospheric : RoomComponent, IContainerHolderRoom<Atm
 
             TryAddValueToRoom(atmosphericDef, newValue, out _);
         }
+        */
     }
 
     private void CreateContainer()
@@ -328,7 +340,6 @@ public class RoomComponent_Atmospheric : RoomComponent, IContainerHolderRoom<Atm
 
 
     private bool renderWindow = false;
-    private AtmosphericContainer container1;
 
     private void DrawMenu(IntVec3 pos)
     {
@@ -459,7 +470,5 @@ public class RoomComponent_Atmospheric : RoomComponent, IContainerHolderRoom<Atm
     {
         return TryAddValueToRoom(def.dissipateTo, dissipatedAmount, out actual);
     }
-
-    AtmosphericContainer IContainerImplementer<AtmosphericDef, IContainerHolderRoom<AtmosphericDef>, AtmosphericContainer>.Container => container1;
 }
 

@@ -46,13 +46,13 @@ namespace TAE
         //
         public void Notify_EnteredAtmosphere(RoomComponent_Atmospheric atmosphere)
         {
-            currentAtmosphere = atmosphere;
+             currentAtmosphere = atmosphere;
         }
 
         //Implies leaving outside
         public void Notify_Clear()
         {
-            currentAtmosphere = null;
+             currentAtmosphere = null;
         }
     }
 }

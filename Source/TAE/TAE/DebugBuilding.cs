@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using RimWorld;
 using TeleCore;
 using TeleCore.Rendering;
@@ -153,6 +154,8 @@ public class ITab_TAEDebug : ITab
         Listing_Standard standard = new Listing_Standard();
         standard.Begin(settingsRect);
         standard.CheckboxLabeled("Show AtmosPortals", ref SelBuilding.ShowAtmosPortals);
+        standard.CheckboxLabeled("Show All AtmosComps", ref SelBuilding.ShowAtmosComps);
+
         standard.End();
     }
 
@@ -192,6 +195,7 @@ public class DebugBuilding : Building
     
     //
     public bool ShowAtmosPortals = true;
+    public bool ShowAtmosComps = false;
     public bool ShowAllBorderThings = true;
 
     
@@ -223,12 +227,36 @@ public class DebugBuilding : Building
 
     public override void DrawGUIOverlay()
     {
-        base.DrawGUIOverlay();
         GenMapUI.DrawThingLabel(GenMapUI.LabelDrawPosFor(Position), $"[{Atmos.Room.ID}]", Color.white);
+        
+        if (ShowAtmosComps)
+        {
+            var mouse = UI.MouseCell();
+            if (!mouse.InBounds(Map)) return;
+            var room = mouse.GetRoomFast(Find.CurrentMap);
+            var tracker = room?.RoomTracker();
+            var comp = room?.GetRoomComp<RoomComponent_Atmospheric>();
+            
+            Rect rect = new Rect(Event.current.mousePosition.x, Event.current.mousePosition.y, 350, 200);
+            Widgets.DrawMenuSection(rect);
+            WidgetStackPanel.Begin(rect);
+            WidgetStackPanel.DrawHeader("Atmospheric");
+            WidgetStackPanel.DrawRow("Room:", $"[{room?.ID}]: {room?.CellCount}");
+            WidgetStackPanel.DrawRow("Tracker:", $"{tracker}");
+            WidgetStackPanel.DrawRow("Comp:", $"{comp}");
+            WidgetStackPanel.End();
+        }
     }
 
     public override void Draw()
     {
+        if (ShowAtmosComps)
+        {
+            var room = UI.MouseCell().GetRoomFast(Map);
+            if (room != null)
+                GenDraw.DrawFieldEdges(room.Cells.ToList());
+        }
+
         if (Find.Selector.IsSelected(this))
         {
             foreach (var thing in Atmos.Parent.BorderListerThings.AllThings)

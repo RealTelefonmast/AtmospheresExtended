@@ -126,6 +126,7 @@
 			<li Class="TeleCore.CompProperties_FX"> 
 				<fxLayers>
 					<li>
+						<categoryTag>AirVent</categoryTag>
 						<layerTag>AirVentRotationLayer</layerTag>
 						<fxMode>Dynamic</fxMode>
 						<graphicData>
@@ -140,6 +141,7 @@
 						<needsPower>false</needsPower>
 					</li>
 					<li>
+						<categoryTag>AirVent</categoryTag>
 						<graphicData>
 							<texPath>Buildings/Network/Intake/top</texPath>
 							<graphicClass>Graphic_Single</graphicClass>

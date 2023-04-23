@@ -159,9 +159,9 @@ namespace TAE
         }
 
         //RoomComponent Stuff
-        public override void Create(RoomTracker parent)
+        public override void PostCreate(RoomTracker parent)
         {
-            base.Create(parent);
+            base.PostCreate(parent);
         }
 
         public override void Disband(RoomTracker parent, Map map)
@@ -174,7 +174,7 @@ namespace TAE
             atmosphericCompInt = null;
         }
 
-        public override void PreApply()
+        public override void Init(RoomTracker[] previous = null)
         {
             AirVents.Clear();
             AirLockDoors.Clear();
@@ -192,7 +192,7 @@ namespace TAE
             }
         }
 
-        public override void FinalizeApply()
+        public override void PostInit(RoomTracker[] previous = null)
         {
             //TRLog.Debug($"Updating AirLockComp for [{Room.ID}][Pre]: IsOutside: {Parent.IsOutside} | Role: {Room.Role}");
             if (Parent.IsOutside) return;

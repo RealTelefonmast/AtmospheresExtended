@@ -23,7 +23,12 @@ namespace TAE
                 //TODO: return this[TiberiumDefOf.AtmosphericNetwork].ContainerSet[NetworkRole.Controller].Any(c => !c.Full);
             }
         }
-        
+
+        public override bool FX_ProvidesForLayer(FXArgs args)
+        {
+            return args.categoryTag == "AirVent";
+        }
+
         public override float? FX_GetRotationSpeedOverride(FXLayerArgs args)
         {
             return args.layerTag switch

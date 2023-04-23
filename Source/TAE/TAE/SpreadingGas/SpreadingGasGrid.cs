@@ -107,9 +107,8 @@ public unsafe class SpreadingGasGrid : MapInformation
         //spreadCellCount = Mathf.CeilToInt(map.Area * 0.03125f);
     }
     
-    public override void ExposeData()
+    public override void ExposeDataExtra()
     {
-        base.ExposeData();
     }
 
     #region Public Safe Accessors
