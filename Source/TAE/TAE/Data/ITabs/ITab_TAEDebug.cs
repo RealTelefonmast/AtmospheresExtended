@@ -1,17 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using RimWorld;
 using TeleCore;
-using TeleCore.Rendering;
-using TeleCore.Static.Utilities;
 using UnityEngine;
 using Verse;
 using GridLayout = Verse.GridLayout;
-using WidgetRow = Verse.WidgetRow;
 
 namespace TAE;
-
 
 public class ITab_TAEDebug : ITab
 {
@@ -21,8 +15,8 @@ public class ITab_TAEDebug : ITab
     //
     private static readonly Vector2 WinSize = new Vector2(480f, 480f);
 
-    public DebugBuilding SelBuilding => (DebugBuilding) SelThing;
-    public RoomComponent_Atmospheric Atmos => SelBuilding.Atmos;
+    public Building_Debug Sel => (Building_Debug) SelThing;
+    public RoomComponent_Atmospheric Atmos => Sel.Atmos;
     
     private DebugTabs SelTab { get; set; }
     
@@ -127,18 +121,18 @@ public class ITab_TAEDebug : ITab
                 Widgets.DrawHighlight(nghbRect);
             Widgets.Label(nghbRect, roomComp.ToString());
             var portal = (roomComp as RoomComponent_Atmospheric)?.Portal;
-            bool hasItem = SelBuilding.ActivePortals.Contains(portal);
+            bool hasItem = Sel.ActivePortals.Contains(portal);
             bool previous = hasItem;
             Widgets.Checkbox(checkBoxRect.position, ref hasItem, disabled: portal == null);
             if (previous != hasItem && portal != null)
             {
                 if (hasItem)
                 {
-                    SelBuilding.ActivePortals.Add(portal);
+                    Sel.ActivePortals.Add(portal);
                 }
                 else
                 {
-                    SelBuilding.ActivePortals.Remove(portal);
+                    Sel.ActivePortals.Remove(portal);
                 }
             }
             i++;
@@ -153,8 +147,9 @@ public class ITab_TAEDebug : ITab
         //Settings
         Listing_Standard standard = new Listing_Standard();
         standard.Begin(settingsRect);
-        standard.CheckboxLabeled("Show AtmosPortals", ref SelBuilding.ShowAtmosPortals);
-        standard.CheckboxLabeled("Show All AtmosComps", ref SelBuilding.ShowAtmosComps);
+        standard.CheckboxLabeled("Show AtmosPortals", ref Sel.ShowAtmosPortals);
+        standard.CheckboxLabeled("Show All AtmosComps", ref Sel.ShowAtmosComps);
+        standard.CheckboxLabeled("Hover Container Readout", ref Sel.ShowContainerReadout);
 
         standard.End();
     }
@@ -184,97 +179,5 @@ public class ITab_TAEDebug : ITab
             Text.Anchor = default;
         }
         Widgets.EndGroup();
-    }
-}
-
-public class DebugBuilding : Building
-{
-    //
-    public RoomComponent_Atmospheric Atmos;
-    public HashSet<AtmosphericPortal> ActivePortals;
-    
-    //
-    public bool ShowAtmosPortals = true;
-    public bool ShowAtmosComps = false;
-    public bool ShowAllBorderThings = true;
-
-    
-    public override void SpawnSetup(Map map, bool respawningAfterLoad)
-    {
-        base.SpawnSetup(map, respawningAfterLoad);
-        Atmos = this.GetRoom().GetRoomComp<RoomComponent_Atmospheric>();
-        ActivePortals = new HashSet<AtmosphericPortal>();
-    }
-
-    public void Notify_ActivatePortal(AtmosphericPortal portal)
-    {
-        ActivePortals.Add(portal);
-    }
-
-    public void Notify_DeactivatePortal(AtmosphericPortal portal)
-    {
-        ActivePortals.Remove(portal);
-    }
-    
-    public override void Tick()
-    {
-        base.Tick();
-        if (Atmos.Disbanded)
-        {
-            Atmos = this.GetRoom().GetRoomComp<RoomComponent_Atmospheric>();;
-        }
-    }
-
-    public override void DrawGUIOverlay()
-    {
-        GenMapUI.DrawThingLabel(GenMapUI.LabelDrawPosFor(Position), $"[{Atmos.Room.ID}]", Color.white);
-        
-        if (ShowAtmosComps)
-        {
-            var mouse = UI.MouseCell();
-            if (!mouse.InBounds(Map)) return;
-            var room = mouse.GetRoomFast(Find.CurrentMap);
-            var tracker = room?.RoomTracker();
-            var comp = room?.GetRoomComp<RoomComponent_Atmospheric>();
-            
-            Rect rect = new Rect(Event.current.mousePosition.x, Event.current.mousePosition.y, 350, 200);
-            Widgets.DrawMenuSection(rect);
-            WidgetStackPanel.Begin(rect);
-            WidgetStackPanel.DrawHeader("Atmospheric");
-            WidgetStackPanel.DrawRow("Room:", $"[{room?.ID}]: {room?.CellCount}");
-            WidgetStackPanel.DrawRow("Tracker:", $"{tracker}");
-            WidgetStackPanel.DrawRow("Comp:", $"{comp}");
-            WidgetStackPanel.End();
-        }
-    }
-
-    public override void Draw()
-    {
-        if (ShowAtmosComps)
-        {
-            var room = UI.MouseCell().GetRoomFast(Map);
-            if (room != null)
-                GenDraw.DrawFieldEdges(room.Cells.ToList());
-        }
-
-        if (Find.Selector.IsSelected(this))
-        {
-            foreach (var thing in Atmos.Parent.BorderListerThings.AllThings)
-            {
-                DebugCellRenderer.RenderCell(thing.Position, Color.clear, Color.cyan, 1);
-            }
-        }
-
-        foreach (var portal in ActivePortals)
-        {
-            if (portal?.IsValid ?? false)
-            {
-                GenDraw.DrawTargetingHighlight_Cell(portal.Thing.Position);
-                if (Find.Selector.IsSelected(portal.Thing))
-                {
-                    portal.DrawDebug();
-                }
-            }   
-        }
     }
 }

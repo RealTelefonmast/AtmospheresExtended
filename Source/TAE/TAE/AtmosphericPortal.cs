@@ -41,7 +41,7 @@ namespace TAE
                     connectionDirections[1] = cell.Rot4Relative(building.Position);
             }
             
-            TLog.Debug($"Making portal with {building}: {connections[0]},{connectionDirections[0].ToStringWord()} --> {connections[1]}{connectionDirections[1].ToStringWord()} ");
+            TLog.Debug($"Making portal with {building}: {connections[0]}{connectionDirections[0].ToStringWord()} --> {connections[1]}{connectionDirections[1].ToStringWord()} ");
         }
         
         private bool PreventFlowBack(AtmosphericDef ofDef, RoomComponent_Atmospheric to)

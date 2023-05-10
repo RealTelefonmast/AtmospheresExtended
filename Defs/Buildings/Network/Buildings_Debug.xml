@@ -4,7 +4,7 @@
 	<ThingDef ParentName="BuildingNaturalBase">
 		<defName>AtmosphericDebug</defName>
 		<label>Atmospheric Debug</label>
-		<thingClass>TAE.DebugBuilding</thingClass>
+		<thingClass>TAE.Building_Debug</thingClass>
 		<statBases>
 			<MaxHitPoints>20000</MaxHitPoints>
 			<Beauty>999</Beauty>
@@ -15,6 +15,7 @@
 			<texPath>Things/Building/Power/WoodFiredGenerator</texPath>
 			<drawSize>(1,1)</drawSize>
 		</graphicData>
+		<drawOffscreen>true</drawOffscreen>
 		<drawGUIOverlay>true</drawGUIOverlay>
 		<drawerType>MapMeshAndRealTime</drawerType>
 		<tickerType>Normal</tickerType>

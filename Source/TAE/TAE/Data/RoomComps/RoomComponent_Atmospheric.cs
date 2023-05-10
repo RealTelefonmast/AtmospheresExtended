@@ -45,8 +45,7 @@ public class RoomComponent_Atmospheric : RoomComponent, IContainerHolderRoom<Atm
     
     public AtmosphericContainer Container => container;
 
-    public AtmosphericContainer CurrentContainer =>
-        IsOutdoors ? OutsideContainer : (IsConnector ? selfPortal[0].CurrentContainer : Container);
+    public AtmosphericContainer CurrentContainer => IsOutdoors ? OutsideContainer : (IsConnector ? selfPortal[0].CurrentContainer : Container);
 
     //
     public void Notify_ContainerStateChanged(NotifyContainerChangedArgs<AtmosphericDef> args)
@@ -69,9 +68,8 @@ public class RoomComponent_Atmospheric : RoomComponent, IContainerHolderRoom<Atm
     {
         //If blocked by impassible (wall, etc), skip
         var cacheInfo = b.Map.GetMapInfo<DynamicDataCacheMapInfo>();
-        if (cacheInfo.AtmosphericPassGrid[b.Position] <= 0) return;
 
-        //Otherwise register the structure as a portal (TODO: maybe group multiple portal-structures into single portal struct)
+        //Otherwise register the structure as a portal
         if (!AtmosphereUtility.IsAtmosphericPortal(b)) return;
 
         var bRoom = b.GetRoom();
@@ -435,7 +433,7 @@ public class RoomComponent_Atmospheric : RoomComponent, IContainerHolderRoom<Atm
                 renderer.DrawFor(renderDef, Parent.DrawPos, value);
             }
         }
-        
+
         //
         GenDraw.FillableBarRequest r = default(GenDraw.FillableBarRequest);
         r.center = Parent.MinMaxCorners[0].ToVector3() + new Vector3(0.075f, 0, 0.75f);
