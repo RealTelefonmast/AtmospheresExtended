@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using TeleCore;
 using TeleCore.FlowCore;
+using TeleCore.Generics.Container;
+using TeleCore.Generics.Container.Holder;
+using TeleCore.Network;
 using UnityEngine;
 using Verse;
 
