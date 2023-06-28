@@ -20,7 +20,7 @@ namespace TAE
         [TweakValue("AE.RoomOverlay_SrcMode", 0f, 10f)]
         public static int SrcMode = 2;
 
-        public override Shader Shader => AtmosContent.TextureBlend;
+        public override Shader Shader => TAEUnityContent.TextureBlend;
 
         public Dictionary<AtmosphericDef, Material>.KeyCollection Defs => materialsByDef.Keys;
 
@@ -40,7 +40,7 @@ namespace TAE
         {
             if (!materialsByDef.TryGetValue(def, out var mat))
             {
-                mat = new Material(AtmosContent.TextureBlend);
+                mat = new Material(TAEUnityContent.TextureBlend);
                 InitShaderProps(mat, def);
                 materialsByDef.Add(def, mat);
             }

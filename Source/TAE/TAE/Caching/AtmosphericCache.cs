@@ -3,24 +3,23 @@ using TeleCore;
 using UnityEngine;
 using Verse;
 
-namespace TAE.Caching
+namespace TAE.Caching;
+
+public class AtmosphericCache : IExposable
 {
-    public class AtmosphericCache : IExposable
+    private Map map;
+    internal readonly AtmosphericScriber scriber;
+
+    public AtmosphericMapInfo AtmosphericMapInfo => map.GetMapInfo<AtmosphericMapInfo>();
+
+    public AtmosphericCache(Map map)
     {
-        private Map map;
-        internal readonly AtmosphericScriber scriber;
+        this.map = map;
+        scriber = new AtmosphericScriber(map);
+    }
 
-        public AtmosphericMapInfo AtmosphericMapInfo => map.GetMapInfo<AtmosphericMapInfo>();
-
-        public AtmosphericCache(Map map)
-        {
-            this.map = map;
-            scriber = new AtmosphericScriber(map);
-        }
-
-        public void ExposeData()
-        {
-            scriber.ScribeData();
-        }
+    public void ExposeData()
+    {
+        scriber.ScribeData();
     }
 }

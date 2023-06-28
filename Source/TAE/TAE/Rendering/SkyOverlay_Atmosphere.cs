@@ -40,7 +40,7 @@ namespace TAE
         private Color initColor = Color.white;
         private void CreateCopy()
         {
-            materialInt = AtmosContent.CustomOverlayWorld;
+            materialInt = TAEUnityContent.CustomOverlayWorld;
             SrcMode = (int)materialInt.GetFloat("_SrcMode");
             DstMode = (int)materialInt.GetFloat("_DstMode");
 

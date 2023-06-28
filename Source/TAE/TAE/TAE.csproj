@@ -56,10 +56,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="AirLock\" />
+    <Folder Include="Atmosphere\Rooms\Fluid\" />
+    <Folder Include="Atmosphere\Rooms\Gas\" />
+    <Folder Include="Data\RoomComps\Airlock\" />
     <Folder Include="Data\Systems\" />
     <Folder Include="Data\Values\" />
-    <Folder Include="RoomComponents\" />
   </ItemGroup>
 
   <Target Name="MyCode" BeforeTargets="UpdateReferences">

@@ -5,7 +5,7 @@ using Verse;
 namespace TAE;
 
 [StaticConstructorOnStartup]
-internal static class AtmosContent
+internal static class TAEUnityContent
 {
     private static AssetBundle bundleInt;
     private static Dictionary<string, Shader> lookupShades;

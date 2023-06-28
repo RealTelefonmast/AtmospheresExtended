@@ -2,13 +2,12 @@
 using TeleCore;
 using Verse;
 
-namespace TAE
+namespace TAE;
+
+/// <summary>
+/// Allows you to set biome-wide atmopsheres
+/// </summary>
+public class TAE_BiomeExtension : DefModExtension
 {
-    /// <summary>
-    /// Allows you to set biome-wide atmopsheres
-    /// </summary>
-    public class TAE_BiomeExtension : DefModExtension
-    {
-        public List<DefFloatRef<AtmosphericDef>> uniqueAtmospheres;
-    }
+    public List<DefFloatRef<AtmosphericDef>> uniqueAtmospheres;
 }

@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using TeleCore;
-using TeleCore.FlowCore;
 using TeleCore.Generics.Container;
-using TeleCore.Generics.Container.Holder;
 using TeleCore.Network;
 using UnityEngine;
 using Verse;
@@ -12,12 +10,8 @@ using Verse;
 namespace TAE;
 
 [StaticConstructorOnStartup]
-public class RoomComponent_Atmospheric : RoomComponent, IContainerHolderRoom<AtmosphericDef>, IContainerImplementer<AtmosphericDef, IContainerHolderRoom<AtmosphericDef>, AtmosphericContainer>
+public class RoomComponent_Atmospheric : RoomComponent
 {
-    //
-    private static readonly Material FilledMat = SolidColorMaterials.NewSolidColorMaterial(Color.green, ShaderDatabase.MetaOverlay);
-    private static readonly Material UnFilledMat = SolidColorMaterials.NewSolidColorMaterial(TColor.LightBlack, ShaderDatabase.MetaOverlay);
-
     //
     private int dirtyMarks;
 
@@ -442,8 +436,8 @@ public class RoomComponent_Atmospheric : RoomComponent, IContainerHolderRoom<Atm
         r.center = Parent.MinMaxCorners[0].ToVector3() + new Vector3(0.075f, 0, 0.75f);
         r.size = new Vector2(1.5f, 0.15f);
         r.fillPercent = container.StoredPercent;
-        r.filledMat = FilledMat;
-        r.unfilledMat = UnFilledMat;
+        r.filledMat = AtmosContent.FilledMat;
+        r.unfilledMat = AtmosContent.UnFilledMat;
         r.margin = 0f;
         r.rotation = Rot4.East;
         GenDraw.DrawFillableBar(r);

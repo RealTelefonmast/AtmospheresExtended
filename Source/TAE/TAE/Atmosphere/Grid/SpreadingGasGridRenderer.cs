@@ -108,12 +108,12 @@ public class SpreadingGasGridRenderer
         {
             if (_material == null)
             {
-                if (AtmosContent.InstancedGas == null)
+                if (TAEUnityContent.InstancedGas == null)
                 {
-                    TLog.Error($"Cannot find {nameof(AtmosContent.InstancedGas)}!");
+                    TLog.Error($"Cannot find {nameof(TAEUnityContent.InstancedGas)}!");
                 }
 
-                _material = MaterialPool.MatFrom("Sprites/Gas", AtmosContent.InstancedGas, 3170);
+                _material = MaterialPool.MatFrom("Sprites/Gas", TAEUnityContent.InstancedGas, 3170);
                 _material.SetInt(PropertyTypeCount, SpreadingGasGrid.GasDefsCount);
 
             }

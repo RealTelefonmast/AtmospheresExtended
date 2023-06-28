@@ -87,7 +87,7 @@ public static class UIPatches
         {
             if (worldView || row == null) return;
 
-            SelectAtmosphere(row, AtmosphericContent.AtmosphereIcon, "TAE_ToggleAtmosphereLayer".Translate(), SoundDefOf.Mouseover_ButtonToggle);
+            SelectAtmosphere(row, AtmosContent.AtmosphereIcon, "TAE_ToggleAtmosphereLayer".Translate(), SoundDefOf.Mouseover_ButtonToggle);
             row.ToggleableIcon(ref AtmosphereMod.Mod.Settings.DrawAtmosphereAroundMouse, BaseContent.BadTex, "Toggle AtmosLayer");
         }
         

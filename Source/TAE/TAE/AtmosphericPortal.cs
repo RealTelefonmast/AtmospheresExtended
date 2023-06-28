@@ -15,7 +15,7 @@ public class AtmosphericPortal
     private readonly Dictionary<AtmosphericDef, FlowResult> lastResultByDef = new();
 
     public bool ConnectsToOutside => connections[0].IsOutdoors || connections[1].IsOutdoors;
-    public bool ConnectsToSame => connections[0].IsOutdoors && connections[1].IsOutdoors || connections[0] == connections[1];
+    public bool ConnectsToSelf => connections[0].IsOutdoors && connections[1].IsOutdoors || connections[0] == connections[1];
     public bool IsValid => connector is {Spawned: true}; // && connections[0] != null && connections[1] != null;
         
     public Thing Thing => connector;
@@ -57,7 +57,7 @@ public class AtmosphericPortal
     public void TryEqualize()
     {
         //Ignore connections to same
-        if (ConnectsToSame) return;
+        if (ConnectsToSelf) return;
 
         //Select containers
         var from = connections[0].CurrentContainer;
