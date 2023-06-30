@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using TAE.AtmosphericFlow;
 using TeleCore;
 using TeleCore.Generics.Container;
 using TeleCore.Network;
@@ -9,7 +10,45 @@ using Verse;
 
 namespace TAE;
 
-[StaticConstructorOnStartup]
+public class RoomComponent_Atmosphere : RoomComponent
+{
+    private AtmosphericVolume _volume;
+    
+    public AtmosphericMapInfo AtmosphericInfo => Map.GetMapInfo<AtmosphericMapInfo>();
+
+    public override void Init(RoomTracker[] previous = null)
+    {
+        base.Init(previous);
+    }
+
+    public override void PostInit(RoomTracker[] previous = null)
+    {
+        base.PostInit(previous);
+        foreach (var portal in Parent.RoomPortals)
+        {
+            
+        }
+        
+        
+        AtmosphericInfo.Notify_NewAtmosphericRoom(this);
+    }
+
+    public override void CompTick()
+    {
+        base.CompTick();
+    }
+
+    public override void OnGUI()
+    {
+        base.OnGUI();
+    }
+
+    public override void Draw()
+    {
+        base.Draw();
+    }
+}
+
 public class RoomComponent_Atmospheric : RoomComponent
 {
     //
@@ -95,7 +134,7 @@ public class RoomComponent_Atmospheric : RoomComponent
                     if (otherRoom == null) return;
 
                     var portal = new AtmosphericPortal(b, this, otherRoom.GetRoomComp<RoomComponent_Atmospheric>());
-                    bAtmos.Noitfy_SetSelfPortal(portal);
+                    bAtmos.Notify_SetSelfPortal(portal);
 
                     portals.Add(portal);
                     AtmosphericInfo.Notify_NewPortal(portal);
@@ -134,8 +173,6 @@ public class RoomComponent_Atmospheric : RoomComponent
     {
         CreateContainer();
         MarkDirty();
-
-        //
         Regenerate(previous);
 
         if (Parent.IsProper)
@@ -184,7 +221,7 @@ public class RoomComponent_Atmospheric : RoomComponent
         tracker.Notify_Clear();
     }
 
-    private void Noitfy_SetSelfPortal(AtmosphericPortal portal)
+    private void Notify_SetSelfPortal(AtmosphericPortal portal)
     {
         selfPortal = portal;
     }

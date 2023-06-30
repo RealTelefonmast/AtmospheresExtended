@@ -15,6 +15,8 @@ public class AtmosphereRenderer
 
     private AtmosphericDef selectedAtmosphere;
     
+    private readonly List<SkyOverlay> naturalOverlays = new();
+    
     public AtmosphereRenderer(Map map)
     {
         this.map = map;
@@ -75,7 +77,7 @@ public class AtmosphereRenderer
     }
     
     //Selection
-    public void OpenAtmosphereLayerMenu(Action<bool> callback)
+    internal void OpenAtmosphereLayerMenu(Action<bool> callback)
     {
         List<FloatMenuOption> options = new List<FloatMenuOption>();
         foreach (var atmosphericDef in atmospheres)
@@ -92,5 +94,28 @@ public class AtmosphereRenderer
         }
         
         Find.WindowStack.Add(new FloatMenu(options, "TAE_SelectLayer".Translate()));
+    }
+    
+    private void DrawSkyOverlays()
+    {
+        if (naturalOverlays.NullOrEmpty()) return;
+        for (var i = 0; i < naturalOverlays.Count; i++)
+        {
+            naturalOverlays[i].DrawOverlay(map);
+        }
+    }
+
+    internal void Draw()
+    {
+        DrawSkyOverlays();
+    }
+
+    public void Tick()
+    {
+        foreach (var overlay in naturalOverlays)
+        {
+            overlay.OverlayColor = naturalAtmospheres[0].Def.valueColor;
+            overlay.TickOverlay(map);
+        }
     }
 }

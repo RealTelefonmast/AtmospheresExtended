@@ -64,6 +64,7 @@ public class Comp_ANS_VentBase : Comp_AtmosphericNetworkStructure
         {
             if (TryManipulateAtmosphere(1))
             {
+            PawnKindDef
             }
         }
     }
