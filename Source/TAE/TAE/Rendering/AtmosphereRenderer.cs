@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using TAE.Atmosphere.Rooms;
 using TeleCore;
 using UnityEngine;
 using Verse;
@@ -33,10 +34,10 @@ public class AtmosphereRenderer
     public float CalculateAtmosphereAt(IntVec3 loc, AtmosphericDef def = null)
     {
         var room = loc.GetRoomFast(map);
-        var roomComp = room?.GetRoomComp<RoomComponent_Atmospheric>();
+        var roomComp = room?.GetRoomComp<RoomComponent_Atmosphere>();
         if (roomComp != null)
         {
-            return roomComp.CurrentContainer.StoredPercentOf(def ?? selectedAtmosphere);
+            return roomComp.Volume.StoredPercentOf(def ?? selectedAtmosphere);
         }
         return 0;
     }
@@ -114,7 +115,8 @@ public class AtmosphereRenderer
     {
         foreach (var overlay in naturalOverlays)
         {
-            overlay.OverlayColor = naturalAtmospheres[0].Def.valueColor;
+            //TODO: create config to get color
+            //overlay.OverlayColor = naturalAtmospheres[0].Def.valueColor;
             overlay.TickOverlay(map);
         }
     }

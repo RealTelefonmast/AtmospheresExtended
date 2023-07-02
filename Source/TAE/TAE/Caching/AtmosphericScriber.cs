@@ -9,8 +9,8 @@ internal class AtmosphericScriber
 {
     private Map map;
 
-    private DefValueStack<AtmosphericDef>[] temporaryGrid;
-    private DefValueStack<AtmosphericDef>[] atmosphericGrid;
+    private DefValueStack<AtmosphericDef, double>[] temporaryGrid;
+    private DefValueStack<AtmosphericDef, double>[] atmosphericGrid;
 
     private AtmosphericMapInfo AtmosphericMapInfo => map.GetMapInfo<AtmosphericMapInfo>();
 
@@ -27,7 +27,7 @@ internal class AtmosphericScriber
         var values = atmosphericGrid[map.cellIndices.NumGridCells];
         if (values.IsValid)
         {
-            AtmosphericMapInfo.MapContainer.LoadFromStack(values);
+            AtmosphericMapInfo.MapVolume.Volume.LoadFromStack(values);
         }
 
         foreach (var comp in AtmosphericMapInfo.AllAtmosphericRooms)
@@ -36,7 +36,7 @@ internal class AtmosphericScriber
             var valueStack = atmosphericGrid[index];
             if (valueStack.IsValid)
             {
-                comp.Container.LoadFromStack(valueStack);
+                comp.Volume.LoadFromStack(valueStack);
             }
         }
             
@@ -49,14 +49,14 @@ internal class AtmosphericScriber
         int arraySize = map.cellIndices.NumGridCells + 1;
         if (Scribe.mode == LoadSaveMode.Saving)
         {
-            temporaryGrid = new DefValueStack<AtmosphericDef>[arraySize];
-            var outsideAtmosphere = AtmosphericMapInfo.MapContainer.ValueStack;
+            temporaryGrid = new DefValueStack<AtmosphericDef,double>[arraySize];
+            var outsideAtmosphere = AtmosphericMapInfo.MapVolume.Volume.Stack;
             temporaryGrid[arraySize - 1] = outsideAtmosphere;
                 
             foreach (var roomComp in AtmosphericMapInfo.AllAtmosphericRooms)
             {
                 if (roomComp.IsOutdoors) continue;
-                var roomAtmosphereStack = roomComp.Container.ValueStack;
+                var roomAtmosphereStack = roomComp.Volume.Stack;
                 foreach (IntVec3 c2 in roomComp.Room.Cells)
                 {
                     temporaryGrid[map.cellIndices.CellToIndex(c2)] = roomAtmosphereStack;
@@ -67,7 +67,7 @@ internal class AtmosphericScriber
 
         if (Scribe.mode == LoadSaveMode.LoadingVars)
         {
-            atmosphericGrid = new DefValueStack<AtmosphericDef>[arraySize];
+            atmosphericGrid = new DefValueStack<AtmosphericDef,double>[arraySize];
         }
 
         //Turn temp grid into byte arrays
@@ -87,7 +87,7 @@ internal class AtmosphericScriber
                 DataExposeUtility.ByteArray(ref dataBytes, $"{type.defName}.atmospheric");
                 DataSerializeUtility.LoadUshort(dataBytes, arraySize, delegate(int idx, ushort idxValue)
                 {
-                    var atmosStack =  new DefFloat<AtmosphericDef>(type, idxValue);
+                    var atmosStack =  new DefValue<AtmosphericDef,double>(type, idxValue);
                     if (atmosStack.Value > 0)
                     {
                         atmosphericGrid[idx] += atmosStack;

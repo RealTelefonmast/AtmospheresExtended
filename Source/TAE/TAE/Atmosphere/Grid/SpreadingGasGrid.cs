@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
+using TAE.Atmosphere.Rooms;
 using TeleCore;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
@@ -305,11 +306,12 @@ public unsafe class SpreadingGasGrid : MapInformation
             if (def.dissipateTo != null)
             {
                 var room = cell.GetRoomFast(map);
-                var roomComp = room.GetRoomComp<RoomComponent_Atmospheric>();
-                if (room is {ProperRoom: true} && roomComp.Notify_SpradingGasDissipating(def, def.dissipationAmount, out var actual))
-                {
-                    SetDensity_Direct(index, defID, (ushort)Math.Max(cellValue.value - actual.ActualAmount, 0));
-                }
+                var roomComp = room.GetRoomComp<RoomComponent_Atmosphere>();
+                //TODO: Add dissipation
+                // if (room is {ProperRoom: true} && roomComp.Notify_SpradingGasDissipating(def, def.dissipationAmount, out var actual))
+                // {
+                //     SetDensity_Direct(index, defID, (ushort)Math.Max(cellValue.value - actual.ActualAmount, 0));
+                // }
             }
             return;
         }

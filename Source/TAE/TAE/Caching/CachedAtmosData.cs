@@ -1,4 +1,5 @@
-﻿using TeleCore;
+﻿using TAE.Atmosphere.Rooms;
+using TeleCore;
 using TeleCore.Primitive;
 
 namespace TAE.Caching;
@@ -6,21 +7,21 @@ namespace TAE.Caching;
 public struct CachedAtmosData
 {
     public int roomID;
-    public DefValueStack<AtmosphericDef> stack;
+    public DefValueStack<AtmosphericDef,double> stack;
 
     public CachedAtmosData()
     {
         roomID = -1;
-        stack = new DefValueStack<AtmosphericDef>();
+        stack = new DefValueStack<AtmosphericDef, double>();
     }
         
-    public CachedAtmosData(RoomComponent_Atmospheric roomComp)
+    public CachedAtmosData(RoomComponent_Atmosphere roomComp)
     {
         roomID = roomComp.Room.ID;
-        stack = roomComp.Container.ValueStack;
+        stack = roomComp.Volume.Stack;
         if (roomComp.IsOutdoors)
         {
-            stack += roomComp.OutsideContainer.ValueStack;
+            stack += roomComp.AtmosphericInfo.MapVolume.Volume.Stack;
         }
     }
         

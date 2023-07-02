@@ -2,6 +2,7 @@
 using System.Linq;
 using HarmonyLib;
 using RimWorld;
+using TAE.Atmosphere.Rooms;
 using TeleCore;
 using UnityEngine;
 using Verse;
@@ -13,7 +14,7 @@ namespace TAE
     {
         //
         private bool hasAirLockRoleInt;
-        private RoomComponent_Atmospheric atmosphericCompInt;
+        private RoomComponent_Atmosphere atmosphericCompInt;
 
         //
         private HashSet<Building> AirVents = new();
@@ -22,7 +23,7 @@ namespace TAE
         private HashSet<Building_Airlock> AirLockDoors = new();
 
         //
-        public RoomComponent_Atmospheric Atmospheric => atmosphericCompInt ??= Parent.GetRoomComp<RoomComponent_Atmospheric>();
+        public RoomComponent_Atmosphere Atmospheric => atmosphericCompInt ??= Parent.GetRoomComp<RoomComponent_Atmosphere>();
 
         //States
         //A room with two airlock doors, incapable of cleaning
@@ -36,7 +37,7 @@ namespace TAE
 
         //Conditions
         public bool IsFunctional => (!IsAirLock || CanVent);
-        public bool IsClean => Atmospheric.CurrentContainer.TotalStored <= 0; //TODO: Add gas && Atmospheric.PhysicalGas.NullOrEmpty();
+        public bool IsClean => Atmospheric.Volume.TotalValue <= 0; //TODO: Add gas && Atmospheric.PhysicalGas.NullOrEmpty();
         public bool IsBeingCleaned => !IsClean && CanVent;
 
         public bool CanVent => IsActiveAirLock && AirVentComps.All(c => c.CanVent);

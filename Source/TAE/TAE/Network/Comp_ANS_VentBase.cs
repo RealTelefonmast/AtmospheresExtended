@@ -33,12 +33,12 @@ public class Comp_ANS_VentBase : Comp_AtmosphericNetworkStructure
                 switch (VentProps.ventMode)
                 {
                     case AtmosphericVentMode.Intake:
-                        if (AtmosRoom.Container.StoredValueOf(def) <= 0) return false;
-                        if (AtmosNetwork.Container.Full) return false;
+                        if (AtmosRoom.Volume.StoredValueOf(def) <= 0) return false;
+                        if (AtmosNetwork.Volume.Full) return false;
                         break;
                     case AtmosphericVentMode.Output:
-                        if (AtmosRoom.Container.StoredValueOf(def) >= 1) return false;
-                        if (AtmosNetwork.Container.Empty) return false;
+                        if (AtmosRoom.Volume.StoredValueOf(def) >= 1) return false;
+                        if (AtmosNetwork.Volume.Empty) return false;
                         break;
                     case AtmosphericVentMode.TwoWay:
                         break;
@@ -54,7 +54,7 @@ public class Comp_ANS_VentBase : Comp_AtmosphericNetworkStructure
         base.PostSpawnSetup(respawningAfterLoad);
         _flickableComp = parent.GetComp<CompFlickable>();
         intakeCell = VentProps.GetIntakePos(parent.Position, parent.Rotation);
-        TLog.Debug($"Created vent with allowed values: {VentProps.AllowedValues.ToStringSafeEnumerable()} and\n{AtmosNetwork.Props.containerConfig.AllowedValues}");
+        //TLog.Debug($"Created vent with allowed values: {VentProps.AllowedValues.ToStringSafeEnumerable()} and\n{AtmosNetwork.Props.containerConfig.AllowedValues}");
     }
     
     public override void CompTick()
@@ -62,14 +62,13 @@ public class Comp_ANS_VentBase : Comp_AtmosphericNetworkStructure
         base.CompTick();
         if (CanTickNow && CanManipulateNow)
         {
-            if (TryManipulateAtmosphere(1))
+            //if (TryManipulateAtmosphere(1))
             {
-            PawnKindDef
             }
         }
     }
 
-    private void TryEqualize(AtmosphericDef atmosphericDef, int tickRate = 1)
+    /*private void TryEqualize(AtmosphericDef atmosphericDef, int tickRate = 1)
     {
         var roomComp = AtmosRoom;
         var roomContainer = roomComp.CurrentContainer;
@@ -121,9 +120,9 @@ public class Comp_ANS_VentBase : Comp_AtmosphericNetworkStructure
                 }
             }
         }
-    }
+    }*/
 
-    private bool TryManipulateAtmosphere(int tick)
+    /*private bool TryManipulateAtmosphere(int tick)
     {
         int totalThroughput = VentProps.gasThroughPut * tick;
         foreach (var def in VentProps.AllowedValues)
@@ -164,7 +163,7 @@ public class Comp_ANS_VentBase : Comp_AtmosphericNetworkStructure
             }
         }
         return false;
-    }
+    }*/
     
     //Helpers
     //Pressure check hack, if other container has higher room pressure it can send to this current vent
@@ -174,7 +173,7 @@ public class Comp_ANS_VentBase : Comp_AtmosphericNetworkStructure
         {
             AtmosphericVentMode.Intake => false,
             AtmosphericVentMode.Output => true,
-            AtmosphericVentMode.TwoWay => AtmosRoom.Container.StoredPercent < other.AtmosRoom.Container.StoredPercent,
+            AtmosphericVentMode.TwoWay => AtmosRoom.Volume.FillPercent < other.AtmosRoom.Volume.FillPercent,
             _ => false
         };
     }
@@ -184,6 +183,6 @@ public class Comp_ANS_VentBase : Comp_AtmosphericNetworkStructure
     {
         var adjacencyList = AtmosNetwork.Network.Graph.GetAdjacencyList(AtmosNetwork);
         if (adjacencyList == null || !adjacencyList.Any()) return false;
-        return adjacencyList.Any(c => c.Parent is Comp_ANS_VentBase pvent && pvent.NeedsToReceiveFrom(this));
+        return adjacencyList.Any(c => c.Item2.Value.Parent is Comp_ANS_VentBase pvent && pvent.NeedsToReceiveFrom(this));
     }
 }

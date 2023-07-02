@@ -32,21 +32,30 @@
 				<networks>
 					<li>
 						<networkDef>AtmosphericNetwork</networkDef>
-						<networkRoles>
+						<roles>
 							<li>Transmitter</li>
 							<li>Controller</li>
 							<li>Storage</li>
-						</networkRoles>
-						<containerConfig>
+						</roles>
+						<volumeConfig>
+							<capacity>1000</capacity>
+							<area>1</area>
+							<elevation>0</elevation>
+							<height>1</height>
+							<!--
 							<baseCapacity>1000</baseCapacity>
 							<dropContents>false</dropContents>
 							<valueDefs>
 								<fromCollection>AtmosphericNetwork</fromCollection>
 							</valueDefs>
-						</containerConfig>
+							-->
+						</volumeConfig>
 					</li>
 				</networks>
-				<!--<generalIOPattern>++|++</generalIOPattern>-->
+				<generalIOConfig>
+					<patternSize>(4,4)</patternSize>
+					<pattern>#XX#|X++X|X++X|#XX#</pattern>
+				</generalIOConfig>
 			</li>
 			<li Class="CompProperties_Power">
 				<compClass>CompPowerTrader</compClass>
@@ -108,20 +117,28 @@
 				<networks>
 					<li>
 						<networkDef>AtmosphericNetwork</networkDef>
-						<networkRoles>
+						<roles>
 							<li>Transmitter</li>
 							<li>Producer</li>
-						</networkRoles>
-						<containerConfig>
+						</roles>
+						<volumeConfig>
+							<capacity>100</capacity>
+							<area>1</area>
+							<elevation>0</elevation>
+							<height>1</height>
+							<!--
 							<baseCapacity>100</baseCapacity>
 							<dropContents>false</dropContents>
 							<valueDefs>
 								<fromCollection>AtmosphericNetwork</fromCollection>
 							</valueDefs>
-						</containerConfig>
+							-->
+						</volumeConfig>
 					</li>
 				</networks>
-				<generalIOPattern>I</generalIOPattern>
+				<generalIOConfig>
+					<pattern>#I#I+I#I#</pattern>
+				</generalIOConfig>
 			</li>
 			<li Class="TeleCore.CompProperties_FX"> 
 				<fxLayers>
@@ -209,20 +226,28 @@
 				<networks>
 					<li>
 						<networkDef>AtmosphericNetwork</networkDef>
-						<networkRoles>
+						<roles>
 							<li>Transmitter</li>
 							<li>Requester</li>
-						</networkRoles>
-						<containerConfig>
+						</roles>
+						<volumeConfig>
+							<capacity>100</capacity>
+							<area>1</area>
+							<elevation>0</elevation>
+							<height>1</height>
+							<!--
 							<baseCapacity>100</baseCapacity>
 							<dropContents>false</dropContents>
 							<valueDefs>
 								<fromCollection>AtmosphericNetwork</fromCollection>
 							</valueDefs>
-						</containerConfig>
+							-->
+						</volumeConfig>
 					</li>
 				</networks>
-				<generalIOPattern>+</generalIOPattern>
+				<generalIOConfig>
+					<pattern>+</pattern>
+				</generalIOConfig>
 			</li>
 			<li Class="CompProperties_Power">
 				<compClass>CompPowerTrader</compClass>
@@ -283,21 +308,27 @@
 					<li>
 						<networkDef>AtmosphericNetwork</networkDef>
 						<requiresController>false</requiresController>
-						<networkRoles>
+						<roles>
 							<li>Transmitter</li>
 							<li>Storage</li>
-						</networkRoles>
-						<containerConfig>
+						</roles>
+						<volumeConfig>
+							<capacity>400</capacity>
+							
+							<!--
 							<baseCapacity>400</baseCapacity>
 							<dropContents>false</dropContents>
 							<storeEvenly>true</storeEvenly>
 							<valueDefs>
 								<fromCollection>AtmosphericNetwork</fromCollection>
 							</valueDefs>
-						</containerConfig>
+							-->
+						</volumeConfig>
 					</li>
 				</networks>
-				<generalIOPattern>+</generalIOPattern>
+				<generalIOConfig>
+					<pattern>#+#+#+#+#</pattern>
+				</generalIOConfig>
 			</li>
 			<li Class="CompProperties_Flickable">
 				<commandTexture>UI/Commands/Vent</commandTexture>

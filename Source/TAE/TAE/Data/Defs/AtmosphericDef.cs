@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using TAE.Static;
 using TeleCore;
-using TeleCore.Defs;
 using Verse;
 
 namespace TAE;

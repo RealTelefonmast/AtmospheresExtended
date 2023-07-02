@@ -8,7 +8,9 @@ namespace TAE;
 public class AtmosphericTransferWorker
 {
     private AtmosphericDef def;
-        
+
+    //TODO: Reuse for custom gas pressure workers
+    /*
     public AtmosphericTransferWorker(SpreadingGasTypeDef def)
     {
         this.def = def.dissipateTo;
@@ -37,5 +39,5 @@ public class AtmosphericTransferWorker
     public void ProcessFlow(Rot4 flowDir, IntVec3 flowOut, RoomComponent_Atmospheric flowInto)
     {
         FleckMaker.ThrowExplosionCell(flowOut, flowInto.Map, FleckDefOf.ExplosionFlash, Color.cyan);
-    }
+    }*/
 }

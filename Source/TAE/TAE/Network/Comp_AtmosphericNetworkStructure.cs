@@ -1,21 +1,23 @@
-﻿using TeleCore;
+﻿using TAE.Atmosphere.Rooms;
+using TeleCore;
+using TeleCore.Network.Data;
 using Verse;
 
 namespace TAE
 {
     public class Comp_AtmosphericNetworkStructure : Comp_Network
     {
-        private RoomComponent_Atmospheric atmosphericInt;
+        private RoomComponent_Atmosphere atmosphericInt;
 
         //
-        public NetworkSubPart AtmosNetwork { get; private set; }
-        public RoomComponent_Atmospheric AtmosRoom
+        public INetworkPart AtmosNetwork { get; private set; }
+        public RoomComponent_Atmosphere AtmosRoom
         {
             get
             {
                 if (atmosphericInt == null || atmosphericInt.Parent.IsDisbanded)
                 {
-                    atmosphericInt = AtmosphericSource.GetRoomComp<RoomComponent_Atmospheric>();
+                    atmosphericInt = AtmosphericSource.GetRoomComp<RoomComponent_Atmosphere>();
                 }
                 return atmosphericInt;
             }

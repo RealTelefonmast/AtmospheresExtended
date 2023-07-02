@@ -42,12 +42,14 @@
 				<networks>
 					<li>
 						<networkDef>AtmosphericNetwork</networkDef>
-						<networkRoles>
+						<roles>
 							<li>Transmitter</li>
-						</networkRoles>
+						</roles>
 					</li>
 				</networks>
-				<generalIOPattern>+</generalIOPattern>
+				<generalIOConfig>
+					<pattern>#+#+#+#+#</pattern>
+				</generalIOConfig>
 			</li>
 		</comps>
 		<modExtensions>

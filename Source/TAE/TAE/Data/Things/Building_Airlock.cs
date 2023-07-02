@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System.Text;
 using RimWorld;
+using TAE.Atmosphere.Rooms;
 using UnityEngine;
 using Verse;
 
@@ -143,8 +144,8 @@ public class Building_Airlock : Building_Door
     public override string GetInspectString()
     {
         StringBuilder sb = new StringBuilder(base.GetInspectString());
-        sb.AppendLine($"{RoomComps[0].Parent.GetRoomComp<RoomComponent_Atmospheric>().Portal}" +
-                      $"\n{RoomComps[1].Parent.GetRoomComp<RoomComponent_Atmospheric>().Portal}");
+        //sb.AppendLine($"{RoomComps[0].Parent.GetRoomComp<RoomComponent_Atmosphere>().Portal}" +
+                      //$"\n{RoomComps[1].Parent.GetRoomComp<RoomComponent_Atmosphere>().Portal}");
         if (DebugSettings.godMode)
         {
             sb.AppendLine($"IsFunctioning: {IsFunctioning}");

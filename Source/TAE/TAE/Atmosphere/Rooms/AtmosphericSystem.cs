@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using TAE.AtmosphericFlow;
-using TeleCore.Network.Flow.Values;
 
 namespace TAE.Atmosphere.Rooms;
 
@@ -10,6 +9,14 @@ public class AtmosphericSystem
     private List<AtmosphericVolume> _volumes;
     private Dictionary<RoomComponent_Atmosphere, AtmosphericVolume> _flowBoxByPart;
     private Dictionary<AtmosphericVolume, List<AtmosInterface>> _connections;
+    //Note: Interface represents a portal between rooms
+    
+    public AtmosphericSystem()
+    {
+        _volumes = new List<AtmosphericVolume>();
+        _flowBoxByPart = new Dictionary<RoomComponent_Atmosphere, AtmosphericVolume>();
+        _connections = new Dictionary<AtmosphericVolume, List<AtmosInterface>>();
+    }
     
     public void Tick()
     {
@@ -71,6 +78,7 @@ public class AtmosphericSystem
     public double CSquared => 0.03;
     public double DampFriction => 0.01;
 
+    //TODO:Adjust flow based on gas/fluid properties
     private double FlowFunc(AtmosphericVolume from, AtmosphericVolume to, double f)
     {
         var dp = Pressure(from) - Pressure(to); // pressure differential

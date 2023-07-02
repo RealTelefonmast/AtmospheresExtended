@@ -3,8 +3,6 @@ using TAE.Atmosphere.Rooms;
 using TAE.AtmosphericFlow;
 using TAE.Caching;
 using TeleCore;
-using TeleCore.Network;
-using TeleCore.Network.Flow.Values;
 using TeleCore.Primitive;
 using UnityEngine;
 using Verse;
@@ -17,15 +15,12 @@ public class AtmosphericOutdoorSet
     
     public AtmosphericVolume Volume => _volume;
     
-    
     public AtmosphericOutdoorSet(int cellCount)
     {
         //var alldefs = AtmosResources.AllAtmosphericDefs;
         _volume = new AtmosphericVolume();
         _volume.UpdateVolume(cellCount);
     }
-    
-    
 }
 
 public class AtmosphericMapInfo : MapInformation
@@ -36,8 +31,8 @@ public class AtmosphericMapInfo : MapInformation
     
     private readonly AtmosphereRenderer _renderer;
 
-    private readonly Dictionary<Room, RoomComponent_Atmospheric> _compLookUp;
-    private readonly List<RoomComponent_Atmospheric> _allComps;
+    private readonly Dictionary<Room, RoomComponent_Atmosphere> _compLookUp;
+    private readonly List<RoomComponent_Atmosphere> _allComps;
 
     private readonly List<IAtmosphericSource> _atmosphericSources;
 
@@ -45,15 +40,10 @@ public class AtmosphericMapInfo : MapInformation
     private readonly List<DefFloat<AtmosphericDef>> naturalAtmospheres = new();
     
     //
-    public List<RoomComponent_Atmospheric> AllAtmosphericRooms => _allComps;
+    public List<RoomComponent_Atmosphere> AllAtmosphericRooms => _allComps;
     public AtmosphericCache Cache => _cache;
     public AtmosphereRenderer Renderer => _renderer;
-        
-    //Container
-    public void Notify_ContainerStateChanged(NotifyContainerChangedArgs<AtmosphericDef> args)
-    {
-            
-    }
+    public AtmosphericOutdoorSet MapVolume => _mapVolume;
 
     public AtmosphericMapInfo(Map map) : base(map)
     {
@@ -64,8 +54,8 @@ public class AtmosphericMapInfo : MapInformation
         //mapContainer = new AtmosphericContainer(null, AtmosResources.DefaultAtmosConfig(map.cellIndices.NumGridCells));
             
         //
-        _compLookUp = new Dictionary<Room, RoomComponent_Atmospheric>();
-        _allComps = new List<RoomComponent_Atmospheric>();
+        _compLookUp = new Dictionary<Room, RoomComponent_Atmosphere>();
+        _allComps = new List<RoomComponent_Atmosphere>();
         _atmosphericSources = new List<IAtmosphericSource>();
             
         //
@@ -78,19 +68,19 @@ public class AtmosphericMapInfo : MapInformation
     }
 
     //
-    public RoomComponent_Atmospheric ComponentAt(IntVec3 pos)
+    public RoomComponent_Atmosphere ComponentAt(IntVec3 pos)
     {
         var room = pos.GetRoomFast(Map);
         return ComponentAt(room);
     }
 
-    public RoomComponent_Atmospheric ComponentAt(District district)
+    public RoomComponent_Atmosphere ComponentAt(District district)
     {
         if (district is null) return null;
         return ComponentAt(district.Room);
     }
 
-    public RoomComponent_Atmospheric ComponentAt(Room room)
+    public RoomComponent_Atmosphere ComponentAt(Room room)
     {
         if (room is null) return null;
         if (!_compLookUp.TryGetValue(room, out var value))
@@ -114,7 +104,7 @@ public class AtmosphericMapInfo : MapInformation
     {
         TLog.Message("Regenerating map info...");
         var totalCells = Map.cellIndices.NumGridCells; //AllComps.Where(c => c.IsOutdoors).Sum(c => c.Room.CellCount) 
-        MapContainer.Notify_RoomChanged(null, totalCells);
+        _mapVolume.Volume.UpdateVolume(totalCells);
     }
 
     //
@@ -147,11 +137,11 @@ public class AtmosphericMapInfo : MapInformation
 
         foreach (var atmosphere in naturalAtmospheres)
         {
-            var storedOf = MapContainer.StoredValueOf(atmosphere.Def);
-            var desired = MapContainer.Capacity * atmosphere.Value;
-            var diff = Mathf.Round(desired - storedOf);
+            var storedOf = MapVolume.Volume.StoredValueOf(atmosphere.Def);
+            var desired =  MapVolume.Volume.MaxCapacity * atmosphere.Value;
+            var diff = desired - storedOf;
             if(diff <= 0) continue;
-            MapContainer.TryAddValue(atmosphere.Def, diff, out _);
+            //TODO: _mapVolume.Volume.TryAddValue(atmosphere.Def, diff, out _);
         }
     }
         
@@ -166,7 +156,7 @@ public class AtmosphericMapInfo : MapInformation
             foreach (var atmosphere in extension.uniqueAtmospheres)
             {
                 naturalAtmospheres.Add(atmosphere);
-                mapContainer.Data_RegisterSourceType(atmosphere.Def);
+                //TODO: MapVolume.Data_RegisterSourceType(atmosphere.Def);
             }
             useRulesets = false;
         }
@@ -191,7 +181,7 @@ public class AtmosphericMapInfo : MapInformation
                         foreach (var atmosphere in ruleSet.atmospheres)
                         {
                             naturalAtmospheres.Add(atmosphere);
-                            mapContainer.Data_RegisterSourceType(atmosphere.Def);
+                            //TODO: mapContainer.Data_RegisterSourceType(atmosphere.Def);
                         }
                     }
                 }
@@ -207,7 +197,7 @@ public class AtmosphericMapInfo : MapInformation
                 {
                     var newOverlay = new SkyOverlay_Atmosphere(atmosphere.Def.naturalOverlay);
 
-                    naturalOverlays.Add(newOverlay);
+                    //TODO: naturalOverlays.Add(newOverlay);
                 });
             }
         }
@@ -216,10 +206,11 @@ public class AtmosphericMapInfo : MapInformation
     private void TryAddToAtmosphereFromSource(IAtmosphericSource source)
     {
         if (!source.IsActive) return;
-        if (_compLookUp[source.Room].TryAddValueToRoom(source.AtmosphericDef, source.PushAmount, out _))
-        {
-            //TODO: effect on source...
-        }
+        //TODO: 
+        // if (_compLookUp[source.Room].TryAddValueToRoom(source.AtmosphericDef, source.PushAmount, out _))
+        // {
+        //     //TODO: effect on source...
+        // }
 
         /*
         if (Pollution != lastPollutionInt)
@@ -249,13 +240,13 @@ public class AtmosphericMapInfo : MapInformation
         
     //Data
     // -- RoomComponents
-    public void Notify_NewComp(RoomComponent_Atmospheric comp)
+    public void Notify_NewComp(RoomComponent_Atmosphere comp)
     {
         _allComps.Add(comp);
         _compLookUp.Add(comp.Room, comp);
     }
 
-    public void Notify_DisbandedComp(RoomComponent_Atmospheric comp)
+    public void Notify_DisbandedComp(RoomComponent_Atmosphere comp)
     {
         _allComps.Remove(comp);
         _compLookUp.Remove(comp.Room);

@@ -13,7 +13,8 @@ namespace TAE
         {
             public static void Postfix(Map ___map)
             {
-                ___map.GetMapInfo<AtmosphericMapInfo>().DrawSkyOverlays();
+                //TODO: Fixup renderer
+                //___map.GetMapInfo<AtmosphericMapInfo>().DrawSkyOverlays();
             }
         }
     }

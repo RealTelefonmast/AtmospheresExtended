@@ -1,5 +1,5 @@
 ﻿using RimWorld;
-using TeleCore.Defs;
+using TeleCore;
 using Verse;
 
 namespace TAE;
