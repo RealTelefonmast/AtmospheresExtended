@@ -9,5 +9,5 @@ namespace TAE;
 /// </summary>
 public class TAE_BiomeExtension : DefModExtension
 {
-    public List<DefFloatRef<AtmosphericDef>> uniqueAtmospheres;
+    public List<DefValueLoadable<AtmosphericDef, float>> uniqueAtmospheres;
 }

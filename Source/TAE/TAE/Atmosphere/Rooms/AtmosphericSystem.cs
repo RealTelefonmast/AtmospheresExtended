@@ -1,31 +1,71 @@
 ﻿using System;
 using System.Collections.Generic;
 using TAE.AtmosphericFlow;
+using TeleCore;
+using TeleCore.Primitive;
+using Verse;
 
 namespace TAE.Atmosphere.Rooms;
 
 public class AtmosphericSystem
 {
+    //Map
+    private AtmosphericVolume _mapVolume;
+    private readonly List<DefValue<AtmosphericDef, float>> _naturalAtmospheres = new();
+    private readonly List<IAtmosphericSource> _atmosphericSources;
+    
+    //Rooms
     private List<AtmosphericVolume> _volumes;
     private Dictionary<RoomComponent_Atmosphere, AtmosphericVolume> _flowBoxByPart;
     private Dictionary<AtmosphericVolume, List<AtmosInterface>> _connections;
     //Note: Interface represents a portal between rooms
     
-    public AtmosphericSystem()
+    public AtmosphericSystem(Map map)
     {
+        //
+        _mapVolume = new AtmosphericVolume();
+        _naturalAtmospheres = new List<DefValue<AtmosphericDef, float>>();
+        _atmosphericSources = new List<IAtmosphericSource>();
+        Notify_Regenerate(map.cellIndices.NumGridCells);
+        
+        //
         _volumes = new List<AtmosphericVolume>();
         _flowBoxByPart = new Dictionary<RoomComponent_Atmosphere, AtmosphericVolume>();
         _connections = new Dictionary<AtmosphericVolume, List<AtmosInterface>>();
     }
-    
-    public void Tick()
+
+    public void Init(Map map)
     {
+        GenerateNaturalAtmospheres(map);
+        PushNaturalSaturation(); //Add all natural atmospheres once
+    }
+
+    public void Notify_AddSource(IAtmosphericSource source)
+    {
+        if (_atmosphericSources.Contains(source)) return;
+        _atmosphericSources.Add(source);
+    }
+    
+    public void Notify_RemoveSource(IAtmosphericSource source)
+    {
+        _atmosphericSources.Remove(source);
+    }
+    
+    public void Notify_Regenerate(int cells)
+    {
+        _mapVolume.UpdateVolume(cells);
+    }
+    
+    public void Tick(int tick)
+    {
+        PreTickProcessor(tick);
+
         foreach (var volume in _volumes)
         {
             volume.PrevStack = volume.Stack;
             _connections[volume].ForEach(c => c.Notify_SetDirty());
         }
-        
+
         foreach (var volume in _volumes)
         {
             foreach (var connection in _connections[volume])
@@ -46,7 +86,7 @@ public class AtmosphericSystem
                 var res = conn.To.RemoveContent(conn.Move);
                 volume.AddContent(res);
                 //conn.Notify_ResolvedMove();
-            
+
                 //TODO: Structify for: _connections[fb][i] = conn;
             }
         }
@@ -60,7 +100,7 @@ public class AtmosphericSystem
             {
                 Add(conn.Move);
             }
-            
+
             volume.FlowRate = Math.Max(fp, fn);
             continue;
 
@@ -74,6 +114,132 @@ public class AtmosphericSystem
         }
     }
 
+    private void PreTickProcessor(int tick)
+    {
+        //Keep Natural Saturation Up
+        if (tick % 750 == 0)
+        {
+            PushNaturalSaturation();
+        }
+
+        foreach (var source in _atmosphericSources)
+        {
+            if (!source.Thing.Spawned) continue;
+            if (source.Thing.IsHashIntervalTick(source.PushInterval))
+            {
+                TryAddToAtmosphereFromSource(source);
+            }
+        }
+    }
+
+    private void PushNaturalSaturation()
+    {
+        foreach (var atmosphere in _naturalAtmospheres)
+        {
+            var storedOf = _mapVolume.StoredValueOf(atmosphere.Def);
+            var desired = _mapVolume.MaxCapacity * atmosphere.Value;
+            var diff = desired - storedOf;
+            if (diff <= 0) continue;
+            //TODO: _mapVolume.Volume.TryAddValue(atmosphere.Def, diff, out _);
+        }
+    }
+
+    //Note: Called once to generate all natural atmospheres
+    private void GenerateNaturalAtmospheres(Map map)
+    {
+        if (!_naturalAtmospheres.NullOrEmpty()) return;
+
+        var extension = map.Biome.GetModExtension<TAE_BiomeExtension>();
+        var useRulesets = true;
+        if (extension?.uniqueAtmospheres != null)
+        {
+            foreach (var atmosphere in extension.uniqueAtmospheres)
+            {
+                _naturalAtmospheres.Add(atmosphere);
+                //TODO: MapVolume.Data_RegisterSourceType(atmosphere.Def);
+            }
+
+            useRulesets = false;
+        }
+
+        if (useRulesets)
+        {
+            foreach (var ruleSet in DefDatabase<TAERulesetDef>.AllDefs)
+            {
+                if (ruleSet.Realm == AtmosphericRealm.AnyBiome)
+                {
+                    foreach (var floatRef in ruleSet.atmospheres)
+                    {
+                        _naturalAtmospheres.Add(floatRef);
+                    }
+
+                    continue;
+                }
+
+                if (ruleSet.Realm == AtmosphericRealm.SpecificBiome)
+                {
+                    if (ruleSet.biomes.Contains(map.Biome))
+                    {
+                        foreach (var atmosphere in ruleSet.atmospheres)
+                        {
+                            _naturalAtmospheres.Add(atmosphere);
+                            //TODO: mapContainer.Data_RegisterSourceType(atmosphere.Def);
+                        }
+                    }
+                }
+            }
+        }
+
+        foreach (var atmosphere in _naturalAtmospheres)
+        {
+            if (atmosphere.Def.naturalOverlay != null)
+            {
+                TLog.Debug($"Adding Natural Overlay: {atmosphere.Def}");
+                TeleUpdateManager.Notify_EnqueueNewSingleAction(() =>
+                {
+                    var newOverlay = new SkyOverlay_Atmosphere(atmosphere.Def.naturalOverlay);
+
+                    //TODO: naturalOverlays.Add(newOverlay);
+                });
+            }
+        }
+    }
+    
+    private void TryAddToAtmosphereFromSource(IAtmosphericSource source)
+    {
+        if (!source.IsActive) return;
+        //TODO: 
+        // if (_compLookUp[source.Room].TryAddValueToRoom(source.AtmosphericDef, source.PushAmount, out _))
+        // {
+        //     //TODO: effect on source...
+        // }
+
+        /*
+        if (Pollution != lastPollutionInt)
+        {
+            GameCondition_TiberiumBiome mainCondition = (GameCondition_TiberiumBiome)map.GameConditionManager.GetActiveCondition(TiberiumDefOf.TiberiumBiome);
+            if (mainCondition == null)
+            {
+                GameCondition condition = GameConditionMaker.MakeCondition(TiberiumDefOf.TiberiumBiome);
+                condition.conditionCauser = TRUtils.Tiberium().GroundZeroInfo.GroundZero;
+                condition.Permanent = true;
+                mainCondition = (GameCondition_TiberiumBiome)condition;
+                map.GameConditionManager.RegisterCondition(condition);
+                Log.Message("Adding game condition..");
+            }
+
+            if (!mainCondition.AffectedMaps.Contains(this.map))
+            {
+                mainCondition.AffectedMaps.Add(map);
+                Log.Message("Adding map to game condition..");
+            }
+            //mainCondition.Notify_PollutionChange(map, OutsideContainer.Saturation);
+        }
+
+        lastPollutionInt = Pollution;
+        */
+    }
+    
     public double Friction => 0;
     public double CSquared => 0.03;
     public double DampFriction => 0.01;
@@ -103,7 +269,8 @@ public class AtmosphericSystem
         return flow >= -limit ? flow : -limit;
     }
 
-    private double ClampFunc(AtmosphericVolume from, AtmosphericVolume to, double f, bool enforceMinPipe = true, bool enforceMaxPipe = true)
+    private double ClampFunc(AtmosphericVolume from, AtmosphericVolume to, double f, bool enforceMinPipe = true,
+        bool enforceMaxPipe = true)
     {
         var d0 = 1d / Math.Max(1, _connections[from].Count);
         var d1 = 1d / Math.Max(1, _connections[to].Count);

@@ -19,12 +19,12 @@ namespace TAE
         public override void PostSpawnSetup(bool respawningAfterLoad)
         {
             base.PostSpawnSetup(respawningAfterLoad);
-            Thing.Map.GetMapInfo<AtmosphericMapInfo>().RegisterSource(this);
+            Thing.Map.GetMapInfo<AtmosphericMapInfo>().Notify_AddSource(this);
         }
 
         public override void PostDeSpawn(Map map)
         {
-            map.GetMapInfo<AtmosphericMapInfo>().DeregisterSource(this);
+            map.GetMapInfo<AtmosphericMapInfo>().Notify_RemoveSource(this);
             base.PostDeSpawn(map);
         }
     }

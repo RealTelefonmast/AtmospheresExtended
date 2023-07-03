@@ -7,30 +7,31 @@ namespace TAE.Caching;
 
 internal class AtmosphericScriber
 {
-    private Map map;
+    private AtmosphericMapInfo _mapInfo;
+    private Map _map;
 
     private DefValueStack<AtmosphericDef, double>[] temporaryGrid;
     private DefValueStack<AtmosphericDef, double>[] atmosphericGrid;
 
-    private AtmosphericMapInfo AtmosphericMapInfo => map.GetMapInfo<AtmosphericMapInfo>();
-
-    internal AtmosphericScriber(Map map)
+    internal AtmosphericScriber(AtmosphericMapInfo mapInfo)
     {
-        this.map = map;
+        _mapInfo = mapInfo;
+        _map = mapInfo.Map;
     }
 
-    public void ApplyLoadedDataToRegions()
+    //TODO: Maybe turn this static with a atmosphericmapinfo parameter?
+    internal void ApplyLoadedDataToRegions()
     {
         if (atmosphericGrid == null) return;
-            
-        CellIndices cellIndices = map.cellIndices;
-        var values = atmosphericGrid[map.cellIndices.NumGridCells];
-        if (values.IsValid)
+        
+        var cellIndices = _map.cellIndices;
+        var outsideStack = atmosphericGrid[_map.cellIndices.NumGridCells];
+        if (outsideStack.IsValid)
         {
-            AtmosphericMapInfo.MapVolume.Volume.LoadFromStack(values);
+            _mapInfo.Notify_LoadedOutsideAtmosphere(outsideStack);
         }
 
-        foreach (var comp in AtmosphericMapInfo.AllAtmosphericRooms)
+        foreach (var comp in _mapInfo.AllAtmosphericRooms)
         {
             var index = cellIndices.CellToIndex(comp.Parent.Room.Cells.First());
             var valueStack = atmosphericGrid[index];
@@ -46,7 +47,7 @@ internal class AtmosphericScriber
     internal void ScribeData()
     {
         //TLog.Debug($"Exposing Atmospheric | {Scribe.mode}".Colorize(Color.cyan));
-        int arraySize = map.cellIndices.NumGridCells + 1;
+        int arraySize = _map.cellIndices.NumGridCells + 1;
         if (Scribe.mode == LoadSaveMode.Saving)
         {
             temporaryGrid = new DefValueStack<AtmosphericDef,double>[arraySize];
@@ -59,7 +60,7 @@ internal class AtmosphericScriber
                 var roomAtmosphereStack = roomComp.Volume.Stack;
                 foreach (IntVec3 c2 in roomComp.Room.Cells)
                 {
-                    temporaryGrid[map.cellIndices.CellToIndex(c2)] = roomAtmosphereStack;
+                    temporaryGrid[_map.cellIndices.CellToIndex(c2)] = roomAtmosphereStack;
                 }
             }
         }

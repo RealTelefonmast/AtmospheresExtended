@@ -24,7 +24,13 @@ public class RoomComponent_Atmosphere : RoomComponent
         base.PostInit(previous);
         _volume = new AtmosphericVolume();
         _renderer = new RoomOverlay_Atmospheric();
-        AtmosphericInfo.Notify_NewAtmosphericRoom(this);
+        AtmosphericInfo.Notify_AddRoomComp(this);
+    }
+
+    public override void Disband(RoomTracker parent, Map map)
+    {
+        base.Disband(parent, map);
+        AtmosphericInfo.Notify_RemoveRoomComp(this);
     }
 
     #region Data Notifiers
@@ -44,10 +50,17 @@ public class RoomComponent_Atmosphere : RoomComponent
     }
 
     #endregion
+
+    #region Updates
+
     public override void CompTick()
     {
         base.CompTick();
     }
+
+    #endregion
+
+    #region Rendering
 
     public override void OnGUI()
     {
@@ -58,4 +71,6 @@ public class RoomComponent_Atmosphere : RoomComponent
     {
         base.Draw();
     }
+
+    #endregion
 }

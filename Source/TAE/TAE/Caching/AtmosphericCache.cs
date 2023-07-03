@@ -5,21 +5,20 @@ using Verse;
 
 namespace TAE.Caching;
 
+/// <summary>
+/// Wraps the scribed Atmospheric data into an object for data encapsulation in XML.
+/// </summary>
 public class AtmosphericCache : IExposable
 {
-    private Map map;
-    internal readonly AtmosphericScriber scriber;
+    private AtmosphericScriber _scriber;
 
-    public AtmosphericMapInfo AtmosphericMapInfo => map.GetMapInfo<AtmosphericMapInfo>();
-
-    public AtmosphericCache(Map map)
+    public AtmosphericCache(AtmosphericMapInfo map)
     {
-        this.map = map;
-        scriber = new AtmosphericScriber(map);
+        _scriber = new AtmosphericScriber(map);
     }
 
     public void ExposeData()
     {
-        scriber.ScribeData();
+        _scriber.ScribeData();
     }
 }
