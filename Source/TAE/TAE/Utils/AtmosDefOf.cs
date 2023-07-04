@@ -12,5 +12,6 @@ public static class AtmosDefOf
         
     //
     public static NetworkDef AtmosphericNetwork;
+    public static StatDef GasPermeability;
 
 }

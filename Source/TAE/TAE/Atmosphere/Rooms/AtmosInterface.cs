@@ -4,24 +4,36 @@ namespace TAE.Atmosphere.Rooms;
 
 public class AtmosInterface
 {
-    private AtmosphericVolume _from;
-    private AtmosphericVolume _to;
-    
     public double NextFlow { get; set; }
     public double PrevFlow { get; set; }
     public double Move { get; set; }
     
-    public AtmosphericVolume From => _from;
-    public AtmosphericVolume To => _to;
+    
+    public bool ResolvedFlow { get; private set; }
+    public bool ResolvedMove { get; private set; }
+    
+    public AtmosphericVolume From { get; }
+    public AtmosphericVolume To { get; }
 
     public AtmosInterface(AtmosphericVolume from, AtmosphericVolume to)
     {
-        _from = from;
-        _to = to;
+        From = from;
+        To = to;
     }
 
-    public void Notify_SetDirty()
+    internal void Notify_SetDirty()
     {
-        throw new System.NotImplementedException();
+        ResolvedMove = false;
+        ResolvedFlow = false;
+    }
+
+    internal void Notify_ResolvedMove()
+    {
+        ResolvedMove = true;
+    }
+
+    internal void Notify_ResolvedFlow()
+    {
+        ResolvedFlow = true;
     }
 }

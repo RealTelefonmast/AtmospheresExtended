@@ -21,7 +21,7 @@ public struct CachedAtmosData
         stack = roomComp.Volume.Stack;
         if (roomComp.IsOutdoors)
         {
-            stack += roomComp.AtmosphericInfo.MapVolume.Volume.Stack;
+            stack += roomComp.AtmosphericInfo.MapVolume.Stack;
         }
     }
         

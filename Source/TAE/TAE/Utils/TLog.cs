@@ -2,41 +2,40 @@
 using UnityEngine;
 using Verse;
 
-namespace TAE
+namespace TAE;
+
+internal static class TLog
 {
-    internal static class TLog
+    public static void Error(string msg, string tag = null)
     {
-        public static void Error(string msg, string tag = null)
-        {
-            Log.Error($"{"[TAE]".Colorize(TColor.BlueHighlight)} {msg}");
-        }
+        Log.Error($"{"[TAE]".Colorize(TColor.BlueHighlight)} {msg}");
+    }
 
-        public static void ErrorOnce(string msg, int id)
-        {
-            Log.ErrorOnce($"{"[TAE]".Colorize(TColor.BlueHighlight)} {msg}", id);
-        }
+    public static void ErrorOnce(string msg, int id)
+    {
+        Log.ErrorOnce($"{"[TAE]".Colorize(TColor.BlueHighlight)} {msg}", id);
+    }
 
-        public static void Warning(string msg)
-        {
-            Log.Warning($"{"[TAE]".Colorize(TColor.BlueHighlight)} {msg}");
-        }
+    public static void Warning(string msg)
+    {
+        Log.Warning($"{"[TAE]".Colorize(TColor.BlueHighlight)} {msg}");
+    }
 
-        public static void Message(string msg, Color color)
-        {
-            Log.Message($"{"[TAE]".Colorize(color)} {msg}");
-        }
+    public static void Message(string msg, Color color)
+    {
+        Log.Message($"{"[TAE]".Colorize(color)} {msg}");
+    }
 
-        public static void Message(string msg)
-        {
-            Log.Message($"{"[TAE]".Colorize(TColor.BlueHighlight)} {msg}");
-        }
+    public static void Message(string msg)
+    {
+        Log.Message($"{"[TAE]".Colorize(TColor.BlueHighlight)} {msg}");
+    }
 
-        public static void Debug(string msg, bool flag = true)
+    public static void Debug(string msg, bool flag = true)
+    {
+        if (flag)
         {
-            if (flag)
-            {
-                Log.Message($"{"[TAE-Debug]".Colorize(TColor.Green)} {msg}");
-            }
+            Log.Message($"{"[TAE-Debug]".Colorize(TColor.Green)} {msg}");
         }
     }
 }

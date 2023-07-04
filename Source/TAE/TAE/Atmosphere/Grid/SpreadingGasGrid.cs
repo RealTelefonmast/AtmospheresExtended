@@ -296,8 +296,8 @@ public unsafe class SpreadingGasGrid : MapInformation
         }
         
         var cellValue = gasGridPtr[index][defID];
-        if (cellValue.totalBitVal == 0) return;
-        if (cellValue.value == 0) return;
+        if (cellValue.TotalBitVal == 0) return;
+        //if (cellValue.value == 0) return;
         var def = ((SpreadingGasTypeDef)defID);
 
         //Dissipate Into Room

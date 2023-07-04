@@ -16,9 +16,12 @@ public class AtmosphericSystem
     
     //Rooms
     private List<AtmosphericVolume> _volumes;
-    private Dictionary<RoomComponent_Atmosphere, AtmosphericVolume> _flowBoxByPart;
+    private Dictionary<RoomComponent_Atmosphere, AtmosphericVolume> _relations;
     private Dictionary<AtmosphericVolume, List<AtmosInterface>> _connections;
     //Note: Interface represents a portal between rooms
+    
+    public AtmosphericVolume MapVolume => _mapVolume;
+    public Dictionary<RoomComponent_Atmosphere, AtmosphericVolume> Relations => _relations;
     
     public AtmosphericSystem(Map map)
     {
@@ -30,7 +33,7 @@ public class AtmosphericSystem
         
         //
         _volumes = new List<AtmosphericVolume>();
-        _flowBoxByPart = new Dictionary<RoomComponent_Atmosphere, AtmosphericVolume>();
+        _relations = new Dictionary<RoomComponent_Atmosphere, AtmosphericVolume>();
         _connections = new Dictionary<AtmosphericVolume, List<AtmosInterface>>();
     }
 
@@ -68,12 +71,14 @@ public class AtmosphericSystem
 
         foreach (var volume in _volumes)
         {
-            foreach (var connection in _connections[volume])
+            foreach (var conn in _connections[volume])
             {
-                var flow = connection.NextFlow;
-                flow = FlowFunc(connection.From, connection.To, flow);
-                connection.NextFlow = ClampFunc(connection.From, connection.To, flow);
-                connection.Move = ClampFunc(connection.From, connection.To, flow);
+                if(conn.ResolvedFlow) continue;
+                var flow = conn.NextFlow;
+                flow = FlowFunc(conn.From, conn.To, flow);
+                conn.NextFlow = ClampFunc(conn.From, conn.To, flow);
+                conn.Move = ClampFunc(conn.From, conn.To, flow);
+                conn.Notify_ResolvedFlow();
             }
         }
 
@@ -82,10 +87,10 @@ public class AtmosphericSystem
             for (var i = 0; i < _connections[volume].Count; i++)
             {
                 var conn = _connections[volume][i];
-                //if(conn.ResolvedMove) continue;
+                if(conn.ResolvedMove) continue;
                 var res = conn.To.RemoveContent(conn.Move);
                 volume.AddContent(res);
-                //conn.Notify_ResolvedMove();
+                conn.Notify_ResolvedMove();
 
                 //TODO: Structify for: _connections[fb][i] = conn;
             }

@@ -2,15 +2,21 @@
 
 namespace TAE;
 
-[StructLayout(LayoutKind.Explicit, Size = 6)]
+[StructLayout(LayoutKind.Sequential)]
 public unsafe struct GasCellValue
 {
-    [FieldOffset(0)] public ushort defID = 0;
+    public ushort defID = 0;
+    public ushort value = 0;
+    public ushort overflow = 0;
 
-    [FieldOffset(2)] public readonly uint totalBitVal = 0;
-    [FieldOffset(2)] public ushort value = 0;
-    [FieldOffset(4)] public ushort overflow = 0;
-
+    public uint TotalBitVal
+    {
+        get { return ((uint)overflow << 16) | value; }
+    }
+    
+    public static GasCellValue Invalid => new GasCellValue(0, 0, 0);
+    public static GasCellValue Empty => new GasCellValue(ushort.MaxValue, 0, 0);
+    
     public GasCellValue(ushort defID, ushort value)
     {
         this.defID = defID;
@@ -51,20 +57,31 @@ public unsafe struct GasCellValue
     }
     
     //
-    public static bool operator ==(GasCellValue self, int value)
+    public static bool operator ==(GasCellValue left, GasCellValue right)
     {
-        return self.totalBitVal == value;
+        return left.Equals(right);
+    }
+
+    public static bool operator !=(GasCellValue left, GasCellValue right)
+    {
+        return !(left == right);
     }
     
-    public static bool operator !=(GasCellValue self, int value)
+    public override bool Equals(object obj) 
     {
-        return self.totalBitVal != value;
+        if(obj is not GasCellValue other)
+            return false;
+        return defID == other.defID && value == other.value && overflow == other.overflow;
     }
 
-    //TODO: Add getters
-    public static GasCellValue Invalid { get; }
-    public static GasCellValue Empty { get; }
-
+    public override int GetHashCode()
+    {
+        unchecked // allows overflow without exception
+        {
+            return (TotalBitVal.GetHashCode() * 397) ^ defID.GetHashCode();
+        }
+    }
+    
     public override string ToString()
     {
         return $"[{(SpreadingGasTypeDef)defID}]: ({value}, {overflow})";

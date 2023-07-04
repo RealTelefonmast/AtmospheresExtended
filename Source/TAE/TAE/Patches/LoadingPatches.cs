@@ -3,18 +3,18 @@ using TeleCore;
 using Verse;
 using Verse.Profile;
 
-namespace TAE
+namespace TAE;
+
+internal static class LoadingPatches
 {
-    internal static class LoadingPatches
+    [HarmonyPatch(typeof(TemperatureSaveLoad))]
+    [HarmonyPatch(nameof(TemperatureSaveLoad.ApplyLoadedDataToRegions))]
+    public static class ApplyLoadedDataToRegionsPatch
     {
-        [HarmonyPatch(typeof(TemperatureSaveLoad))]
-        [HarmonyPatch(nameof(TemperatureSaveLoad.ApplyLoadedDataToRegions))]
-        public static class ApplyLoadedDataToRegionsPatch
+        public static void Postfix(Map ___map)
         {
-            public static void Postfix(Map ___map)
-            {
-                ___map.GetMapInfo<AtmosphericMapInfo>().Cache.scriber.ApplyLoadedDataToRegions();
-            }
+            ___map.GetMapInfo<AtmosphericMapInfo>().Notify_ApplyLoadedData();
+            
         }
     }
 }

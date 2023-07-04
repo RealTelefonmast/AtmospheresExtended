@@ -28,7 +28,7 @@ public class CompProperties_ANS_Vent : CompProperties_ANS
     private AtmosphericVentFilter filter;
     
     //
-    public List<DefFloat<AtmosphericDef>> upkeepLevels;
+    public List<DefValue<AtmosphericDef, float>> upkeepLevels;
     
     private class AtmosphericVentFilter
     {

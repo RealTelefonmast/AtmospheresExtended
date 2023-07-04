@@ -134,28 +134,11 @@ public static class AtmosphereUtility
             CellInspectorDrawer.DrawRow($"Total Gas Value:", gasGrid.TotalSubGasValue[value.defID].ToString());
             CellInspectorDrawer.DrawRow($"{nameof(GasCellValue.value)}:", value.value.ToString());
             CellInspectorDrawer.DrawRow($"{nameof(GasCellValue.overflow)}:", value.overflow.ToString());
-            CellInspectorDrawer.DrawRow($"{nameof(GasCellValue.totalBitVal)}:", value.totalBitVal.ToString());
+            CellInspectorDrawer.DrawRow($"{nameof(GasCellValue.TotalBitVal)}:", value.TotalBitVal.ToString());
         }
 
         Text.WordWrap = true;
         Text.Anchor = TextAnchor.UpperLeft;
-    }
-
-    //TODO: Radial readout was only used for oxygen, kinda useless
-    public static void DrawAtmosphereAroundMouse()
-    {
-        if (!AtmosphereMod.Mod.Settings.DrawAtmosphereAroundMouse) return;
-
-        FillAtmosphereRelevantCells(UI.MouseCell(), Find.CurrentMap);
-        for (int i = 0; i < relevantCells.Count; i++)
-        {
-            IntVec3 intVec = relevantCells[i];
-            // float num = CellAtmosphere(intVec, Find.CurrentMap, out Color color);
-            // if (num != 0f)
-            // {
-            //     GenMapUI.DrawThingLabel(GenMapUI.LabelDrawPosFor(intVec), Mathf.RoundToInt(num).ToStringCached(), color);
-            // }
-        }
     }
 
     private static void FillAtmosphereRelevantCells(IntVec3 root, Map map)
@@ -228,44 +211,65 @@ public static class AtmosphereUtility
     {
         var thingList = pos.GetThingList(map);
         if (thingList.NullOrEmpty()) return 1f;
+        
+        // float passPercent = thingList
+        //     .OfType<Building>()
+        //     .Select(DefaultAtmosphericPassPercent)
+        //     .DefaultIfEmpty(1f)
+        //     .Min();  
+        
+        //Min PassPercent Getter
         var passPct = 1f;
         for (var i = 0; i < thingList.Count; i++)
         {
             var thing = thingList[i];
-            if (thing is Building b)
-            {
-                var buildingPassPct = DefaultAtmosphericPassPercent(b);
-                
-                //Set maximum passage to minimum possible
-                if (buildingPassPct < passPct)
-                    passPct = buildingPassPct;
-            }
+            if (thing is not Building b) continue;
+            var buildingPassPct = DefaultAtmosphericPassPercent(b);
+            //Set maximum passage to minimum possible
+            if (buildingPassPct < passPct)
+                passPct = buildingPassPct;
         }
         return passPct;
     }
-    
+
     public static float DefaultAtmosphericPassPercent(Thing forThing)
     {
-        if (forThing == null) return 1f;
+        if (forThing == null) 
+            return 1f;
 
-        //Custom Worker Subroutine
         if (AtmosPortalData.TryGetWorkerFor(forThing.def, out var worker))
-        {
             return worker.Worker.PassPercent(forThing);
-        }
-
-        //
-        var fullFillage = forThing.def.Fillage == FillCategory.Full;
-        var fillage = forThing.def.fillPercent;
-        var flowPct = fullFillage ? 0f : 1f - fillage;
+   
+        var flowPct = GetFlowPct(forThing);
         return forThing switch
         {
-            Building_Door door => door.Open ? 1 : PassiveFlowPctForDoor(door, fillage),
-            Building_Vent vent => FlickUtility.WantsToBeOn(vent) ? 1f : 0f,
-            Building_Cooler cooler => cooler.IsPoweredOn() ? 2f : 0f,
-            { } b => flowPct,
-            _ => 0.0f
+            Building_Door door => GetDoorPassPct(door),
+            Building_Vent vent => GetVentPassPct(vent),
+            Building_Cooler cooler => GetCoolerPassPct(cooler),
+            _ => flowPct
         };
+    }
+
+    private static float GetFlowPct(Thing forThing)
+    {
+        bool isFullFillage = forThing.def.Fillage == FillCategory.Full;
+        float fillage = forThing.def.fillPercent;
+        return isFullFillage ? 0f : 1f - fillage;
+    }
+
+    private static float GetDoorPassPct(Building_Door door)
+    {
+        return door.Open ? 1f : PassiveFlowPctForDoor(door, door.def.fillPercent);
+    }
+
+    private static float GetVentPassPct(Building_Vent vent)
+    {
+        return FlickUtility.WantsToBeOn(vent) ? 1f : 0f;
+    }
+
+    private static float GetCoolerPassPct(Building_Cooler cooler)
+    {
+        return cooler.IsPoweredOn() ? 2f : 0f;
     }
 
     public static bool IsAtmosphericPortal(Building building)

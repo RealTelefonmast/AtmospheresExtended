@@ -6,12 +6,12 @@ namespace TAE.Atmosphere.Rooms;
 
 public class RoomComponent_Atmosphere : RoomComponent
 {
-    private AtmosphericVolume _volume;
     private RoomOverlay_Atmospheric _renderer;
-    
-    public AtmosphericMapInfo AtmosphericInfo => Map.GetMapInfo<AtmosphericMapInfo>();
+    private AtmosphericMapInfo _atmosphericInfo;
 
-    public AtmosphericVolume Volume => _volume;
+    public AtmosphericMapInfo AtmosphericInfo => _atmosphericInfo;
+
+    public AtmosphericVolume Volume => AtmosphericInfo.System.Relations[this];
     public bool IsOutdoors => Parent.IsOutside;
 
     public override void Init(RoomTracker[] previous = null)
@@ -22,7 +22,6 @@ public class RoomComponent_Atmosphere : RoomComponent
     public override void PostInit(RoomTracker[] previous = null)
     {
         base.PostInit(previous);
-        _volume = new AtmosphericVolume();
         _renderer = new RoomOverlay_Atmospheric();
         AtmosphericInfo.Notify_AddRoomComp(this);
     }

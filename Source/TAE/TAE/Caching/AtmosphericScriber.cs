@@ -1,6 +1,6 @@
 ﻿using System.Linq;
-using TeleCore;
 using TeleCore.Primitive;
+using UnityEngine;
 using Verse;
 
 namespace TAE.Caching;
@@ -18,8 +18,7 @@ internal class AtmosphericScriber
         _mapInfo = mapInfo;
         _map = mapInfo.Map;
     }
-
-    //TODO: Maybe turn this static with a atmosphericmapinfo parameter?
+    
     internal void ApplyLoadedDataToRegions()
     {
         if (atmosphericGrid == null) return;
@@ -46,15 +45,15 @@ internal class AtmosphericScriber
 
     internal void ScribeData()
     {
-        //TLog.Debug($"Exposing Atmospheric | {Scribe.mode}".Colorize(Color.cyan));
+        TLog.Debug($"Exposing Atmospheric | {Scribe.mode}".Colorize(Color.cyan));
         int arraySize = _map.cellIndices.NumGridCells + 1;
         if (Scribe.mode == LoadSaveMode.Saving)
         {
             temporaryGrid = new DefValueStack<AtmosphericDef,double>[arraySize];
-            var outsideAtmosphere = AtmosphericMapInfo.MapVolume.Volume.Stack;
+            var outsideAtmosphere = _mapInfo.MapVolume.Stack;
             temporaryGrid[arraySize - 1] = outsideAtmosphere;
                 
-            foreach (var roomComp in AtmosphericMapInfo.AllAtmosphericRooms)
+            foreach (var roomComp in _mapInfo.AllAtmosphericRooms)
             {
                 if (roomComp.IsOutdoors) continue;
                 var roomAtmosphereStack = roomComp.Volume.Stack;

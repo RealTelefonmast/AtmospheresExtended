@@ -13,7 +13,7 @@ internal static class IncidentFilterDB
     {
         if (filtersByIncident.TryGetValue(def, out var value))
         {
-            var volume = map.GetMapInfo<AtmosphericMapInfo>().MapVolume.Volume;
+            var volume = map.GetMapInfo<AtmosphericMapInfo>().MapVolume;
             return volume.StoredPercentOf(value.atmosDef) >= value.threshold;
         }
 

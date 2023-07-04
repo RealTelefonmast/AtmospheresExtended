@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using TAE.Atmosphere.Rooms;
+using TAE.AtmosphericFlow;
 using TAE.Caching;
 using TeleCore;
 using TeleCore.Primitive;
@@ -19,6 +20,8 @@ public class AtmosphericMapInfo : MapInformation
     //
     public List<RoomComponent_Atmosphere> AllAtmosphericRooms => _allComps;
     public AtmosphereRenderer Renderer => _renderer;
+    public AtmosphericSystem System => _system;
+    public AtmosphericVolume MapVolume => _system.MapVolume;
 
     public AtmosphericMapInfo(Map map) : base(map)
     {
@@ -144,5 +147,10 @@ public class AtmosphericMapInfo : MapInformation
     public void Notify_LoadedOutsideAtmosphere(DefValueStack<AtmosphericDef,double> stack)
     {
         
+    }
+
+    public void Notify_ApplyLoadedData()
+    {
+        //.Cache.scriber.ApplyLoadedDataToRegions();
     }
 }
