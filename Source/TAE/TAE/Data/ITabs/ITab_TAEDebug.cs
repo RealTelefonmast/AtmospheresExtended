@@ -3,6 +3,7 @@ using RimWorld;
 using TAE.Atmosphere.Rooms;
 using TAE.AtmosphericFlow;
 using TeleCore;
+using TeleCore.Network.Utility;
 using UnityEngine;
 using Verse;
 using GridLayout = Verse.GridLayout;
@@ -81,11 +82,10 @@ public class ITab_TAEDebug : ITab
         Rect mapContainer = mapContainerArea.BottomPart(0.85f);
         
         Widgets.Label(roomContainerLabel, "Room Container");
-        //TWidgets.DrawValueContainerReadout(roomContainer, Atmos.Container);
-        //TWidgets.HoverContainerReadout(roomContainer, Atmos.Container);
+        FlowUI<AtmosphericDef>.HoverFlowBoxReadout(roomContainer, Atmos.Volume);
         
         Widgets.Label(mapContainerLabel, "Map Container");
-        //TWidgets.DrawValueContainerReadout(mapContainer, Atmos.OutsideContainer);
+        FlowUI<AtmosphericDef>.HoverFlowBoxReadout(roomContainer, Atmos.AtmosphericInfo.MapVolume);
     }
 
     public void DrawLayout(GridLayout layout, int cols, int rows)

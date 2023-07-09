@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+
+	<StatDef>
+		<defName>GasPermeability</defName>
+		<label>gas permeability</label>
+		<description>The amount of atmospheric gas that an object allows through.</description>
+		<category>Basics</category>
+		<defaultBaseValue>0</defaultBaseValue>
+		<minValue>0</minValue>
+		<maxValue>100</maxValue>
+		<toStringStyle>FloatTwoOrThree</toStringStyle>
+		<formatString>{0}</formatString>
+		<minifiedThingInherits>true</minifiedThingInherits>
+		<displayPriorityInCategory>1500</displayPriorityInCategory>
+		<showOnUnhaulables>false</showOnUnhaulables>
+	</StatDef>
+
+</Defs>

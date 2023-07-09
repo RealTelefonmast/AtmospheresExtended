@@ -16,12 +16,12 @@ public class AtmosphericSystem
     
     //Rooms
     private List<AtmosphericVolume> _volumes;
-    private Dictionary<RoomComponent_Atmosphere, AtmosphericVolume> _relations;
+    private Dictionary<RoomComponent, AtmosphericVolume> _relations;
     private Dictionary<AtmosphericVolume, List<AtmosInterface>> _connections;
     //Note: Interface represents a portal between rooms
     
     public AtmosphericVolume MapVolume => _mapVolume;
-    public Dictionary<RoomComponent_Atmosphere, AtmosphericVolume> Relations => _relations;
+    public Dictionary<RoomComponent, AtmosphericVolume> Relations => _relations;
     
     public AtmosphericSystem(Map map)
     {
@@ -33,7 +33,7 @@ public class AtmosphericSystem
         
         //
         _volumes = new List<AtmosphericVolume>();
-        _relations = new Dictionary<RoomComponent_Atmosphere, AtmosphericVolume>();
+        _relations = new Dictionary<RoomComponent, AtmosphericVolume>();
         _connections = new Dictionary<AtmosphericVolume, List<AtmosInterface>>();
     }
 
@@ -43,6 +43,34 @@ public class AtmosphericSystem
         PushNaturalSaturation(); //Add all natural atmospheres once
     }
 
+    public void Notify_AddRoomComp(RoomComponent_Atmosphere comp)
+    {
+        if (_relations.ContainsKey(comp)) return;
+        var volume = new AtmosphericVolume();
+        _volumes.Add(volume);
+        _relations.Add(comp, volume);
+        _connections.Add(volume, new List<AtmosInterface>());
+
+        foreach (var adjComp in comp.AdjRoomComps)
+        {
+            if (!_relations.TryGetValue(adjComp, out var adjVolume)) continue;
+            var conn = new AtmosInterface(volume, adjVolume);
+            _connections[volume].Add(conn);
+        }
+        
+        //
+        var room = comp.Room;
+    }
+
+    public void Notify_RemoveRoomComp(RoomComponent_Atmosphere comp)
+    {
+        if (!_relations.ContainsKey(comp)) return;
+        var volume = _relations[comp];
+        _volumes.Remove(volume);
+        _relations.Remove(comp);
+        _connections.Remove(volume);
+    }
+    
     public void Notify_AddSource(IAtmosphericSource source)
     {
         if (_atmosphericSources.Contains(source)) return;
@@ -171,24 +199,29 @@ public class AtmosphericSystem
         {
             foreach (var ruleSet in DefDatabase<TAERulesetDef>.AllDefs)
             {
-                if (ruleSet.Realm == AtmosphericRealm.AnyBiome)
+                if (ruleSet.realm == AtmosphericRealm.AnyBiome)
                 {
-                    foreach (var floatRef in ruleSet.atmospheres)
+                    if (ruleSet.atmospheres != null)
                     {
-                        _naturalAtmospheres.Add(floatRef);
+                        foreach (var floatRef in ruleSet.atmospheres)
+                        {
+                            _naturalAtmospheres.Add(floatRef);
+                        }   
                     }
-
                     continue;
                 }
 
-                if (ruleSet.Realm == AtmosphericRealm.SpecificBiome)
+                if (ruleSet.realm == AtmosphericRealm.SpecificBiome)
                 {
-                    if (ruleSet.biomes.Contains(map.Biome))
+                    if (ruleSet.biomes != null)
                     {
-                        foreach (var atmosphere in ruleSet.atmospheres)
+                        if (ruleSet.biomes.Contains(map.Biome))
                         {
-                            _naturalAtmospheres.Add(atmosphere);
-                            //TODO: mapContainer.Data_RegisterSourceType(atmosphere.Def);
+                            foreach (var atmosphere in ruleSet.atmospheres)
+                            {
+                                _naturalAtmospheres.Add(atmosphere);
+                                //TODO: mapContainer.Data_RegisterSourceType(atmosphere.Def);
+                            }
                         }
                     }
                 }

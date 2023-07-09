@@ -17,6 +17,7 @@ public class RoomComponent_Atmosphere : RoomComponent
     public override void Init(RoomTracker[] previous = null)
     {
         base.Init(previous);
+        _atmosphericInfo = Map.GetMapInfo<AtmosphericMapInfo>();
     }
 
     public override void PostInit(RoomTracker[] previous = null)

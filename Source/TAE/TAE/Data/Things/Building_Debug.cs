@@ -68,9 +68,9 @@ public class Building_Debug : Building
                 WidgetStackPanel.DrawRow($"Is Outdoors:", $"{comp.IsOutdoors}");
                 //WidgetStackPanel.DrawRow($"Has Portal:", $"{comp.Portal != null}");
                 //WidgetStackPanel.DrawRow($"Portal:", comp.Portal?.ToString());
+                
+                WidgetStackPanel.DrawRow("Comp:", $"{comp.GetType().Name}");
             }
-
-            WidgetStackPanel.DrawRow("Comp:", $"{comp}");
             WidgetStackPanel.End();
         }
 

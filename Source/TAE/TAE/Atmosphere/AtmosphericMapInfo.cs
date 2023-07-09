@@ -97,12 +97,14 @@ public class AtmosphericMapInfo : MapInformation
     {
         _allComps.Add(comp);
         _compLookUp.Add(comp.Room, comp);
+        _system.Notify_AddRoomComp(comp);
     }
 
     public void Notify_RemoveRoomComp(RoomComponent_Atmosphere comp)
     {
         _allComps.Remove(comp);
         _compLookUp.Remove(comp.Room);
+        _system.Notify_RemoveRoomComp(comp);
     }
     
     // -- Atmosphere Sources
