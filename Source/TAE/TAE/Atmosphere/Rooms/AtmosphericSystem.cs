@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using TAE.AtmosphericFlow;
 using TeleCore;
 using TeleCore.Primitive;
@@ -35,6 +36,10 @@ public class AtmosphericSystem
         _volumes = new List<AtmosphericVolume>();
         _relations = new Dictionary<RoomComponent, AtmosphericVolume>();
         _connections = new Dictionary<AtmosphericVolume, List<AtmosInterface>>();
+        
+        //Prepare Map Volume
+        _volumes.Add(_mapVolume);
+        _connections.Add(_mapVolume, new List<AtmosInterface>());
     }
 
     public void Init(Map map)
@@ -46,6 +51,20 @@ public class AtmosphericSystem
     public void Notify_AddRoomComp(RoomComponent_Atmosphere comp)
     {
         if (_relations.ContainsKey(comp)) return;
+        
+        if (comp.IsOutdoors)
+        {
+            _relations.Add(comp, _mapVolume);
+            foreach (var adjComp in comp.AdjRoomComps)
+            {
+                if (!_relations.TryGetValue(adjComp, out var adjVolume)) continue;
+                var conn = new AtmosInterface(_mapVolume, adjVolume);
+                _connections[_mapVolume].Add(conn);
+            }
+            return;
+        }
+        
+        TLog.Debug($"Adding room {comp.Room.ID} to system relations...");
         var volume = new AtmosphericVolume();
         _volumes.Add(volume);
         _relations.Add(comp, volume);
@@ -57,14 +76,29 @@ public class AtmosphericSystem
             var conn = new AtmosInterface(volume, adjVolume);
             _connections[volume].Add(conn);
         }
-        
-        //
-        var room = comp.Room;
     }
 
     public void Notify_RemoveRoomComp(RoomComponent_Atmosphere comp)
     {
         if (!_relations.ContainsKey(comp)) return;
+
+        if (comp.IsOutdoors)
+        {
+            //TODO: Needs serious testing
+            _relations.Remove(comp);
+
+            bool Match(AtmosInterface iface)
+            {
+                var firstMatch = _relations.FirstOrDefault(c => c.Value == iface.To);
+                if (firstMatch.Key == null) return false;
+                var contains = firstMatch.Key.AdjRoomComps.Contains(comp);
+                return contains;
+            }
+
+            _connections[_mapVolume].RemoveAll(Match); 
+            return;
+        }
+        
         var volume = _relations[comp];
         _volumes.Remove(volume);
         _relations.Remove(comp);
@@ -173,7 +207,7 @@ public class AtmosphericSystem
             var desired = _mapVolume.MaxCapacity * atmosphere.Value;
             var diff = desired - storedOf;
             if (diff <= 0) continue;
-            //TODO: _mapVolume.Volume.TryAddValue(atmosphere.Def, diff, out _);
+            _mapVolume.TryAdd(atmosphere, diff);
         }
     }
 

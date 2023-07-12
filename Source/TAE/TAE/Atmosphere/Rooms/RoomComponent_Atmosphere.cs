@@ -1,4 +1,5 @@
-﻿using TAE.AtmosphericFlow;
+﻿using System.Linq;
+using TAE.AtmosphericFlow;
 using TeleCore;
 using Verse;
 
@@ -11,7 +12,20 @@ public class RoomComponent_Atmosphere : RoomComponent
 
     public AtmosphericMapInfo AtmosphericInfo => _atmosphericInfo;
 
-    public AtmosphericVolume Volume => AtmosphericInfo.System.Relations[this];
+    public AtmosphericVolume Volume
+    {
+        get
+        {
+            if (AtmosphericInfo.System.Relations.TryGetValue(this, out var volume))
+            {
+                return volume;
+            }
+            TLog.Warning($"Tried to access volume for room {Room.ID} from {AtmosphericInfo.System.Relations.Count} relations.");
+            TLog.Warning($"{AtmosphericInfo.System.Relations.Select(s => s.Key.Room.ID).ToStringSafeEnumerable()}");
+            return null;
+        }
+    }
+
     public bool IsOutdoors => Parent.IsOutside;
 
     public override void Init(RoomTracker[] previous = null)

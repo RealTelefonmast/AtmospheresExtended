@@ -4,9 +4,9 @@ namespace TAE.Atmosphere.Rooms;
 
 public class AtmosInterface
 {
-    public double NextFlow { get; set; }
-    public double PrevFlow { get; set; }
-    public double Move { get; set; }
+    public double NextFlow { get; set; } = 0;
+    public double PrevFlow { get; set; } = 0;
+    public double Move { get; set; } = 0;
     
     
     public bool ResolvedFlow { get; private set; }
