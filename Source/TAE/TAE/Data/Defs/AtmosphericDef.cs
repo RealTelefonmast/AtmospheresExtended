@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using TAE.Static;
 using TeleCore;
+using TeleCore.Primitive;
 using Verse;
 
 namespace TAE;
@@ -74,7 +75,8 @@ public class AtmosphericDef : FlowValueDef
     public NaturalOverlayProperties naturalOverlay;
     public RoomOverlayProperties roomOverlay;
     public bool useRenderLayer = false;
-        
+    public double friction;
+
     public AtmosphericTransferWorker TransferWorker => workerInt ??= (AtmosphericTransferWorker)Activator.CreateInstance(transferWorker, this);
 
     public override void PostLoad()

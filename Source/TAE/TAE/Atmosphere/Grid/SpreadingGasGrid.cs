@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
+using MathNet.Numerics.LinearAlgebra;
 using TAE.Atmosphere.Rooms;
 using TeleCore;
 using Unity.Collections;
@@ -10,12 +11,13 @@ using Verse;
 namespace TAE;
 
 //TODO: Make rule based sprading and dissipation: ie: if a gas cell is surrounded by gas of the same type, it spreads less than a cell with free neighbours => viscosity simulation
+//TODO: NEW Fluid dynamics sim reference: https://cg.informatik.uni-freiburg.de/intern/seminar/gridFluids_fluid-EulerParticle.pdf
 public unsafe class SpreadingGasGrid : MapInformation
 {
     internal static SpreadingGasTypeDef[] GasDefsArr;
     internal static int GasDefsCount;
     internal const int AlphaCurvePoints = 8;
-    internal const int AlphaCurvePointsData = AlphaCurvePoints + 1; //TODO use a n+1th position to set max size to not have comparisions against "empty" curve points
+    internal const int AlphaCurvePointsData = AlphaCurvePoints + 1;
     
     //
     private SpreadingGasGridRenderer renderer;
@@ -46,7 +48,6 @@ public unsafe class SpreadingGasGrid : MapInformation
     //private readonly IntVec3[] randomSpreadCells;
 
     //
-    public NativeArray<GasCellStack> GasGrid => gasGridData;
     public int Length => gasGridData.Length;
     
     //Value Tracking
@@ -59,6 +60,15 @@ public unsafe class SpreadingGasGrid : MapInformation
     
     //
     public bool HasAnyGas => totalGasCount > 0;
+    
+    public static Vector<double> SolveLinearEquations(double[,] matrixA, double[] vectorB)
+    {
+        var matrix = Matrix<double>.Build.DenseOfArray(matrixA);
+        var vector = Vector<double>.Build.Dense(vectorB);
+
+        var result = matrix.Solve(vector);
+        return result;
+    }
     
     //
     public SpreadingGasGrid(Map map) : base(map)
@@ -121,27 +131,27 @@ public unsafe class SpreadingGasGrid : MapInformation
     
     private ushort DensityAt(int index, int defID)
     {
-        return GasGrid[index][defID].value;
+        return gasGridData[index][defID].value;
     }
     
     public GasCellStack CellStackAt(int index)
     {
-        return GasGrid[index];
+        return gasGridData[index];
     }
     
     public ushort OverflowAt(int index, int defID)
     {
-        return GasGrid[index][defID].overflow;
+        return gasGridData[index][defID].overflow;
     }
     
     public bool AnyGasAt(IntVec3 cell)
     {
-        return GasGrid[cell.Index(map)].HasAnyGas;
+        return gasGridData[cell.Index(map)].HasAnyGas;
     }
     
     public bool AnyGasAt(int index)
     {
-        return GasGrid[index].HasAnyGas;
+        return gasGridData[index].HasAnyGas;
     }
     
     /// <summary>
@@ -257,7 +267,9 @@ public unsafe class SpreadingGasGrid : MapInformation
                 break;
         }
     }
-    
+
+    #region Ticking
+
     public override void Tick()
     {
         //
@@ -267,26 +279,63 @@ public unsafe class SpreadingGasGrid : MapInformation
     {
         if (!HasAnyGas) return;
 
-        int area = map.Area;
+        var area = map.Area;
         var cellsInRandomOrder = map.cellsInRandomOrder.GetAll();
-        
-        for (int i = 0; i < workingCellCount; ++i)
+
+        for (var i = 0; i < workingCellCount; ++i)
         {
-            if (workingIndex >= area) 
+            if (workingIndex >= area)
                 workingIndex = 0;
-            
+
             var cell = cellsInRandomOrder[workingIndex];
 
-            for (int id = 0; id < GasDefsCount; ++id)
+            for (var id = 0; id < GasDefsCount; ++id)
             {
                 TrySpreadGas(cell, id);
-                Dissipate(cell.Index(map), cell , id);
+                TryDissipate(cell.Index(map), cell, id);
             }
+
             workingIndex++;
         }
     }
 
-    private void Dissipate(int index, IntVec3 cell, int defID)
+    #endregion
+
+    private void TrySpreadGas(IntVec3 pos, int defID)
+    {
+        var index = pos.Index(map);
+        var def = (SpreadingGasTypeDef)defID;
+        var cellValue = CellValueAtUnsafe(index, defID);
+
+        if (cellValue.overflow > 0)
+        {
+            var extra = (ushort)Mathf.Clamp(cellValue.overflow, 0, def.maxDensityPerCell);
+            cellValue.value += extra;
+            cellValue.overflow -= extra;
+        }
+
+        //
+        if (cellValue.value == 0) return;
+        if (cellValue.value < def.minSpreadDensity) return;
+
+        //randomSpreadCells.Shuffle();
+        for (var i = 0; i < randomSpreadDirs.Length; i++)
+        {
+            var offset = IndexOffset(index, randomSpreadDirs[i]); // pos + randomSpreadCells[i];
+            if (!CanSpreadTo(offset, def, out var passPct)) continue;
+
+            var cellValueNghb = CellValueAtUnsafe(offset, defID);
+
+        
+            if (TryEqualizeWith(ref cellValue, ref cellValueNghb, def, passPct))
+            {
+                SetCellValueAt(index, cellValue);
+                SetCellValueAt(offset, cellValueNghb);
+            }
+        }
+    }
+    
+    private void TryDissipate(int index, IntVec3 cell, int defID)
     {
         //No gas at index, return
         if (index < 0 || index >= Length || defID >= GasDefsCount)
@@ -318,41 +367,6 @@ public unsafe class SpreadingGasGrid : MapInformation
 
         cellValue.value = (ushort)Math.Max(cellValue.value - def.dissipationAmount, 0);
         SetDensity_Direct(index, defID, cellValue.value);
-    }
-    
-    void TrySpreadGas(IntVec3 pos, int defID)
-    {
-        var index = pos.Index(map);
-        var def = ((SpreadingGasTypeDef)defID);
-        var cellValue = CellValueAtUnsafe(index, defID);
-
-        if (cellValue.overflow > 0)
-        {
-            var extra = (ushort) Mathf.Clamp(cellValue.overflow, 0, def.maxDensityPerCell);
-            cellValue.value += extra;
-            cellValue.overflow -= extra;
-        }
-
-        //
-        if (cellValue.value == 0) return;
-        if (cellValue.value < def.minSpreadDensity) return;
-        
-        //randomSpreadCells.Shuffle();
-        for (int i = 0; i < randomSpreadDirs.Length; i++)
-        {
-            var offset = IndexOffset(index, randomSpreadDirs[i]); // pos + randomSpreadCells[i];
-            if (!CanSpreadTo(offset, def, out float passPct)) continue;
-
-            int newIndex = offset;
-            var cellValueNghb = CellValueAtUnsafe(newIndex, defID);
-            
-            //
-            if (TryEqualizeWith(ref cellValue, ref cellValueNghb, def, passPct))
-            {
-                SetCellValueAt(index, cellValue);
-                SetCellValueAt(newIndex, cellValueNghb);
-            }
-        }
     }
 
     private bool OutOfBounds(int index)
@@ -396,7 +410,7 @@ public unsafe class SpreadingGasGrid : MapInformation
         if (diff <= 0) return false;
         
         //TODO: Viscosity needs to be directly settable, not a hardcoded value like 0.35
-        var diffShort = (ushort)(Mathf.Abs(diff * passPct) * 0.35 * def.ViscosityMultiplier);
+        var diffShort = (ushort)(Mathf.Abs(diff * passPct) * 0.35f * def.ViscosityMultiplier);
         
         gasCellA -= diffShort;
         gasCellB += diffShort;

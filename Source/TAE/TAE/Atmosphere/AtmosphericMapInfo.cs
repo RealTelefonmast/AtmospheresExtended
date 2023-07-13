@@ -93,6 +93,11 @@ public class AtmosphericMapInfo : MapInformation
     
     #region Data
 
+    public void Notify_UpdateRoomComp(RoomComponent_Atmosphere comp)
+    {    
+        _system.Notify_UpdateRoomComp(comp);
+    }
+
     public void Notify_AddRoomComp(RoomComponent_Atmosphere comp)
     {
         _allComps.Add(comp);

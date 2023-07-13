@@ -213,7 +213,7 @@ public class SpreadingGasGridRenderer
     {
         //Fill
         int j = 0;
-        for (uint i = 0; i < grid.GasGrid.Length; i++)
+        for (uint i = 0; i < grid.Length; i++)
         {
             if (!grid.AnyGasAtUnsafe(i)) continue;
             

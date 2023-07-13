@@ -24,7 +24,7 @@ public class SpreadingGasTypeDef : Def
     public int minDissipationDensity = 10;
     public int minSpreadDensity = 2;
     public int dissipationAmount = 1;
-    public float spreadViscosity = 0;
+    public float spreadViscosity = 0.35f;
 
     public AtmosphericDef dissipateTo;
     public Type transferWorker = typeof(AtmosphericTransferWorker);

@@ -117,7 +117,7 @@ public static class AtmosphereUtility
         var gasStack = gasGrid.CellStackAtUnsafe(intVec.Index(gasGrid.Map));
 
         CellInspectorDrawer.DrawHeader("Stack Inspection");
-        CellInspectorDrawer.DrawRow("Gas Grid: ", gasGrid.GasGrid.Length.ToString());
+        CellInspectorDrawer.DrawRow("Gas Grid: ", gasGrid.Length.ToString());
         CellInspectorDrawer.DrawRow("Has Any Gas: ", gasGrid.HasAnyGas.ToString());
         CellInspectorDrawer.DrawRow("Total Gas Count: ", gasGrid.TotalGasCount.ToString());
         CellInspectorDrawer.DrawRow("Total Gas Value: ", gasGrid.TotalGasValue.ToString());

@@ -23,14 +23,14 @@ public class AtmosphericSystem
     
     public AtmosphericVolume MapVolume => _mapVolume;
     public Dictionary<RoomComponent, AtmosphericVolume> Relations => _relations;
-    
-    public AtmosphericSystem(Map map)
+
+    public AtmosphericSystem(int mapCellSize)
     {
         //
         _mapVolume = new AtmosphericVolume();
         _naturalAtmospheres = new List<DefValue<AtmosphericDef, float>>();
         _atmosphericSources = new List<IAtmosphericSource>();
-        Notify_Regenerate(map.cellIndices.NumGridCells);
+        Notify_Regenerate(mapCellSize);
         
         //
         _volumes = new List<AtmosphericVolume>();
@@ -42,12 +42,24 @@ public class AtmosphericSystem
         _connections.Add(_mapVolume, new List<AtmosInterface>());
     }
 
+    public AtmosphericSystem(Map map) : this(map.cellIndices.NumGridCells)
+    {
+    }
+
     public void Init(Map map)
     {
         GenerateNaturalAtmospheres(map);
         PushNaturalSaturation(); //Add all natural atmospheres once
     }
 
+    public void Notify_UpdateRoomComp(RoomComponent_Atmosphere comp)
+    {
+        if (_relations.TryGetValue(comp, out var volume))
+        {
+            volume.UpdateVolume(comp.Room.CellCount);
+        }
+    }
+    
     public void Notify_AddRoomComp(RoomComponent_Atmosphere comp)
     {
         if (_relations.ContainsKey(comp)) return;
@@ -66,6 +78,7 @@ public class AtmosphericSystem
         
         TLog.Debug($"Adding room {comp.Room.ID} to system relations...");
         var volume = new AtmosphericVolume();
+        volume.UpdateVolume(comp.Room.CellCount);
         _volumes.Add(volume);
         _relations.Add(comp, volume);
         _connections.Add(volume, new List<AtmosInterface>());
@@ -314,7 +327,7 @@ public class AtmosphericSystem
     
     public double Friction => 0;
     public double CSquared => 0.03;
-    public double DampFriction => 0.01;
+    public double DampFriction => 0.01; //TODO: Extract into global flowsystem config xml or mod settings
 
     //TODO:Adjust flow based on gas/fluid properties
     private double FlowFunc(AtmosphericVolume from, AtmosphericVolume to, double f)
@@ -323,13 +336,35 @@ public class AtmosphericSystem
         var src = f > 0 ? from : to;
         var dc = Math.Max(0, src.PrevStack.TotalValue - src.TotalValue);
         f += dp * CSquared;
-        f *= 1 - Friction;
+        f *= 1 - GetTotalFriction(src); //Note: Might be unnecessary slow-down
         f *= 1 - Math.Min(0.5, DampFriction * dc);
         return f;
     }
 
+    private static double GetTotalFriction(AtmosphericVolume volume)
+    {
+        double totalFriction = 0;
+        double totalVolume = 0;
+            
+        foreach (var fluid in volume.Stack)
+        {
+            totalFriction += fluid.Def.friction * fluid.Value;
+            totalVolume += fluid.Value;
+        }
+
+        if (totalVolume == 0) return 0;
+    
+        var averageFriction = totalFriction / totalVolume;
+        return averageFriction;
+    }
+
     private static double Pressure(AtmosphericVolume volume)
     {
+        if (volume.MaxCapacity <= 0)
+        {
+            TLog.Warning($"Tried to get pressure from container with {volume.MaxCapacity} capacity!");
+            return 0;
+        }
         return volume.TotalValue / volume.MaxCapacity * 100d;
     }
 

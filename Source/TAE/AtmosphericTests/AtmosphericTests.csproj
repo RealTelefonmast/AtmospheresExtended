@@ -34,20 +34,36 @@
         <WarningLevel>4</WarningLevel>
     </PropertyGroup>
     <ItemGroup>
+        <Reference Include="Assembly-CSharp">
+          <HintPath>..\..\..\..\..\..\.nuget\packages\krafs.rimworld.ref\1.4.3704\ref\net472\Assembly-CSharp_publicised.dll</HintPath>
+        </Reference>
         <Reference Include="nunit.framework, Version=3.13.3.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
           <HintPath>..\packages\NUnit.3.13.3\lib\net45\nunit.framework.dll</HintPath>
         </Reference>
         <Reference Include="System"/>
         <Reference Include="System.Core"/>
         <Reference Include="System.Data"/>
+        <Reference Include="System.Runtime" />
+        <Reference Include="System.Runtime.InteropServices" />
+        <Reference Include="System.Threading.Thread" />
         <Reference Include="System.Xml"/>
+        <Reference Include="TeleCore, Version=1.0.1.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>..\packages\TeleCore.1.7.8.3\lib\net472\TeleCore.dll</HintPath>
+        </Reference>
     </ItemGroup>
     <ItemGroup>
+        <Compile Include="AtmosSystemTests.cs" />
         <Compile Include="Tests.cs"/>
         <Compile Include="Properties\AssemblyInfo.cs"/>
     </ItemGroup>
     <ItemGroup>
       <None Include="packages.config" />
+    </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\TAE\TAE.csproj">
+        <Project>{e6052599-8b5a-475e-b5f4-aba78f87cd64}</Project>
+        <Name>TAE</Name>
+      </ProjectReference>
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
     <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

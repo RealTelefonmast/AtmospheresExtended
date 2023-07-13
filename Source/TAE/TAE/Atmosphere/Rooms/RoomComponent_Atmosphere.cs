@@ -30,21 +30,24 @@ public class RoomComponent_Atmosphere : RoomComponent
 
     public override void Init(RoomTracker[] previous = null)
     {
-        base.Init(previous);
         _atmosphericInfo = Map.GetMapInfo<AtmosphericMapInfo>();
     }
 
     public override void PostInit(RoomTracker[] previous = null)
     {
-        base.PostInit(previous);
         _renderer = new RoomOverlay_Atmospheric();
         AtmosphericInfo.Notify_AddRoomComp(this);
     }
 
     public override void Disband(RoomTracker parent, Map map)
     {
-        base.Disband(parent, map);
         AtmosphericInfo.Notify_RemoveRoomComp(this);
+    }
+
+    public override void Notify_Reused()
+    {
+        base.Notify_Reused();
+        AtmosphericInfo.Notify_UpdateRoomComp(this);
     }
 
     #region Data Notifiers
