@@ -4,6 +4,7 @@ using System.Linq;
 using RimWorld;
 using TAE.Atmosphere.Rooms;
 using TeleCore;
+using TeleCore.Network.Utility;
 using TeleCore.Rendering;
 using TeleCore.Static.Utilities;
 using UnityEngine;
@@ -82,23 +83,30 @@ public class Building_Debug : Building
             var comp = room?.GetRoomComp<RoomComponent_Atmosphere>();
             if (comp == null) return;
             
-            //Vector2 mousePosition = Event.current.mousePosition;
-            // Vector2 containerReadoutSize = TWidgets.GetValueContainerReadoutSize(comp.CurrentContainer);
-            
-            //Vector2 mousePosition2 = new Vector2(mousePosition.x + containerReadoutSize.x, mousePosition.y);
-            //Vector2 containerReadoutSize2 = TWidgets.GetValueContainerReadoutSize(comp.Container);
-
-            //Vector2 mousePosition3 = new Vector2(mousePosition2.x + containerReadoutSize2.x, mousePosition2.y);
-            //Vector2 containerReadoutSize3 = TWidgets.GetValueContainerReadoutSize(comp.OutsideContainer);
+            Vector2 mousePosition = Event.current.mousePosition;
+            Vector2 containerReadoutSize = FlowUI<AtmosphericDef>.GetFlowBoxReadoutSize(comp.Volume);
             
             //.DrawValueContainerReadout(new Rect(mousePosition.x, mousePosition.y - containerReadoutSize.y, containerReadoutSize.x, containerReadoutSize.y), comp.CurrentContainer);
-            //TWidgets.DrawValueContainerReadout(new Rect(mousePosition2.x, mousePosition2.y - containerReadoutSize2.y, containerReadoutSize2.x, containerReadoutSize2.y), comp.Container);
+            FlowUI<AtmosphericDef>.DrawFlowBoxReadout(new Rect(mousePosition.x, mousePosition.y - containerReadoutSize.y, containerReadoutSize.x, containerReadoutSize.y), comp.Volume);
             //TWidgets.DrawValueContainerReadout(new Rect(mousePosition3.x, mousePosition3.y - containerReadoutSize3.y, containerReadoutSize3.x, containerReadoutSize3.y), comp.OutsideContainer);
         }
     }
 
     public override void Draw()
     {
+        if (Atmos.Parent.IsProper)
+        {
+            GenDraw.FillableBarRequest r = default(GenDraw.FillableBarRequest);
+            r.center = Atmos.Parent.MinMaxCorners[0].ToVector3() + new Vector3(0.075f, 0, 0.75f);
+            r.size = new Vector2(1.5f, 0.15f);
+            r.fillPercent = (float)Atmos.Volume.FillPercent;
+            r.filledMat = AtmosContent.FilledMat;
+            r.unfilledMat = AtmosContent.UnFilledMat;
+            r.margin = 0f;
+            r.rotation = Rot4.East;
+            GenDraw.DrawFillableBar(r);
+        }
+        
         if (ShowAtmosComps)
         {
             var room = UI.MouseCell().GetRoomFast(Map);

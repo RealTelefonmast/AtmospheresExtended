@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
-using MathNet.Numerics.LinearAlgebra;
 using TAE.Atmosphere.Rooms;
 using TeleCore;
 using Unity.Collections;
@@ -60,15 +59,6 @@ public unsafe class SpreadingGasGrid : MapInformation
     
     //
     public bool HasAnyGas => totalGasCount > 0;
-    
-    public static Vector<double> SolveLinearEquations(double[,] matrixA, double[] vectorB)
-    {
-        var matrix = Matrix<double>.Build.DenseOfArray(matrixA);
-        var vector = Vector<double>.Build.Dense(vectorB);
-
-        var result = matrix.Solve(vector);
-        return result;
-    }
     
     //
     public SpreadingGasGrid(Map map) : base(map)

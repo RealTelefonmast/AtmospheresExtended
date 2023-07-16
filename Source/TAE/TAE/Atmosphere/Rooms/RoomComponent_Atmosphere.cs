@@ -46,7 +46,6 @@ public class RoomComponent_Atmosphere : RoomComponent
 
     public override void Notify_Reused()
     {
-        base.Notify_Reused();
         AtmosphericInfo.Notify_UpdateRoomComp(this);
     }
 

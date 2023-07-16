@@ -88,7 +88,7 @@ internal class AtmosphericScriber
                 DataSerializeUtility.LoadUshort(dataBytes, arraySize, delegate(int idx, ushort idxValue)
                 {
                     var atmosStack =  new DefValue<AtmosphericDef,double>(type, idxValue);
-                    if (atmosStack.Value > 0)
+                    if (atmosStack.Value > 0d)
                     {
                         atmosphericGrid[idx] += atmosStack;
                     }

@@ -1,4 +1,7 @@
-﻿using TeleCore;
+﻿#define IS_TELE_DEBUG
+
+using System;
+using TeleCore;
 using UnityEngine;
 using Verse;
 
@@ -8,17 +11,29 @@ internal static class TLog
 {
     public static void Error(string msg, string tag = null)
     {
+#if IS_TELE_DEBUG
+        Console.WriteLine($"{msg}");
+#else
         Log.Error($"{"[TAE]".Colorize(TColor.BlueHighlight)} {msg}");
+#endif
     }
 
     public static void ErrorOnce(string msg, int id)
     {
+#if IS_TELE_DEBUG
+            Console.WriteLine($"{msg}");
+#else
         Log.ErrorOnce($"{"[TAE]".Colorize(TColor.BlueHighlight)} {msg}", id);
+#endif
     }
 
     public static void Warning(string msg)
     {
+#if IS_TELE_DEBUG
+            Console.WriteLine($"{msg}");
+#else
         Log.Warning($"{"[TAE]".Colorize(TColor.BlueHighlight)} {msg}");
+#endif
     }
 
     public static void Message(string msg, Color color)

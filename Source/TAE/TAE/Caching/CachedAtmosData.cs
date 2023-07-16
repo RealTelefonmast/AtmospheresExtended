@@ -27,6 +27,6 @@ public struct CachedAtmosData
         
     public override string ToString()
     {
-        return $"[{roomID}][{stack.Empty}]\n{stack}";
+        return $"[{roomID}][{stack.IsEmpty}]\n{stack}";
     }
 }

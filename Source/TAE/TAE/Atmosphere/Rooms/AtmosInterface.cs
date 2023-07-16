@@ -8,32 +8,27 @@ public class AtmosInterface
     public double PrevFlow { get; set; } = 0;
     public double Move { get; set; } = 0;
     
+    public double FlowRate { get; set; }
     
-    public bool ResolvedFlow { get; private set; }
-    public bool ResolvedMove { get; private set; }
-    
-    public AtmosphericVolume From { get; }
-    public AtmosphericVolume To { get; }
+    public AtmosphericVolume From { get; private set; }
+    public AtmosphericVolume To { get; private set; }
 
     public AtmosInterface(AtmosphericVolume from, AtmosphericVolume to)
     {
         From = from;
         To = to;
     }
-
-    internal void Notify_SetDirty()
+    
+    public void UpdateBasedOnFlow(double flow)
     {
-        ResolvedMove = false;
-        ResolvedFlow = false;
+        if (flow < 0)
+        {
+            (From, To) = (To, From);
+        }
     }
-
-    internal void Notify_ResolvedMove()
+    
+    public AtmosphericVolume Opposite(AtmosphericVolume volume)
     {
-        ResolvedMove = true;
-    }
-
-    internal void Notify_ResolvedFlow()
-    {
-        ResolvedFlow = true;
+        return From == volume ? To : From;
     }
 }

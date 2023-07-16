@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using RimWorld;
 using TAE.Atmosphere.Rooms;
 using TAE.AtmosphericFlow;
@@ -30,6 +31,8 @@ public class ITab_TAEDebug : ITab
         
         cachedTabs = new List<TabRecord>
         {
+            new("Map", delegate { SelTab = DebugTabs.Map; },
+                ()=>SelTab == DebugTabs.Map),
             new("Room", delegate { SelTab = DebugTabs.Room; },
                 ()=>SelTab == DebugTabs.Room),
             new("Neighbours", delegate { SelTab = DebugTabs.Neighbours; },
@@ -41,6 +44,7 @@ public class ITab_TAEDebug : ITab
 
     private enum DebugTabs
     {
+        Map,
         Room,
         Neighbours,
         Border
@@ -56,6 +60,9 @@ public class ITab_TAEDebug : ITab
         //
         switch (SelTab)
         {
+            case DebugTabs.Map:
+                DrawMapData(rect);
+                break;
             case DebugTabs.Room:
                 DrawRoomData(rect);
                 break;
@@ -68,6 +75,11 @@ public class ITab_TAEDebug : ITab
         }
     }
 
+    private void DrawMapData(Rect inRect)
+    {
+        
+    }
+    
     private void DrawRoomData(Rect inRect)
     {
         GridLayout layout = new GridLayout(inRect, 3, 2);
@@ -81,10 +93,10 @@ public class ITab_TAEDebug : ITab
         Rect mapContainerLabel = mapContainerArea.TopPart(0.15f);
         Rect mapContainer = mapContainerArea.BottomPart(0.85f);
         
-        Widgets.Label(roomContainerLabel, $"Room Container[{Atmos.Volume.Stack.TotalValue}]");
+        Widgets.Label(roomContainerLabel, $"Room[{Math.Round(Atmos.Volume.Stack.TotalValue,0)}]");
         FlowUI<AtmosphericDef>.DrawFlowBoxReadout(roomContainer, Atmos.Volume);
         
-        Widgets.Label(mapContainerLabel, $"Map Container[{Atmos.AtmosphericInfo.MapVolume.Stack.TotalValue}]");
+        Widgets.Label(mapContainerLabel, $"Map[{Math.Round(Atmos.AtmosphericInfo.MapVolume.Stack.TotalValue)}]");
         FlowUI<AtmosphericDef>.DrawFlowBoxReadout(mapContainer, Atmos.AtmosphericInfo.MapVolume);
     }
 

@@ -3,10 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using TAE.AtmosphericFlow;
 using TeleCore;
+using TeleCore.Network.Data;
 using TeleCore.Primitive;
 using Verse;
 
 namespace TAE.Atmosphere.Rooms;
+
+//TODO: Add a visual readout of a graph between all roomcomps via interfaces
+//TODO: Like those burst graphs
 
 public class AtmosphericSystem
 {
@@ -17,6 +21,7 @@ public class AtmosphericSystem
     
     //Rooms
     private List<AtmosphericVolume> _volumes;
+    private List<AtmosInterface> _interfaces;
     private Dictionary<RoomComponent, AtmosphericVolume> _relations;
     private Dictionary<AtmosphericVolume, List<AtmosInterface>> _connections;
     //Note: Interface represents a portal between rooms
@@ -26,14 +31,14 @@ public class AtmosphericSystem
 
     public AtmosphericSystem(int mapCellSize)
     {
-        //
-        _mapVolume = new AtmosphericVolume();
+        _mapVolume = new AtmosphericVolume(AtmosResources.DefaultAtmosConfig(mapCellSize));
         _naturalAtmospheres = new List<DefValue<AtmosphericDef, float>>();
         _atmosphericSources = new List<IAtmosphericSource>();
         Notify_Regenerate(mapCellSize);
         
         //
         _volumes = new List<AtmosphericVolume>();
+        _interfaces = new List<AtmosInterface>();
         _relations = new Dictionary<RoomComponent, AtmosphericVolume>();
         _connections = new Dictionary<AtmosphericVolume, List<AtmosInterface>>();
         
@@ -72,12 +77,13 @@ public class AtmosphericSystem
                 if (!_relations.TryGetValue(adjComp, out var adjVolume)) continue;
                 var conn = new AtmosInterface(_mapVolume, adjVolume);
                 _connections[_mapVolume].Add(conn);
+                _interfaces.Add(conn);
             }
             return;
         }
         
         TLog.Debug($"Adding room {comp.Room.ID} to system relations...");
-        var volume = new AtmosphericVolume();
+        var volume = new AtmosphericVolume(AtmosResources.DefaultAtmosConfig(comp.Room.CellCount));
         volume.UpdateVolume(comp.Room.CellCount);
         _volumes.Add(volume);
         _relations.Add(comp, volume);
@@ -88,6 +94,7 @@ public class AtmosphericSystem
             if (!_relations.TryGetValue(adjComp, out var adjVolume)) continue;
             var conn = new AtmosInterface(volume, adjVolume);
             _connections[volume].Add(conn);
+            _interfaces.Add(conn);
         }
     }
 
@@ -108,7 +115,8 @@ public class AtmosphericSystem
                 return contains;
             }
 
-            _connections[_mapVolume].RemoveAll(Match); 
+            _connections[_mapVolume].RemoveAll(Match);
+            _interfaces.RemoveAll(Match);
             return;
         }
         
@@ -116,6 +124,7 @@ public class AtmosphericSystem
         _volumes.Remove(volume);
         _relations.Remove(comp);
         _connections.Remove(volume);
+        _interfaces.RemoveAll(t => t.From == volume || t.To == volume);
     }
     
     public void Notify_AddSource(IAtmosphericSource source)
@@ -138,7 +147,7 @@ public class AtmosphericSystem
     {
         PreTickProcessor(tick);
 
-        foreach (var volume in _volumes)
+        /*foreach (var volume in _volumes)
         {
             volume.PrevStack = volume.Stack;
             _connections[volume].ForEach(c => c.Notify_SetDirty());
@@ -151,8 +160,8 @@ public class AtmosphericSystem
                 if(conn.ResolvedFlow) continue;
                 var flow = conn.NextFlow;
                 flow = FlowFunc(conn.From, conn.To, flow);
-                conn.NextFlow = ClampFunc(conn.From, conn.To, flow);
-                conn.Move = ClampFunc(conn.From, conn.To, flow);
+                conn.NextFlow = ClampFunc(_connections, conn.From, conn.To, flow);
+                conn.Move = ClampFunc(_connections, conn.From, conn.To, flow);
                 conn.Notify_ResolvedFlow();
             }
         }
@@ -169,8 +178,34 @@ public class AtmosphericSystem
 
                 //TODO: Structify for: _connections[fb][i] = conn;
             }
-        }
+        }*/
 
+        foreach (AtmosphericVolume volume in _volumes)
+        {
+            volume.PrevStack = volume.Stack;
+        }
+        
+        foreach (var conn in _interfaces)
+        {
+            double flow = conn.NextFlow;      
+            var from = conn.From;
+            var to = conn.To;
+            flow = AtmosphericSystem.FlowFunc(from, to, flow, out double dp);
+            conn.UpdateBasedOnFlow(flow);
+            flow = Math.Abs(flow);
+            conn.NextFlow = AtmosphericSystem.ClampFunc(_connections,from, to, flow);
+            conn.Move = AtmosphericSystem.ClampFunc(_connections, from, to, flow);
+        }
+        
+        foreach (var conn in _interfaces)
+        {
+            DefValueStack<AtmosphericDef, double> res = conn.From.RemoveContent(conn.Move);
+            conn.To.AddContent(res);
+            //Console.WriteLine($"Moved: " + conn.Move + $":\n{res}");
+                    
+            //TODO: Structify for: _connections[fb][i] = conn;
+        }
+        
         foreach (var volume in _volumes)
         {
             double fp = 0;
@@ -325,27 +360,35 @@ public class AtmosphericSystem
         */
     }
     
-    public double Friction => 0;
-    public double CSquared => 0.03;
-    public double DampFriction => 0.01; //TODO: Extract into global flowsystem config xml or mod settings
+    //Note: Friction is key!!
+    public static double Friction => 0.01;
+    public static double CSquared => 0.03;
+    public static double DampFriction => 0.01; //TODO: Extract into global flowsystem config xml or mod settings
 
     //TODO:Adjust flow based on gas/fluid properties
-    private double FlowFunc(AtmosphericVolume from, AtmosphericVolume to, double f)
+    //TODO: return stack of flow deltas for each def being moved
+    public static double FlowFunc(AtmosphericVolume from, AtmosphericVolume to, double f, out double dp)
     {
-        var dp = Pressure(from) - Pressure(to); // pressure differential
+        dp = Pressure(from) - Pressure(to); // pressure differential
         var src = f > 0 ? from : to;
         var dc = Math.Max(0, src.PrevStack.TotalValue - src.TotalValue);
         f += dp * CSquared;
-        f *= 1 - GetTotalFriction(src); //Note: Might be unnecessary slow-down
+        f *= 1 - Friction;
+        f *= 1 - GetTotalFriction(src); //Additional Friction from each fluid/gas
         f *= 1 - Math.Min(0.5, DampFriction * dc);
+
+        //f += dp * CSquared;
+        //f *= 1 - GetTotalFriction(src); //Note: Might be unnecessary slow-down
+        //f *= 1 - Math.Min(0.5, DampFriction * dc);
         return f;
     }
 
-    private static double GetTotalFriction(AtmosphericVolume volume)
+    public static double GetTotalFriction(AtmosphericVolume volume)
     {
         double totalFriction = 0;
         double totalVolume = 0;
-            
+        
+        if (!volume.Stack.IsValid) return 0;
         foreach (var fluid in volume.Stack)
         {
             totalFriction += fluid.Def.friction * fluid.Value;
@@ -358,7 +401,7 @@ public class AtmosphericSystem
         return averageFriction;
     }
 
-    private static double Pressure(AtmosphericVolume volume)
+    public static double Pressure(AtmosphericVolume volume)
     {
         if (volume.MaxCapacity <= 0)
         {
@@ -368,7 +411,7 @@ public class AtmosphericSystem
         return volume.TotalValue / volume.MaxCapacity * 100d;
     }
 
-    private static double ClampFlow(double content, double flow, double limit)
+    public static double ClampFlow(double content, double flow, double limit)
     {
         if (content <= 0) return 0;
 
@@ -376,11 +419,10 @@ public class AtmosphericSystem
         return flow >= -limit ? flow : -limit;
     }
 
-    private double ClampFunc(AtmosphericVolume from, AtmosphericVolume to, double f, bool enforceMinPipe = true,
-        bool enforceMaxPipe = true)
+    public static double ClampFunc(IDictionary<AtmosphericVolume, List<AtmosInterface>> conns, AtmosphericVolume from, AtmosphericVolume to, double f, bool enforceMinPipe = true,bool enforceMaxPipe = true)
     {
-        var d0 = 1d / Math.Max(1, _connections[from].Count);
-        var d1 = 1d / Math.Max(1, _connections[to].Count);
+        var d0 = 1d / Math.Max(1, conns[from].Count);
+        var d1 = 1d / Math.Max(1, conns[to].Count);
 
         if (enforceMinPipe)
         {
