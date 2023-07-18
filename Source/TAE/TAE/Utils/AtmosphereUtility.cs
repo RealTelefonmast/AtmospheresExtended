@@ -272,18 +272,18 @@ public static class AtmosphereUtility
         return cooler.IsPoweredOn() ? 2f : 0f;
     }
 
-    public static bool IsAtmosphericPortal(Building building)
+    public static bool IsAtmosphericLink(Thing thing)
     {
-        if (building == null) return false;
+        if (thing == null) return false;
 
         //Custom PassBuilding Subroutine
-        if (AtmosPortalData.IsPassBuilding(building.def))
+        if (AtmosPortalData.IsPassBuilding(thing.def))
         {
             return true;
         }
 
         //var fullFillage = building.def.Fillage == FillCategory.Full;
-        return building switch
+        return thing switch
         {
             Building_Door => true,
             Building_Vent => true,

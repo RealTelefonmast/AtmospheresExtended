@@ -49,6 +49,11 @@ public class RoomComponent_Atmosphere : RoomComponent
         AtmosphericInfo.Notify_UpdateRoomComp(this);
     }
 
+    public override bool IsRelevantLink(Thing thing)
+    {
+        return AtmosphereUtility.IsAtmosphericLink(thing);
+    }
+
     #region Data Notifiers
 
     public override void Notify_PawnEnteredRoom(Pawn pawn)

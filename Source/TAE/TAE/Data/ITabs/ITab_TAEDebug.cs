@@ -120,14 +120,14 @@ public class ITab_TAEDebug : ITab
         Rect nghbListView = layout.GetCellRect(0, 0, 1, 2);
         Rect nghbListLabel = nghbListView.TopPartPixels(30);
         Rect nghbList = nghbListView.BottomPartPixels(nghbListView.height - 30);
-        Rect nghbListScrollView = new Rect(nghbList.x, nghbList.y, nghbList.width, Atmos.AdjRoomComps.Count * 30);
+        Rect nghbListScrollView = new Rect(nghbList.x, nghbList.y, nghbList.width, Atmos.CompNeighbors.CompNeighbors.Count * 30);
         
         //
         Widgets.Label(nghbListLabel, "Neighbour Rooms");
         Widgets.BeginScrollView(nghbList, ref neighborListScrollPos, nghbListScrollView);
 
         int i = 0;
-        foreach (var roomComp in Atmos.AdjRoomComps)
+        foreach (var roomComp in Atmos.CompNeighbors.CompNeighbors)
         {
             Rect nghbRect = new Rect(nghbList.x,  nghbListScrollView.y + i * 30, nghbListScrollView.width, 30);
             Rect checkBoxRect = new Rect(nghbList.xMax-24,  nghbListScrollView.y + i * 30, 24, 30);
