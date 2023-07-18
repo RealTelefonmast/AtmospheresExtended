@@ -64,7 +64,7 @@ public class RoomComponent_Atmosphere : RoomComponent
         if (tracker == null) return;
         tracker.Notify_Clear();
     }
-
+    
     #endregion
 
     #region Updates
