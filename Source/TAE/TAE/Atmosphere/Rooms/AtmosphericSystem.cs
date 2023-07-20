@@ -72,7 +72,7 @@ public class AtmosphericSystem
         if (comp.IsOutdoors)
         {
             _relations.Add(comp, _mapVolume);
-            foreach (var adjComp in comp.AdjRoomComps)
+            foreach (var adjComp in comp.CompNeighbors.CompNeighbors)
             {
                 if (!_relations.TryGetValue(adjComp, out var adjVolume)) continue;
                 var conn = new AtmosInterface(_mapVolume, adjVolume);
@@ -89,7 +89,7 @@ public class AtmosphericSystem
         _relations.Add(comp, volume);
         _connections.Add(volume, new List<AtmosInterface>());
 
-        foreach (var adjComp in comp.AdjRoomComps)
+        foreach (var adjComp in comp.CompNeighbors.CompNeighbors)
         {
             if (!_relations.TryGetValue(adjComp, out var adjVolume)) continue;
             var conn = new AtmosInterface(volume, adjVolume);
@@ -111,7 +111,7 @@ public class AtmosphericSystem
             {
                 var firstMatch = _relations.FirstOrDefault(c => c.Value == iface.To);
                 if (firstMatch.Key == null) return false;
-                var contains = firstMatch.Key.AdjRoomComps.Contains(comp);
+                var contains = firstMatch.Key.CompNeighbors.CompNeighbors.Contains(comp);
                 return contains;
             }
 

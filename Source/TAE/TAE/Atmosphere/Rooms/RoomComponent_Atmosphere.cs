@@ -49,6 +49,7 @@ public class RoomComponent_Atmosphere : RoomComponent
         AtmosphericInfo.Notify_UpdateRoomComp(this);
     }
 
+    //Note: Used to check whether a border thing is relevant in setting up a link to another roomcomp of the same type.
     public override bool IsRelevantLink(Thing thing)
     {
         return AtmosphereUtility.IsAtmosphericLink(thing);
