@@ -94,12 +94,12 @@ public class Building_Debug : Building
 
     public override void Draw()
     {
-        if (Atmos.Parent.IsProper)
+        foreach (var room in Atmos.AtmosphericInfo.AllAtmosphericRooms)
         {
             GenDraw.FillableBarRequest r = default(GenDraw.FillableBarRequest);
-            r.center = Atmos.Parent.MinMaxCorners[0].ToVector3() + new Vector3(0.075f, 0, 0.75f);
+            r.center = room.Parent.MinMaxCorners[0].ToVector3() + new Vector3(0.075f, 0, 0.75f);
             r.size = new Vector2(1.5f, 0.15f);
-            r.fillPercent = (float)Atmos.Volume.FillPercent;
+            r.fillPercent = (float)room.Volume.FillPercent;
             r.filledMat = AtmosContent.FilledMat;
             r.unfilledMat = AtmosContent.UnFilledMat;
             r.margin = 0f;
