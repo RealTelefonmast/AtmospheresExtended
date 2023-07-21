@@ -10,8 +10,8 @@ internal class AtmosphericScriber
     private AtmosphericMapInfo _mapInfo;
     private Map _map;
 
-    private DefValueStack<AtmosphericDef, double>[] temporaryGrid;
-    private DefValueStack<AtmosphericDef, double>[] atmosphericGrid;
+    private DefValueStack<AtmosphericValueDef, double>[] temporaryGrid;
+    private DefValueStack<AtmosphericValueDef, double>[] atmosphericGrid;
 
     internal AtmosphericScriber(AtmosphericMapInfo mapInfo)
     {
@@ -49,7 +49,7 @@ internal class AtmosphericScriber
         int arraySize = _map.cellIndices.NumGridCells + 1;
         if (Scribe.mode == LoadSaveMode.Saving)
         {
-            temporaryGrid = new DefValueStack<AtmosphericDef,double>[arraySize];
+            temporaryGrid = new DefValueStack<AtmosphericValueDef,double>[arraySize];
             var outsideAtmosphere = _mapInfo.MapVolume.Stack;
             temporaryGrid[arraySize - 1] = outsideAtmosphere;
                 
@@ -67,11 +67,11 @@ internal class AtmosphericScriber
 
         if (Scribe.mode == LoadSaveMode.LoadingVars)
         {
-            atmosphericGrid = new DefValueStack<AtmosphericDef,double>[arraySize];
+            atmosphericGrid = new DefValueStack<AtmosphericValueDef,double>[arraySize];
         }
 
         //Turn temp grid into byte arrays
-        var savableTypes = DefDatabase<AtmosphericDef>.AllDefsListForReading;
+        var savableTypes = DefDatabase<AtmosphericValueDef>.AllDefsListForReading;
         foreach (var type in savableTypes)
         {
             byte[] dataBytes = null;
@@ -87,7 +87,7 @@ internal class AtmosphericScriber
                 DataExposeUtility.ByteArray(ref dataBytes, $"{type.defName}.atmospheric");
                 DataSerializeUtility.LoadUshort(dataBytes, arraySize, delegate(int idx, ushort idxValue)
                 {
-                    var atmosStack =  new DefValue<AtmosphericDef,double>(type, idxValue);
+                    var atmosStack =  new DefValue<AtmosphericValueDef,double>(type, idxValue);
                     if (atmosStack.Value > 0d)
                     {
                         atmosphericGrid[idx] += atmosStack;

@@ -10,7 +10,7 @@ namespace TAE
         public Room Room => parent.GetRoomIndirect();
 
         //
-        public AtmosphericDef AtmosphericDef => Props.atmosphericDef;
+        public AtmosphericValueDef AtmosphericValueDef => Props.AtmosphericValueDef;
         public int PushInterval => Props.pushInterval;
         public int PushAmount => Props.pushAmount;
 

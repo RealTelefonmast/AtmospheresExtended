@@ -9,7 +9,7 @@ public class TAERulesetDef : Def
 {
     public AtmosphericRealm realm = AtmosphericRealm.AnyBiome;
     public List<BiomeDef> biomes;
-    public List<DefValueLoadable<AtmosphericDef, float>> atmospheres;
+    public List<DefValueLoadable<AtmosphericValueDef, float>> atmospheres;
 
     //IncidentRules
     public List<AtmosphericIncidentFilter> incidentFilters;

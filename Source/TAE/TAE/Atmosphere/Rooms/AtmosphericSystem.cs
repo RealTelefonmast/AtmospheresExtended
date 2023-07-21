@@ -16,7 +16,7 @@ public class AtmosphericSystem
 {
     //Map
     private AtmosphericVolume _mapVolume;
-    private readonly List<DefValue<AtmosphericDef, float>> _naturalAtmospheres = new();
+    private readonly List<DefValue<AtmosphericValueDef, float>> _naturalAtmospheres = new();
     private readonly List<IAtmosphericSource> _atmosphericSources;
     
     //Rooms
@@ -32,7 +32,7 @@ public class AtmosphericSystem
     public AtmosphericSystem(int mapCellSize)
     {
         _mapVolume = new AtmosphericVolume(AtmosResources.DefaultAtmosConfig(mapCellSize));
-        _naturalAtmospheres = new List<DefValue<AtmosphericDef, float>>();
+        _naturalAtmospheres = new List<DefValue<AtmosphericValueDef, float>>();
         _atmosphericSources = new List<IAtmosphericSource>();
         Notify_Regenerate(mapCellSize);
         
@@ -199,7 +199,7 @@ public class AtmosphericSystem
         
         foreach (var conn in _interfaces)
         {
-            DefValueStack<AtmosphericDef, double> res = conn.From.RemoveContent(conn.Move);
+            DefValueStack<AtmosphericValueDef, double> res = conn.From.RemoveContent(conn.Move);
             conn.To.AddContent(res);
             //Console.WriteLine($"Moved: " + conn.Move + $":\n{res}");
                     
@@ -211,13 +211,12 @@ public class AtmosphericSystem
             double fp = 0;
             double fn = 0;
 
-            foreach (var conn in _connections[volume])
-            {
+            foreach (var conn in ConnectionTable[fb]) 
                 Add(conn.Move);
-            }
 
-            volume.FlowRate = Math.Max(fp, fn);
-            continue;
+            //
+            fb.FlowRate = Math.Max(fp, fn);
+            return;
 
             void Add(double f)
             {
@@ -226,6 +225,26 @@ public class AtmosphericSystem
                 else
                     fn -= f;
             }
+        }
+    }
+    
+    private void UpdateFlowRate(AtmosphericVolume volume)
+    {
+        double fp = 0;
+        double fn = 0;
+
+        foreach (var conn in _connections[volume]) 
+            Add(conn.Move);
+        
+        volume.FlowRate = Math.Max(fp, fn);
+        return;
+
+        void Add(double f)
+        {
+            if (f > 0)
+                fp += f;
+            else
+                fn -= f;
         }
     }
 

@@ -7,7 +7,7 @@ namespace TAE.AtmosphericFlow;
 /// <summary>
 /// Similar to <see cref="FlowBox"/> for volumes of atmospheric values.
 /// </summary>
-public class AtmosphericVolume : FlowVolume<AtmosphericDef>
+public class AtmosphericVolume : FlowVolume<AtmosphericValueDef>
 {
     private int _cells;
     
@@ -18,7 +18,7 @@ public class AtmosphericVolume : FlowVolume<AtmosphericDef>
         _cells = cellCount;
     }
 
-    public AtmosphericVolume(FlowVolumeConfig<AtmosphericDef> config) : base(config)
+    public AtmosphericVolume(FlowVolumeConfig<AtmosphericValueDef> config) : base(config)
     {
     }
 }

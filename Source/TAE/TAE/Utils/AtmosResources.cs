@@ -12,11 +12,11 @@ public static class AtmosResources
     internal const int CELL_CAPACITY = 128;
     public const float MIN_EQ_VAL = 2;
     
-    public static List<AtmosphericDef> AllAtmosphericDefs => DefDatabase<AtmosphericDef>.AllDefsListForReading;
+    public static List<AtmosphericValueDef> AllAtmosphericDefs => DefDatabase<AtmosphericValueDef>.AllDefsListForReading;
     
-    public static FlowVolumeConfig<AtmosphericDef> DefaultAtmosConfig(int roomSize)
+    public static FlowVolumeConfig<AtmosphericValueDef> DefaultAtmosConfig(int roomSize)
     {
-        return new FlowVolumeConfig<AtmosphericDef>
+        return new FlowVolumeConfig<AtmosphericValueDef>
         {
             allowedValues = AllAtmosphericDefs,
             capacity = roomSize * CELL_CAPACITY,

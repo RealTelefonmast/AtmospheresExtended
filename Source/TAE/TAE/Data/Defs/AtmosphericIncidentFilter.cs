@@ -7,7 +7,7 @@ namespace TAE;
 public class AtmosphericIncidentFilter : Editable
 {
     public IncidentDef incidentDef;
-    public AtmosphericDef atmosDef;
+    public AtmosphericValueDef AtmosValueDef;
     public float threshold = 0;
 
     public override void PostLoad()

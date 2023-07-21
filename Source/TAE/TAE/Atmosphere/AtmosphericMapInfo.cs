@@ -151,7 +151,7 @@ public class AtmosphericMapInfo : MapInformation
 
     #endregion
 
-    public void Notify_LoadedOutsideAtmosphere(DefValueStack<AtmosphericDef,double> stack)
+    public void Notify_LoadedOutsideAtmosphere(DefValueStack<AtmosphericValueDef,double> stack)
     {
         
     }

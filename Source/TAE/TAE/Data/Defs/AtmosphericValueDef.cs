@@ -30,7 +30,7 @@ public enum DissipationMode
 public class RealmConfig : Editable
 {
     public AtmosphericRealm realmType;
-    public List<AtmosphericDef> requiresAtmospheres;
+    public List<AtmosphericValueDef> requiresAtmospheres;
 }
 
 /// <summary>
@@ -45,7 +45,7 @@ public class DissipationConfig : Editable
     public List<string> terrainFilter;
 }
 
-public class AtmosphericDef : FlowValueDef
+public class AtmosphericValueDef : FlowValueDef
 {
     //
     private AtmosphericTransferWorker workerInt;

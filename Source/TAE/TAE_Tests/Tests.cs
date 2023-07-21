@@ -20,9 +20,9 @@ namespace TAE_Tests
         private static List<AtmosInterface> interfaces;
         private static Dictionary<AtmosphericVolume, List<AtmosInterface>> connections;
 
-        public static AtmosphericDef[] defs = new AtmosphericDef[2]
+        public static AtmosphericValueDef[] defs = new AtmosphericValueDef[2]
         {
-            new AtmosphericDef
+            new AtmosphericValueDef
             {
                 defName = "GasA",
                 label = "gas A",
@@ -32,7 +32,7 @@ namespace TAE_Tests
                 viscosity = 1,
                 friction = 0
             },
-            new AtmosphericDef
+            new AtmosphericValueDef
             {
                 defName = "GasB",
                 label = "gas B",
@@ -47,9 +47,9 @@ namespace TAE_Tests
         [SetUp]
         public void Setup()
         {
-            var config = new FlowVolumeConfig<AtmosphericDef>
+            var config = new FlowVolumeConfig<AtmosphericValueDef>
             {
-                allowedValues = new List<AtmosphericDef>(),
+                allowedValues = new List<AtmosphericValueDef>(),
                 capacity = 1000
             };
 
@@ -111,7 +111,7 @@ namespace TAE_Tests
             //Upate Content
             foreach (var conn in interfaces)
             {
-                DefValueStack<AtmosphericDef, double> res = conn.From.RemoveContent(conn.Move);
+                DefValueStack<AtmosphericValueDef, double> res = conn.From.RemoveContent(conn.Move);
                 conn.To.AddContent(res);
                 //Console.WriteLine($"Moved: " + conn.Move + $":\n{res}");
                     

@@ -26,7 +26,7 @@ public class SpreadingGasTypeDef : Def
     public int dissipationAmount = 1;
     public float spreadViscosity = 0.35f;
 
-    public AtmosphericDef dissipateTo;
+    public AtmosphericValueDef dissipateTo;
     public Type transferWorker = typeof(AtmosphericTransferWorker);
 
     public FloatRange rotationSpeeds = new FloatRange(-100,100);

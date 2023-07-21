@@ -6,7 +6,7 @@ namespace TAE
     {
         public Thing Thing { get; }
         public Room Room { get; }
-        public AtmosphericDef AtmosphericDef { get; }
+        public AtmosphericValueDef AtmosphericValueDef { get; }
         bool IsActive { get; }
         int PushInterval { get; }
         int PushAmount { get; }

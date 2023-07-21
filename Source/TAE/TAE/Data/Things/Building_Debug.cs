@@ -84,10 +84,10 @@ public class Building_Debug : Building
             if (comp == null) return;
             
             Vector2 mousePosition = Event.current.mousePosition;
-            Vector2 containerReadoutSize = FlowUI<AtmosphericDef>.GetFlowBoxReadoutSize(comp.Volume);
+            Vector2 containerReadoutSize = FlowUI<AtmosphericValueDef>.GetFlowBoxReadoutSize(comp.Volume);
             
             //.DrawValueContainerReadout(new Rect(mousePosition.x, mousePosition.y - containerReadoutSize.y, containerReadoutSize.x, containerReadoutSize.y), comp.CurrentContainer);
-            FlowUI<AtmosphericDef>.DrawFlowBoxReadout(new Rect(mousePosition.x, mousePosition.y - containerReadoutSize.y, containerReadoutSize.x, containerReadoutSize.y), comp.Volume);
+            FlowUI<AtmosphericValueDef>.DrawFlowBoxReadout(new Rect(mousePosition.x, mousePosition.y - containerReadoutSize.y, containerReadoutSize.x, containerReadoutSize.y), comp.Volume);
             //TWidgets.DrawValueContainerReadout(new Rect(mousePosition3.x, mousePosition3.y - containerReadoutSize3.y, containerReadoutSize3.x, containerReadoutSize3.y), comp.OutsideContainer);
         }
     }

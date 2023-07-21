@@ -38,9 +38,9 @@ public class Comp_PawnAtmosphereTracker : ThingComp
         base.PostSpawnSetup(respawningAfterLoad);
     }
 
-    public bool IsInAtmosphere(AtmosphericDef def)
+    public bool IsInAtmosphere(AtmosphericValueDef valueDef)
     {
-        return currentAtmosphere.Volume.StoredValueOf(def) > 0;
+        return currentAtmosphere.Volume.StoredValueOf(valueDef) > 0;
     }
 
     //

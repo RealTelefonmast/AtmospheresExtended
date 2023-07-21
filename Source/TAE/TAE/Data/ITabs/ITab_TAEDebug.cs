@@ -94,10 +94,10 @@ public class ITab_TAEDebug : ITab
         Rect mapContainer = mapContainerArea.BottomPart(0.85f);
         
         Widgets.Label(roomContainerLabel, $"Room[{Math.Round(Atmos.Volume.Stack.TotalValue,0)}]");
-        FlowUI<AtmosphericDef>.DrawFlowBoxReadout(roomContainer, Atmos.Volume);
+        FlowUI<AtmosphericValueDef>.DrawFlowBoxReadout(roomContainer, Atmos.Volume);
         
         Widgets.Label(mapContainerLabel, $"Map[{Math.Round(Atmos.AtmosphericInfo.MapVolume.Stack.TotalValue)}]");
-        FlowUI<AtmosphericDef>.DrawFlowBoxReadout(mapContainer, Atmos.AtmosphericInfo.MapVolume);
+        FlowUI<AtmosphericValueDef>.DrawFlowBoxReadout(mapContainer, Atmos.AtmosphericInfo.MapVolume);
     }
 
     public void DrawLayout(GridLayout layout, int cols, int rows)

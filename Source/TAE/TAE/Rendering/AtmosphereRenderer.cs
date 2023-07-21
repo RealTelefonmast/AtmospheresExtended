@@ -12,16 +12,16 @@ public class AtmosphereRenderer
 {
     private Map map;
     private CellBoolDrawer drawerInt;
-    private readonly List<AtmosphericDef> atmospheres;
+    private readonly List<AtmosphericValueDef> atmospheres;
 
-    private AtmosphericDef selectedAtmosphere;
+    private AtmosphericValueDef selectedAtmosphere;
     
     private readonly List<SkyOverlay> naturalOverlays = new();
     
     public AtmosphereRenderer(Map map)
     {
         this.map = map;
-        atmospheres = DefDatabase<AtmosphericDef>.AllDefs.Where(t => t.useRenderLayer).ToList();
+        atmospheres = DefDatabase<AtmosphericValueDef>.AllDefs.Where(t => t.useRenderLayer).ToList();
     }
     
     private CellBoolDrawer Drawer => drawerInt ??= new CellBoolDrawer(CellBoolDrawerGetBoolInt, CellBoolDrawerColorInt, CellBoolDrawerGetExtraColorInt, map.Size.x, map.Size.z, 3610);
@@ -31,13 +31,13 @@ public class AtmosphereRenderer
         return CalculateAtmosphereAt(loc);
     }
 
-    public float CalculateAtmosphereAt(IntVec3 loc, AtmosphericDef def = null)
+    public float CalculateAtmosphereAt(IntVec3 loc, AtmosphericValueDef valueDef = null)
     {
         var room = loc.GetRoomFast(map);
         var roomComp = room?.GetRoomComp<RoomComponent_Atmosphere>();
         if (roomComp != null)
         {
-            return roomComp.Volume.StoredPercentOf(def ?? selectedAtmosphere);
+            return roomComp.Volume.StoredPercentOf(valueDef ?? selectedAtmosphere);
         }
         return 0;
     }
@@ -72,9 +72,9 @@ public class AtmosphereRenderer
         return Color.Lerp(Color.clear, selectedAtmosphere.valueColor, AtmosphereAt(CellIndicesUtility.IndexToCell(index, map.Size.x)));
     }
     
-    public Color CellBoolDrawerGetExtraColorInt(int index, AtmosphericDef def)
+    public Color CellBoolDrawerGetExtraColorInt(int index, AtmosphericValueDef valueDef)
     {
-        return Color.Lerp(Color.clear, def.valueColor, AtmosphereAt(CellIndicesUtility.IndexToCell(index, map.Size.x)));
+        return Color.Lerp(Color.clear, valueDef.valueColor, AtmosphereAt(CellIndicesUtility.IndexToCell(index, map.Size.x)));
     }
     
     //Selection

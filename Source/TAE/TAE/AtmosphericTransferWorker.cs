@@ -7,7 +7,7 @@ namespace TAE;
 
 public class AtmosphericTransferWorker
 {
-    private AtmosphericDef def;
+    private AtmosphericValueDef _valueDef;
 
     //TODO: Reuse for custom gas pressure workers
     /*

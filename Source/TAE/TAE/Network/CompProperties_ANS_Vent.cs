@@ -17,7 +17,7 @@ public enum AtmosphericVentMode
 public class CompProperties_ANS_Vent : CompProperties_ANS
 {
     [Unsaved()]
-    private List<AtmosphericDef> allowedValuesInt;
+    private List<AtmosphericValueDef> allowedValuesInt;
         
     //
     public IntVec3 intakeOffset;
@@ -28,21 +28,21 @@ public class CompProperties_ANS_Vent : CompProperties_ANS
     private AtmosphericVentFilter filter;
     
     //
-    public List<DefValue<AtmosphericDef, float>> upkeepLevels;
+    public List<DefValue<AtmosphericValueDef, float>> upkeepLevels;
     
     private class AtmosphericVentFilter
     {
         public string acceptedTag;
-        public List<AtmosphericDef> acceptedAtmospheres;
+        public List<AtmosphericValueDef> acceptedAtmospheres;
     }
     
-    public List<AtmosphericDef> AllowedValues
+    public List<AtmosphericValueDef> AllowedValues
     {
         get
         {
             if (allowedValuesInt == null)
             {
-                var list = new List<AtmosphericDef>();
+                var list = new List<AtmosphericValueDef>();
                 if (filter.acceptedTag != null)
                 {
                     list.AddRange(AtmosphericReferenceCache.AtmospheresOfTag(filter.acceptedTag));

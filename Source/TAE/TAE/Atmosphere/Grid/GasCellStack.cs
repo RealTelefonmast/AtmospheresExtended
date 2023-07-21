@@ -37,8 +37,8 @@ public unsafe struct GasCellStack
 
     public GasCellStack()
     {
-        var allDefs = DefDatabase<SpreadingGasTypeDef>.AllDefsListForReading;
-        stackData = new NativeArray<GasCellValue>(allDefs.Count, Allocator.Persistent);
+        var allDefs = SpreadingGasGrid.GasDefsArr; //DefDatabase<SpreadingGasTypeDef>.AllDefsListForReading;
+        stackData = new NativeArray<GasCellValue>(allDefs.Length, Allocator.Persistent);
         stackPtr = (GasCellValue*) stackData.GetUnsafePtr();
         totalValue = 0;
         

@@ -8,7 +8,7 @@ namespace TAE;
 
 public class RoomOverlay_Atmospheric : RoomOverlayRenderer
 {
-    private Dictionary<AtmosphericDef, Material> materialsByDef;
+    private Dictionary<AtmosphericValueDef, Material> materialsByDef;
 
     [TweakValue("AE.RoomOverlay_BlendSpeed", 0f, 2f)]
     public static float BlendSpeed = 0.4f;
@@ -22,42 +22,42 @@ public class RoomOverlay_Atmospheric : RoomOverlayRenderer
 
     public override Shader Shader => TAEUnityContent.TextureBlend;
 
-    public Dictionary<AtmosphericDef, Material>.KeyCollection Defs => materialsByDef.Keys;
+    public Dictionary<AtmosphericValueDef, Material>.KeyCollection Defs => materialsByDef.Keys;
 
     public RoomOverlay_Atmospheric()
     {
         materialsByDef = new();
     }
 
-    public void TryRegisterNewOverlayPart(AtmosphericDef def)
+    public void TryRegisterNewOverlayPart(AtmosphericValueDef valueDef)
     {
-        if (def.roomOverlay == null) return;
-        if (materialsByDef.ContainsKey(def)) return;
-        TeleUpdateManager.Notify_EnqueueNewSingleAction(() => GetMaterial(def));
+        if (valueDef.roomOverlay == null) return;
+        if (materialsByDef.ContainsKey(valueDef)) return;
+        TeleUpdateManager.Notify_EnqueueNewSingleAction(() => GetMaterial(valueDef));
     }
 
-    public Material GetMaterial(AtmosphericDef def)
+    public Material GetMaterial(AtmosphericValueDef valueDef)
     {
-        if (!materialsByDef.TryGetValue(def, out var mat))
+        if (!materialsByDef.TryGetValue(valueDef, out var mat))
         {
             mat = new Material(TAEUnityContent.TextureBlend);
-            InitShaderProps(mat, def);
-            materialsByDef.Add(def, mat);
+            InitShaderProps(mat, valueDef);
+            materialsByDef.Add(valueDef, mat);
         }
-        UpdateShaderProps(mat, def);
+        UpdateShaderProps(mat, valueDef);
         return mat;
     }
 
-    protected void InitShaderProps(Material material, AtmosphericDef def)
+    protected void InitShaderProps(Material material, AtmosphericValueDef valueDef)
     {
         TeleUpdateManager.Notify_EnqueueNewSingleAction(() =>
         {
-            var overlayPart1 = ContentFinder<Texture2D>.Get(def.roomOverlay.overlayTex1);
-            var overlayPart2 = ContentFinder<Texture2D>.Get(def.roomOverlay.overlayTex2);
+            var overlayPart1 = ContentFinder<Texture2D>.Get(valueDef.roomOverlay.overlayTex1);
+            var overlayPart2 = ContentFinder<Texture2D>.Get(valueDef.roomOverlay.overlayTex2);
             material.SetTexture("_MainTex1", overlayPart1);
             material.SetTexture("_MainTex2", overlayPart2);
         });
-        var color = def.roomOverlay.color;
+        var color = valueDef.roomOverlay.color;
         color.a = 100f / 255f;
         material.SetFloat("_SrcMode", 2);
         material.SetFloat("_DstMode", 1);
@@ -73,7 +73,7 @@ public class RoomOverlay_Atmospheric : RoomOverlayRenderer
         }
     }
 
-    protected void UpdateShaderProps(Material material, AtmosphericDef def)
+    protected void UpdateShaderProps(Material material, AtmosphericValueDef valueDef)
     {
         base.UpdateShaderProps(material);
         material.SetFloat("_SrcMode", SrcMode);
@@ -82,14 +82,14 @@ public class RoomOverlay_Atmospheric : RoomOverlayRenderer
         material.SetFloat("_Opacity", MainAlpha * Alpha);
     }
 
-    public void DrawFor(AtmosphericDef def, Vector3 drawPos, float saturation)
+    public void DrawFor(AtmosphericValueDef valueDef, Vector3 drawPos, float saturation)
     {
         if (cachedMesh == null) return;
         MainAlpha = saturation;
 
         Matrix4x4 matrix = default;
         matrix.SetTRS(drawPos, Quaternion.identity, Vector3.one);
-        Graphics.DrawMesh(cachedMesh, matrix, GetMaterial(def), 0);
+        Graphics.DrawMesh(cachedMesh, matrix, GetMaterial(valueDef), 0);
     }
         
 }

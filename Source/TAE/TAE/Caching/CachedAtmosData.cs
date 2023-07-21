@@ -7,12 +7,12 @@ namespace TAE.Caching;
 public struct CachedAtmosData
 {
     public int roomID;
-    public DefValueStack<AtmosphericDef,double> stack;
+    public DefValueStack<AtmosphericValueDef,double> stack;
 
     public CachedAtmosData()
     {
         roomID = -1;
-        stack = new DefValueStack<AtmosphericDef, double>();
+        stack = new DefValueStack<AtmosphericValueDef, double>();
     }
         
     public CachedAtmosData(RoomComponent_Atmosphere roomComp)

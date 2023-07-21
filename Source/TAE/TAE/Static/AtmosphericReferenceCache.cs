@@ -4,15 +4,15 @@ namespace TAE.Static;
 
 public static class AtmosphericReferenceCache
 {
-    private static List<AtmosphericDef> EmptyList = new List<AtmosphericDef>();
-    public static readonly Dictionary<string, List<AtmosphericDef>> AtmosphericGroupsByTag;
+    private static List<AtmosphericValueDef> EmptyList = new List<AtmosphericValueDef>();
+    public static readonly Dictionary<string, List<AtmosphericValueDef>> AtmosphericGroupsByTag;
     
     static AtmosphericReferenceCache()
     {
         AtmosphericGroupsByTag = new();
     }
 
-    public static List<AtmosphericDef> AtmospheresOfTag(string tag)
+    public static List<AtmosphericValueDef> AtmospheresOfTag(string tag)
     {
         if (tag != null && AtmosphericGroupsByTag.TryGetValue(tag, out var group))
         {
@@ -21,16 +21,16 @@ public static class AtmosphericReferenceCache
         return EmptyList;
     }
 
-    public static void RegisterDef(AtmosphericDef def)
+    public static void RegisterDef(AtmosphericValueDef valueDef)
     {
-        if (def.atmosphericTag == null) return;
-        if (!AtmosphericGroupsByTag.TryGetValue(def.atmosphericTag, out var groupList))
+        if (valueDef.atmosphericTag == null) return;
+        if (!AtmosphericGroupsByTag.TryGetValue(valueDef.atmosphericTag, out var groupList))
         {
-            groupList = new List<AtmosphericDef>();
-            AtmosphericGroupsByTag.Add(def.atmosphericTag, groupList);
+            groupList = new List<AtmosphericValueDef>();
+            AtmosphericGroupsByTag.Add(valueDef.atmosphericTag, groupList);
         }
         
         //
-        groupList.Add(def);
+        groupList.Add(valueDef);
     }
 }
