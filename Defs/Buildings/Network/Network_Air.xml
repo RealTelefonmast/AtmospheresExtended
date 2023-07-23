@@ -62,15 +62,51 @@
 				<basePowerConsumption>1000</basePowerConsumption>
 			</li>
 		</comps>
-		<placeWorkers>
-			<li>TAE.PlaceWorker_AtmosphericVent</li>
-		</placeWorkers>
 		<rotatable>true</rotatable>
 		<tickerType>Never</tickerType>
 		<castEdgeShadows>false</castEdgeShadows>
 		<staticSunShadowHeight>0</staticSunShadowHeight>	
 		<fillPercent>1</fillPercent>			
 		<surfaceType>Item</surfaceType>
+		<modExtensions>
+			<li Class="TeleCore.SubMenuExtension">
+				<groupDef>TestGroup</groupDef>
+				<category>Structure</category>
+			</li>
+		</modExtensions>
+	</ThingDef>
+	
+	<ThingDef ParentName="NetworkPipeBase">
+		<defName>AtmosphericPipe</defName>
+		<label>gas pipe</label>
+		<description>This structure connects Atmospheric processing structures on the Atmospheric Network.</description>
+		<building>
+			<blueprintGraphicData>
+				<texPath>Buildings/Network/Pipe_Air_blueprint</texPath>
+				<graphicClass>TeleCore.Graphic_LinkedWithSame</graphicClass>
+			</blueprintGraphicData>
+		</building>
+		<statBases>
+			<MaxHitPoints>100</MaxHitPoints>
+			<WorkToBuild>100</WorkToBuild>
+			<Flammability>0.2</Flammability>
+			<Beauty>-18</Beauty>
+		</statBases>
+		<costList>
+			<Steel>5</Steel>
+		</costList>
+		<comps>
+			<li Class="TeleCore.CompProperties_Network">
+				<networks>
+					<li>
+						<networkDef>AtmosphericNetwork</networkDef>
+						<roles>
+							<li>Transmitter</li>
+						</roles>
+					</li>
+				</networks>
+			</li>
+		</comps>
 		<modExtensions>
 			<li Class="TeleCore.SubMenuExtension">
 				<groupDef>TestGroup</groupDef>
@@ -137,7 +173,8 @@
 					</li>
 				</networks>
 				<generalIOConfig>
-					<pattern>#I#I+I#I#</pattern>
+					<patternSize>(3,3)</patternSize>
+					<pattern>#O#|O#O|#O#</pattern>
 				</generalIOConfig>
 			</li>
 			<li Class="TeleCore.CompProperties_FX"> 
@@ -246,7 +283,8 @@
 					</li>
 				</networks>
 				<generalIOConfig>
-					<pattern>+</pattern>
+					<patternSize>(3,3)</patternSize>
+					<pattern>#I#|I#I|#I#</pattern>
 				</generalIOConfig>
 			</li>
 			<li Class="CompProperties_Power">
@@ -254,6 +292,9 @@
 				<basePowerConsumption>45</basePowerConsumption>
 			</li>
 		</comps>
+		<placeWorkers>
+			<li>TAE.PlaceWorker_AtmosphericVent</li>
+		</placeWorkers>
 		<castEdgeShadows>false</castEdgeShadows>
 		<staticSunShadowHeight>0</staticSunShadowHeight>	
 		<fillPercent>1</fillPercent>
@@ -327,7 +368,8 @@
 					</li>
 				</networks>
 				<generalIOConfig>
-					<pattern>#+#+#+#+#</pattern>
+					<patternSize>(3,3)</patternSize>
+					<pattern>#+#|+#+|#+#</pattern>
 				</generalIOConfig>
 			</li>
 			<li Class="CompProperties_Flickable">

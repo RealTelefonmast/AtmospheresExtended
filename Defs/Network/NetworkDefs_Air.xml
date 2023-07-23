@@ -18,46 +18,4 @@
 		</overlayGraphic>
 	</TeleCore.NetworkDef>
 
-	<ThingDef ParentName="NetworkPipeBase">
-		<defName>AtmosphericPipe</defName>
-		<label>gas pipe</label>
-		<description>This structure connects Atmospheric processing structures on the Atmospheric Network.</description>
-		<building>
-			<blueprintGraphicData>
-				<texPath>Buildings/Network/Pipe_Air_blueprint</texPath>
-				<graphicClass>TeleCore.Graphic_LinkedWithSame</graphicClass>
-			</blueprintGraphicData>
-		</building>
-		<statBases>
-			<MaxHitPoints>100</MaxHitPoints>
-			<WorkToBuild>100</WorkToBuild>
-			<Flammability>0.2</Flammability>
-			<Beauty>-18</Beauty>
-		</statBases>
-		<costList>
-			<Steel>5</Steel>
-		</costList>
-		<comps>
-			<li Class="TeleCore.CompProperties_Network">
-				<networks>
-					<li>
-						<networkDef>AtmosphericNetwork</networkDef>
-						<roles>
-							<li>Transmitter</li>
-						</roles>
-					</li>
-				</networks>
-				<generalIOConfig>
-					<pattern>#+#+#+#+#</pattern>
-				</generalIOConfig>
-			</li>
-		</comps>
-		<modExtensions>
-			<li Class="TeleCore.SubMenuExtension">
-				<groupDef>TestGroup</groupDef>
-				<category>Structure</category>
-			</li>
-		</modExtensions>
-	</ThingDef>
-
 </Defs>

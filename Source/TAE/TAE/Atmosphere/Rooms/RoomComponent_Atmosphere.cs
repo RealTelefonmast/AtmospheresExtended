@@ -41,6 +41,11 @@ public class RoomComponent_Atmosphere : RoomComponent
 
     public override void Disband(RoomTracker parent, Map map)
     {
+        if (_atmosphericInfo == null)
+        {
+            TLog.Warning("Tried to disband roomcomp without atmospheric info.");
+            return;
+        }
         AtmosphericInfo.Notify_RemoveRoomComp(this);
     }
 
