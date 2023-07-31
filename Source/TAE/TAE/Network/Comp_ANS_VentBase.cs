@@ -1,5 +1,12 @@
-﻿using RimWorld;
+﻿using System;
+using System.Linq;
+using RimWorld;
+using TAE.AtmosphericFlow;
 using TeleCore;
+using TeleCore.FlowCore;
+using TeleCore.Network.Flow;
+using TeleCore.Network.Flow.Clamping;
+using TeleCore.Primitive;
 using UnityEngine;
 using Verse;
 
@@ -21,7 +28,6 @@ public class Comp_ANS_VentBase : Comp_AtmosphericNetworkStructure
     //State Bools
     public bool CanTickNow => IsPowered;
     public virtual bool CanManipulateNow => !IntakeCellBlocked;
-
     
     protected bool CanWork_Obsolete
     {
@@ -57,16 +63,158 @@ public class Comp_ANS_VentBase : Comp_AtmosphericNetworkStructure
         //TLog.Debug($"Created vent with allowed values: {VentProps.AllowedValues.ToStringSafeEnumerable()} and\n{AtmosNetwork.Props.containerConfig.AllowedValues}");
     }
     
+    public double NextFlow { get; set; } = 0;
+    public double PrevFlow { get; set; } = 0;
+    public double Move { get; set; } = 0;
+    public double FlowRate { get; set; }
+    
+    public DefValueStack<NetworkValueDef, double> PrevStackNetwork { get; set; }
+    public DefValueStack<AtmosphericValueDef, double> PrevStackAtmos { get; set; }
+    
     public override void CompTick()
     {
         base.CompTick();
         if (CanTickNow && CanManipulateNow)
         {
-            //if (TryManipulateAtmosphere(1))
+            var selfVolume = this.AtmosNetwork.Volume;
+            var roomVolume = this.AtmosRoom.Volume;
+
+            //Setup
+            PrevStackNetwork = selfVolume.Stack;
+            PrevStackAtmos = roomVolume.Stack;
+            
+            
+            //Flow
+            var fromTo = true;
+            //Equalize Based On Simple Pressure And Clamping
+            double flow = NextFlow;
+            flow = FlowFunc(selfVolume, roomVolume, flow);
+            if (flow < 0)
             {
+                fromTo = false;
             }
+            flow = Math.Abs(flow);
+
+            NextFlow = ClampFunc(selfVolume, roomVolume, flow, fromTo);
+            Move = ClampFunc(selfVolume, roomVolume, flow, fromTo);
+
+            //Update Content
+            if (fromTo)
+            {
+                DefValueStack<NetworkValueDef, double> res = selfVolume.RemoveContent(Move);
+                var res2 = new DefValueStack<AtmosphericValueDef, double>();
+                for(var i = 0; i < res.Length; i++)
+                {
+                    var def = res[i].Def;
+                    var atmosDef = AtmosRoom.Volume.AllowedValues.FirstOrDefault(d => d.networkValue == def);
+                    if (atmosDef != null)
+                    {
+                        res2 += new DefValue<AtmosphericValueDef, double>(atmosDef, res[i].Value);
+                    }
+                }
+                roomVolume.AddContent(res2);
+            }
+            else
+            {
+                DefValueStack<AtmosphericValueDef, double> res = roomVolume.RemoveContent(Move);
+                var res2 = new DefValueStack<NetworkValueDef, double>();
+                for(var i = 0; i < res.Length; i++)
+                {
+                    var def = res[i].Def;
+                    if (def.networkValue != null)
+                    {
+                        res2 += new DefValue<NetworkValueDef, double>(def.networkValue, res[i].Value);
+                    }
+                }
+                selfVolume.AddContent(res2);
+            }
+            
         }
     }
+    
+    public static double Pressure<T>(FlowVolume<T> volume) where T : FlowValueDef
+    {
+        if (volume.MaxCapacity <= 0)
+        {
+            TLog.Warning($"Tried to get pressure from container with {volume.MaxCapacity} capacity!");
+            return 0;
+        }
+        return volume.TotalValue / volume.MaxCapacity * 100d;
+    }
+    
+    //Note: Friction is key!!
+    public static double Friction => 0;
+    public static double CSquared => 0.5;
+    public static double DampFriction => 0.01; //TODO: Extract into global flowsystem config xml or mod settings
+
+    
+    public double FlowFunc(NetworkVolume network, AtmosphericVolume atmos, double f)
+    {
+        var dp = Pressure(network) - Pressure(atmos);
+        return f > 0 ? HandleNetworkSource(network, f, dp) : HandleAtmosSource(atmos, f, dp);
+    }
+
+    private double HandleNetworkSource(NetworkVolume src, double f, double dp)
+    {
+        var dc = Math.Max(0, PrevStackNetwork.TotalValue - src.TotalValue);
+        f += dp * CSquared;
+        f *= 1 - Friction;
+        //f *= 1 - Math.Min(0.5, DampFriction * dc);
+        return f;
+    }
+    
+    private double HandleAtmosSource(AtmosphericVolume src, double f, double dp)
+    {
+        var dc = Math.Max(0, PrevStackAtmos.TotalValue - src.TotalValue);
+        f += dp * CSquared;
+        f *= 1 - Friction;
+        f *= 1 - Math.Min(0.5, DampFriction * dc);
+        return f;
+    }
+
+    public double ClampFunc(NetworkVolume network, AtmosphericVolume atmos, double f, bool fromTo)
+    {
+        double totalFrom = fromTo ? network.TotalValue : atmos.TotalValue ;
+        double maxCapFrom = fromTo ? network.MaxCapacity : atmos.MaxCapacity;
+        double totalTo = fromTo ? atmos.TotalValue : network.TotalValue;
+        double maxCapTo = fromTo ? atmos.MaxCapacity : network.MaxCapacity;
+        
+        var limit = 0.5;
+        double c, r;
+        if (f > 0)
+        {
+            c = totalFrom;
+            f = ClampFlow(c, f, limit * c);
+        }
+        
+        else if (f < 0)
+        {
+            c = totalTo;
+            f = -ClampFlow(c, -f, limit* c);
+        }
+
+
+        if (f > 0)
+        {
+            r = maxCapTo - totalTo;
+            f = ClampFlow(r, f, limit * r);
+        }
+        else if (f < 0)
+        {
+            r = maxCapFrom - totalFrom;
+            f = -ClampFlow(r, -f, limit * r);
+        }
+        return f;
+
+        static double ClampFlow(double content, double flow, double limit)
+        {
+            if (content <= 0) return 0;
+
+            if (flow >= 0) return flow <= limit ? flow : limit;
+            return flow >= -limit ? flow : -limit;
+        }
+    }
+
 
     /*private void TryEqualize(AtmosphericDef atmosphericDef, int tickRate = 1)
     {

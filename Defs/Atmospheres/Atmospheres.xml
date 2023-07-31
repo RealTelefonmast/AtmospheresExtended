@@ -1,6 +1,16 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <Defs>
+  
+	<TeleCore.FlowValueCollectionDef>
+		<defName>Atmosphere_Air</defName>
+		<label>air</label>
+	</TeleCore.FlowValueCollectionDef>
 
+	<TeleCore.FlowValueCollectionDef>
+		<defName>Atmosphere_Underwater</defName>
+		<label>water</label>
+	</TeleCore.FlowValueCollectionDef>
+	
 	<TeleCore.NetworkDef>
 		<defName>AtmosphericNetwork</defName>
 		<containerLabel>Atmospheres</containerLabel>
@@ -18,4 +28,5 @@
 		</overlayGraphic>
 	</TeleCore.NetworkDef>
 
+	
 </Defs>

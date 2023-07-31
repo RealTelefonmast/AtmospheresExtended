@@ -42,13 +42,9 @@
 							<area>1</area>
 							<elevation>0</elevation>
 							<height>1</height>
-							<!--
-							<baseCapacity>1000</baseCapacity>
-							<dropContents>false</dropContents>
-							<valueDefs>
+							<values>
 								<fromCollection>AtmosphericNetwork</fromCollection>
-							</valueDefs>
-							-->
+							</values>
 						</volumeConfig>
 					</li>
 				</networks>
@@ -156,19 +152,16 @@
 						<roles>
 							<li>Transmitter</li>
 							<li>Producer</li>
+							<li>Storage</li>
 						</roles>
 						<volumeConfig>
 							<capacity>100</capacity>
 							<area>1</area>
 							<elevation>0</elevation>
 							<height>1</height>
-							<!--
-							<baseCapacity>100</baseCapacity>
-							<dropContents>false</dropContents>
-							<valueDefs>
+							<values>
 								<fromCollection>AtmosphericNetwork</fromCollection>
-							</valueDefs>
-							-->
+							</values>
 						</volumeConfig>
 					</li>
 				</networks>
@@ -266,19 +259,16 @@
 						<roles>
 							<li>Transmitter</li>
 							<li>Requester</li>
+							<li>Storage</li>
 						</roles>
 						<volumeConfig>
 							<capacity>100</capacity>
 							<area>1</area>
 							<elevation>0</elevation>
 							<height>1</height>
-							<!--
-							<baseCapacity>100</baseCapacity>
-							<dropContents>false</dropContents>
-							<valueDefs>
+							<values>
 								<fromCollection>AtmosphericNetwork</fromCollection>
-							</valueDefs>
-							-->
+							</values>
 						</volumeConfig>
 					</li>
 				</networks>
@@ -354,22 +344,16 @@
 							<li>Storage</li>
 						</roles>
 						<volumeConfig>
-							<capacity>400</capacity>
-							
-							<!--
-							<baseCapacity>400</baseCapacity>
-							<dropContents>false</dropContents>
-							<storeEvenly>true</storeEvenly>
-							<valueDefs>
+							<capacity>80</capacity>
+							<values>
 								<fromCollection>AtmosphericNetwork</fromCollection>
-							</valueDefs>
-							-->
+							</values>
 						</volumeConfig>
 					</li>
 				</networks>
 				<generalIOConfig>
 					<patternSize>(3,3)</patternSize>
-					<pattern>#+#|+#+|#+#</pattern>
+					<pattern>#X#|X+X|#X#</pattern>
 				</generalIOConfig>
 			</li>
 			<li Class="CompProperties_Flickable">

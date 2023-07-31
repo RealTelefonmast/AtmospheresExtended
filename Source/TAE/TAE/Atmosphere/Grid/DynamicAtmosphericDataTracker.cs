@@ -5,33 +5,33 @@ using Verse;
 
 namespace TAE;
 
-public class DynamicDataTracker : ThingTrackerComp
+public class DynamicAtmosphericDataTracker : ThingTrackerComp
 {
-    private DynamicDataCacheMapInfo cacheMapInfo;
+    private DynamicAtmosphericDataMapInfo _mapInfo;
 
-    private DynamicDataCacheMapInfo CacheInfo(Map map)
+    private DynamicAtmosphericDataMapInfo CacheInfo(Map map)
     {
-        if (cacheMapInfo == null)
+        if (_mapInfo == null)
         {
-            cacheMapInfo = map.GetMapInfo<DynamicDataCacheMapInfo>();
+            _mapInfo = map.GetMapInfo<DynamicAtmosphericDataMapInfo>();
         }
-        return cacheMapInfo;
+        return _mapInfo;
     }
 
     //TODO: Update to use protected parent later
-    public DynamicDataTracker(ThingTrackerMapInfo parent) : base(parent)
+    public DynamicAtmosphericDataTracker(ThingTrackerMapInfo parent) : base(parent)
     {
     }
     
     public override void Notify_ThingRegistered(ThingStateChangedEventArgs args)
     {
-        args.Thing.Map.GetMapInfo<DynamicDataCacheMapInfo>().Notify_ThingSpawned(args.Thing);
+        args.Thing.Map.GetMapInfo<DynamicAtmosphericDataMapInfo>().Notify_ThingSpawned(args.Thing);
         args.Thing.Map.GetMapInfo<SpreadingGasGrid>().Notify_ThingSpawned(args.Thing);
     }
 
     public override void Notify_ThingDeregistered(ThingStateChangedEventArgs args)
     {
-        args.Thing.Map.GetMapInfo<DynamicDataCacheMapInfo>().Notify_ThingDespawned(args.Thing);
+        args.Thing.Map.GetMapInfo<DynamicAtmosphericDataMapInfo>().Notify_ThingDespawned(args.Thing);
     }
 
     public override void Notify_ThingSentSignal(ThingStateChangedEventArgs args)
@@ -47,7 +47,7 @@ public class DynamicDataTracker : ThingTrackerComp
             case "DoorOpened":
             case "DoorClosed":
             {
-                args.Thing.Map.GetMapInfo<DynamicDataCacheMapInfo>().Notify_UpdateThingState(args.Thing);
+                args.Thing.Map.GetMapInfo<DynamicAtmosphericDataMapInfo>().Notify_ThingSentSignal(args);
             }
                 break;
         }

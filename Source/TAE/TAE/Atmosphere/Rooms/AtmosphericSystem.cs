@@ -58,11 +58,20 @@ public class AtmosphericSystem : FlowSystem<RoomComponent, AtmosphericVolume, At
         }
     }
     
+    
+    protected override AtmosphericVolume CreateVolume(RoomComponent part)
+    {
+        return new AtmosphericVolume(AtmosResources.DefaultAtmosConfig(part.Room.CellCount));
+    }
+    
     public void Notify_AddRoomComp(RoomComponent_Atmosphere comp)
     {
-        if (Relations.ContainsKey(comp)) 
+        if (Relations.ContainsKey(comp))
+        {
+            TLog.Error("This technically shouldn't happen");
             return;
-        
+        }
+
         if (comp.IsOutdoors)
         {
             Relations.Add(comp, _mapVolume);
@@ -71,7 +80,7 @@ public class AtmosphericSystem : FlowSystem<RoomComponent, AtmosphericVolume, At
                 if (!Relations.TryGetValue(adjComp, out var adjVolume)) continue;
                 var conn = new FlowInterface<AtmosphericVolume, AtmosphericValueDef>(_mapVolume, adjVolume);
                 Connections[_mapVolume].Add(conn);
-                Interfaces.Add(conn);
+                Notify_CreateInterface((comp, adjComp), conn);
             }
             return;
         }
@@ -88,7 +97,7 @@ public class AtmosphericSystem : FlowSystem<RoomComponent, AtmosphericVolume, At
             if (!Relations.TryGetValue(adjComp, out var adjVolume)) continue;
             var conn = new FlowInterface<AtmosphericVolume, AtmosphericValueDef>(volume, adjVolume);
             Connections[volume].Add(conn);
-            Interfaces.Add(conn);
+            Notify_CreateInterface((comp, adjComp), conn);
         }
     }
 
@@ -108,9 +117,9 @@ public class AtmosphericSystem : FlowSystem<RoomComponent, AtmosphericVolume, At
                 var contains = firstMatch.Key.CompNeighbors.Neighbors.Contains(comp);
                 return contains;
             }
-
+            
             Connections[_mapVolume].RemoveAll(Match);
-            Interfaces.RemoveAll(Match);
+            Notify_RemoveInterfaces(Match);
             return;
         }
         
@@ -118,7 +127,7 @@ public class AtmosphericSystem : FlowSystem<RoomComponent, AtmosphericVolume, At
         Volumes.Remove(volume);
         Relations.Remove(comp);
         Connections.Remove(volume);
-        Interfaces.RemoveAll(t => t.From == volume || t.To == volume);
+        Notify_RemoveInterfaces(t => t.From == volume || t.To == volume);
     }
     
     public void Notify_AddSource(IAtmosphericSource source)
@@ -160,8 +169,11 @@ public class AtmosphericSystem : FlowSystem<RoomComponent, AtmosphericVolume, At
         _mapVolume.UpdateVolume(cells);
     }
     
-    public override double FlowFunc(AtmosphericVolume from, AtmosphericVolume to, double f)
+    public override double FlowFunc(FlowInterface<AtmosphericVolume, AtmosphericValueDef> iface, double f)
     {
+        var from = iface.From;
+        var to = iface.To;
+        
         var dp = Pressure(from) - Pressure(to); // pressure differential
         var src = f > 0 ? from : to;
         var dc = Math.Max(0, src.PrevStack.TotalValue - src.TotalValue);
@@ -179,8 +191,11 @@ public class AtmosphericSystem : FlowSystem<RoomComponent, AtmosphericVolume, At
     private bool enforceMinPipe = true;
     private bool enforceMaxPipe = true;
     
-    public override double ClampFunc(AtmosphericVolume from, AtmosphericVolume to, double f, ClampType clampType)
+    public override double ClampFunc(FlowInterface<AtmosphericVolume, AtmosphericValueDef> iface, double f, ClampType clampType)
     {     
+        var from = iface.From;
+        var to = iface.To;
+        
         var d0 = 1d / Math.Max(1, Connections[from].Count);
         var d1 = 1d / Math.Max(1, Connections[to].Count);
 

@@ -3,45 +3,44 @@ using TeleCore;
 using TeleCore.Network.Data;
 using Verse;
 
-namespace TAE
+namespace TAE;
+
+public class Comp_AtmosphericNetworkStructure : Comp_Network
 {
-    public class Comp_AtmosphericNetworkStructure : Comp_Network
+    private RoomComponent_Atmosphere atmosphericInt;
+
+    //
+    public INetworkPart AtmosNetwork { get; private set; }
+    public RoomComponent_Atmosphere AtmosRoom
     {
-        private RoomComponent_Atmosphere atmosphericInt;
-
-        //
-        public INetworkPart AtmosNetwork { get; private set; }
-        public RoomComponent_Atmosphere AtmosRoom
+        get
         {
-            get
+            if (atmosphericInt == null || atmosphericInt.Parent.IsDisbanded)
             {
-                if (atmosphericInt == null || atmosphericInt.Parent.IsDisbanded)
-                {
-                    atmosphericInt = AtmosphericSource.GetRoomComp<RoomComponent_Atmosphere>();
-                }
-                return atmosphericInt;
+                atmosphericInt = AtmosphericSource.GetRoomComp<RoomComponent_Atmosphere>();
             }
-        }
-        
-        protected virtual Room AtmosphericSource => parent.GetRoom();
-
-        public override void PostSpawnSetup(bool respawningAfterLoad)
-        {
-            base.PostSpawnSetup(respawningAfterLoad);
-            AtmosNetwork = this[AtmosDefOf.AtmosphericNetwork];
-        }
-
-        public override void CompTick()
-        {
-            base.CompTick();
+            return atmosphericInt;
         }
     }
+        
+    protected virtual Room AtmosphericSource => parent.GetRoom();
 
-    public class CompProperties_ANS : CompProperties_Network
+    public override void PostSpawnSetup(bool respawningAfterLoad)
     {
-        public CompProperties_ANS()
-        {
-            this.compClass = typeof(Comp_AtmosphericNetworkStructure);
-        }
+        base.PostSpawnSetup(respawningAfterLoad);
+        AtmosNetwork = this[AtmosDefOf.AtmosphericNetwork];
+    }
+
+    public override void CompTick()
+    {
+        base.CompTick();
+    }
+}
+
+public class CompProperties_ANS : CompProperties_Network
+{
+    public CompProperties_ANS()
+    {
+        this.compClass = typeof(Comp_AtmosphericNetworkStructure);
     }
 }

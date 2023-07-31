@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
+using RimWorld;
 using TAE.Atmosphere.Rooms;
 using TAE.AtmosphericFlow;
 using TAE.Caching;
 using TeleCore;
+using TeleCore.Data.Events;
 using TeleCore.Primitive;
 using Verse;
 
@@ -92,7 +94,7 @@ public class AtmosphericMapInfo : MapInformation
     }
     
     #region Data
-
+    
     public void Notify_UpdateRoomComp(RoomComponent_Atmosphere comp)
     {    
         _system.Notify_UpdateRoomComp(comp);
@@ -122,18 +124,45 @@ public class AtmosphericMapInfo : MapInformation
     {
         _system.Notify_RemoveSource(source);
     }
+    
+    //Things
+    public void Notify_ThingSentSignal(ThingStateChangedEventArgs args)
+    {
+        switch (args.Thing)
+        {
+            case Building_Vent or Building_Cooler:
+                var rot = args.Thing.Rotation;
+                var positionA = args.Thing.Position + rot.FacingCell;
+                var positionB = args.Thing.Position + rot.Opposite.FacingCell;
+                var roomA = positionA.GetRoomFast(Map);
+                var roomB = positionB.GetRoomFast(Map);
+                
+                var infront = _compLookUp.TryGetValue(roomA);
+                var behind = _compLookUp.TryGetValue(roomB);
+                infront.Notify_InterfacingThingChanged(behind, args.Thing, args.CompSignal);
+                break;
+            case Building_Door door:
+                var tracker = _compLookUp.TryGetValue(door.GetRoom());
+                break;
+        }
+    }
+
+    //Atmospher Scribing
+    public void Notify_LoadedOutsideAtmosphere(DefValueStack<AtmosphericValueDef,double> stack)
+    {
+        
+    }
+
+    public void Notify_ApplyLoadedData()
+    {
+        //.Cache.scriber.ApplyLoadedDataToRegions();
+    }
 
     public void TrySpawnGasAt(IntVec3 cell, SpreadingGasTypeDef gasType, float value)
     {
         Map.GetMapInfo<SpreadingGasGrid>().Notify_SpawnGasAt(cell, gasType, value);
     }
     
-    #endregion
-
-    #region Updates
-
-    
-
     #endregion
 
     #region Rendering
@@ -150,14 +179,4 @@ public class AtmosphericMapInfo : MapInformation
     }
 
     #endregion
-
-    public void Notify_LoadedOutsideAtmosphere(DefValueStack<AtmosphericValueDef,double> stack)
-    {
-        
-    }
-
-    public void Notify_ApplyLoadedData()
-    {
-        //.Cache.scriber.ApplyLoadedDataToRegions();
-    }
 }

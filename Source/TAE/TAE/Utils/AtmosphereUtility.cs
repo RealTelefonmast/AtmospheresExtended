@@ -25,7 +25,7 @@ public static class AtmosphereUtility
         var map = Find.CurrentMap;
         //FillAtmosphereRelevantCells(UI.MouseCell(), Find.CurrentMap);
         
-        var cacheInfo = Find.CurrentMap.GetMapInfo<DynamicDataCacheMapInfo>();
+        var cacheInfo = Find.CurrentMap.GetMapInfo<DynamicAtmosphericDataMapInfo>();
         for (int i = 0; i < SampleNumCells; i++)
         {
             IntVec3 intVec = root + GenRadial.RadialPattern[i];
@@ -47,7 +47,7 @@ public static class AtmosphereUtility
         var map = Find.CurrentMap;
         //FillAtmosphereRelevantCells(UI.MouseCell(), Find.CurrentMap);
         
-        var cacheInfo = Find.CurrentMap.GetMapInfo<DynamicDataCacheMapInfo>();
+        var cacheInfo = Find.CurrentMap.GetMapInfo<DynamicAtmosphericDataMapInfo>();
         for (int i = 0; i < SampleNumCells; i++)
         {
             IntVec3 intVec = root + GenRadial.RadialPattern[i];

@@ -61,7 +61,14 @@ public class RoomComponent_Atmosphere : RoomComponent
     }
 
     #region Data Notifiers
-
+    
+    public void Notify_InterfacingThingChanged(RoomComponent_Atmosphere toOther, Thing thing, string signal)
+    {
+        //TODO use new interface lookup
+        var interFace = _atmosphericInfo.System.Relations[this];
+        var conns = _atmosphericInfo.System.Connections[interFace];
+    }
+    
     public override void Notify_PawnEnteredRoom(Pawn pawn)
     {
         var tracker = pawn.TryGetComp<Comp_PawnAtmosphereTracker>();

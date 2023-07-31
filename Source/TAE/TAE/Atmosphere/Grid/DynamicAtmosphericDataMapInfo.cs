@@ -1,4 +1,5 @@
-﻿using TeleCore;
+﻿using TAE.Atmosphere.Rooms;
+using TeleCore;
 using TeleCore.Data.Events;
 using TeleCore.Static;
 using UnityEngine;
@@ -6,7 +7,7 @@ using Verse;
 
 namespace TAE;
 
-public class DynamicDataCacheMapInfo : MapInformation
+public class DynamicAtmosphericDataMapInfo : MapInformation
 {
     //Grid data
     public ComputeGrid<float> AtmosphericPassGrid { get; }
@@ -17,7 +18,7 @@ public class DynamicDataCacheMapInfo : MapInformation
     public ComputeBuffer LightPassBuffer => LightPassGrid.DataBuffer;
     public ComputeBuffer EdificeBuffer => EdificeGrid.DataBuffer;
 
-    public DynamicDataCacheMapInfo(Map map) : base(map)
+    public DynamicAtmosphericDataMapInfo(Map map) : base(map)
     {
         AtmosphericPassGrid = new ComputeGrid<float>(map, _ => 1f);
         LightPassGrid = new ComputeGrid<float>(map, _ => 1f);
@@ -65,7 +66,6 @@ public class DynamicDataCacheMapInfo : MapInformation
         {
             if (!isBuilding) continue;
             
-            //
             AtmosphericPassGrid.SetValue_Array(pos, AtmosphereUtility.DefaultAtmosphericPassPercentAtCell(pos, map));
             if (thing.def.IsEdifice())
                 EdificeGrid.SetValue_Array(pos, 1);
@@ -94,5 +94,10 @@ public class DynamicDataCacheMapInfo : MapInformation
                     LightPassGrid.ResetValue(pos, 1f);
             }
         }
+    }
+
+    internal void Notify_ThingSentSignal(ThingStateChangedEventArgs args)
+    {
+        args.Thing.Map.GetMapInfo<AtmosphericMapInfo>().Notify_ThingSentSignal(args);
     }
 }

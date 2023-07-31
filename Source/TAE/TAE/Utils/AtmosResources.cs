@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using TeleCore;
+using TeleCore.FlowCore;
 using TeleCore.Generics.Container;
 using TeleCore.Network.Data;
 using Verse;
@@ -18,7 +19,7 @@ public static class AtmosResources
     {
         return new FlowVolumeConfig<AtmosphericValueDef>
         {
-            allowedValues = AllAtmosphericDefs,
+            AllowedValues = AllAtmosphericDefs,
             capacity = roomSize * CELL_CAPACITY,
             area = 0,
             elevation = 0,

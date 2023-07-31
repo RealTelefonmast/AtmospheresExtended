@@ -11,6 +11,7 @@ using GridLayout = Verse.GridLayout;
 
 namespace TAE;
 
+//TODO: replace this with RoomComp.Draw_DebugExtra
 public class ITab_TAEDebug : ITab
 {
     private List<TabRecord> cachedTabs;
@@ -125,19 +126,28 @@ public class ITab_TAEDebug : ITab
         //
         Widgets.Label(nghbListLabel, "Neighbour Rooms");
         Widgets.BeginScrollView(nghbList, ref neighborListScrollPos, nghbListScrollView);
-
-        int i = 0;
-        foreach (var roomComp in Atmos.CompNeighbors.Neighbors)
         {
-            Rect nghbRect = new Rect(nghbList.x,  nghbListScrollView.y + i * 30, nghbListScrollView.width, 30);
-            Rect checkBoxRect = new Rect(nghbList.xMax-24,  nghbListScrollView.y + i * 30, 24, 30);
-            if (i % 2 == 0)
-                Widgets.DrawHighlight(nghbRect);
-            Widgets.Label(nghbRect, roomComp.ToString());
-            //Widgets.Checkbox(checkBoxRect.position, ref hasItem, disabled: portal == null);
-            i++;
+            int i = 0;
+            foreach (var roomComp in Atmos.CompNeighbors.Neighbors)
+            {
+                Rect nghbRect = new Rect(nghbList.x, nghbListScrollView.y + i * 30, nghbListScrollView.width, 30);
+                Rect checkBoxRect = new Rect(nghbList.xMax - 24, nghbListScrollView.y + i * 30, 24, 30);
+                if (i % 2 == 0)
+                    Widgets.DrawHighlight(nghbRect);
+                Widgets.Label(nghbRect, $"[{roomComp.Room.ID}]");
+                //Widgets.Checkbox(checkBoxRect.position, ref hasItem, disabled: portal == null);
+                i++;
+            }
         }
         Widgets.EndScrollView();
+        
+        //
+        Rect nghbListView2 = layout.GetCellRect(1, 0, 1, 2);
+        Rect nghbListLabel2 = nghbListView2.TopPartPixels(30);
+        Rect nghbList2 = nghbListView2.BottomPartPixels(nghbListView2.height - 30);
+        Rect nghbListScrollView2 = new Rect(nghbList2.x, nghbList2.y, nghbList2.width, Atmos.Neighbors.TrueNeighbors.Count * 30);
+
+        
     }
 
     private void DrawBorderData(Rect rect)
