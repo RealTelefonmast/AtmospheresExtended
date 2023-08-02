@@ -36,8 +36,7 @@ public class AtmosphericSystem : FlowSystem<RoomComponent, AtmosphericVolume, At
         _atmosphericSources = new List<IAtmosphericSource>();
         Notify_Regenerate(mapCellSize);
         
-        Volumes.Add(_mapVolume);
-        Connections.Add(_mapVolume, new List<FlowInterface<AtmosphericVolume, AtmosphericValueDef>>());
+        AddVolume(_mapVolume);
     }
     
     public AtmosphericSystem(Map map) : this(map.cellIndices.NumGridCells)
@@ -58,7 +57,6 @@ public class AtmosphericSystem : FlowSystem<RoomComponent, AtmosphericVolume, At
         }
     }
     
-    
     protected override AtmosphericVolume CreateVolume(RoomComponent part)
     {
         return new AtmosphericVolume(AtmosResources.DefaultAtmosConfig(part.Room.CellCount));
@@ -74,13 +72,12 @@ public class AtmosphericSystem : FlowSystem<RoomComponent, AtmosphericVolume, At
 
         if (comp.IsOutdoors)
         {
-            Relations.Add(comp, _mapVolume);
             foreach (var adjComp in comp.CompNeighbors.Neighbors)
             {
                 if (!Relations.TryGetValue(adjComp, out var adjVolume)) continue;
                 var conn = new FlowInterface<AtmosphericVolume, AtmosphericValueDef>(_mapVolume, adjVolume);
-                Connections[_mapVolume].Add(conn);
-                Notify_CreateInterface((comp, adjComp), conn);
+                AddConnection(_mapVolume, conn);
+                AddInterface((comp, adjComp), conn);
             }
             return;
         }
@@ -88,16 +85,13 @@ public class AtmosphericSystem : FlowSystem<RoomComponent, AtmosphericVolume, At
         TLog.Debug($"Adding room {comp.Room.ID} to system relations...");
         var volume = new AtmosphericVolume(AtmosResources.DefaultAtmosConfig(comp.Room.CellCount));
         volume.UpdateVolume(comp.Room.CellCount);
-        Volumes.Add(volume);
-        Relations.Add(comp, volume);
-        Connections.Add(volume, new List<FlowInterface<AtmosphericVolume, AtmosphericValueDef>>());
-
+        AddVolume(volume);
         foreach (var adjComp in comp.CompNeighbors.Neighbors)
         {
             if (!Relations.TryGetValue(adjComp, out var adjVolume)) continue;
             var conn = new FlowInterface<AtmosphericVolume, AtmosphericValueDef>(volume, adjVolume);
-            Connections[volume].Add(conn);
-            Notify_CreateInterface((comp, adjComp), conn);
+            AddConnection(volume, conn);
+            AddInterface((comp, adjComp), conn);
         }
     }
 
@@ -118,16 +112,14 @@ public class AtmosphericSystem : FlowSystem<RoomComponent, AtmosphericVolume, At
                 return contains;
             }
             
-            Connections[_mapVolume].RemoveAll(Match);
-            Notify_RemoveInterfaces(Match);
+            RemoveInterfacesWhere(Match);
             return;
         }
         
         var volume = Relations[comp];
-        Volumes.Remove(volume);
-        Relations.Remove(comp);
-        Connections.Remove(volume);
-        Notify_RemoveInterfaces(t => t.From == volume || t.To == volume);
+        RemoveVolume(volume);
+        RemoveRelation(comp);
+        RemoveInterfacesWhere(t => t.From == volume || t.To == volume);
     }
     
     public void Notify_AddSource(IAtmosphericSource source)
