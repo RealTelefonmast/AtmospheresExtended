@@ -1,6 +1,8 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using TAE.AtmosphericFlow;
 using TeleCore;
+using UnityEngine;
 using Verse;
 
 namespace TAE.Atmosphere.Rooms;
@@ -95,6 +97,49 @@ public class RoomComponent_Atmosphere : RoomComponent
     #endregion
 
     #region Rendering
+
+    public override void Draw_DebugExtra(Rect inRect)
+    {
+        var bounds = inRect.ContractedBy(10);
+        var center = bounds.center;
+        Widgets.DrawHighlight(inRect);
+        Widgets.DrawHighlight(bounds);
+        
+        var system = AtmosphericInfo.System;
+        var volumeCount = system.Relations.Count;
+        var width =  bounds.width;
+        var rad = width/3f;
+        var points = GetPointsOnCircle(rad, volumeCount);
+
+        for (var i = 0; i < points.Count; i++)
+        {
+            var point = points[i];
+            var pointRect = new Rect(center.x + (point.x - 2), center.y + (point.y - 2), 4, 4);
+            var volume = system.Relations.ElementAt(i);
+            
+            Widgets.Label(new Rect(pointRect.x, pointRect.y-30, 40, 26), $"{volume.Key.Room.ID}");
+            Widgets.DrawBoxSolid(pointRect, Color.white);
+        }
+    }
+    
+    public List<Vector2> GetPointsOnCircle(float radius, int totalPoints)
+    {
+        List<Vector2> points = new List<Vector2>();
+        float angleStep = 360f / totalPoints;
+
+        for(int i = 0; i < totalPoints; i++)
+        {
+            float angleInDegrees = angleStep * i;
+            float angleInRadians = angleInDegrees * (Mathf.PI / 180f);
+
+            float x = radius * Mathf.Cos(angleInRadians);
+            float y = radius * Mathf.Sin(angleInRadians);
+
+            points.Add(new Vector2(x, y));
+        }
+
+        return points;
+    }
 
     public override void OnGUI()
     {

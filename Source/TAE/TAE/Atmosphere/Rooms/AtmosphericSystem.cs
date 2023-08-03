@@ -62,9 +62,11 @@ public class AtmosphericSystem : FlowSystem<RoomComponent, AtmosphericVolume, At
     
     protected override AtmosphericVolume CreateVolume(RoomComponent part)
     {
-        return new AtmosphericVolume(AtmosResources.DefaultAtmosConfig(part.Room.CellCount));
+        var volume =  new AtmosphericVolume(AtmosResources.DefaultAtmosConfig(part.Room.CellCount));
+        volume.UpdateVolume(part.Room.CellCount);
+        return volume;
     }
-    
+     
     public void Notify_AddRoomComp(RoomComponent_Atmosphere comp)
     {
         if (Relations.ContainsKey(comp))
@@ -109,7 +111,7 @@ public class AtmosphericSystem : FlowSystem<RoomComponent, AtmosphericVolume, At
         if (comp.IsOutdoors)
         {
             //TODO: Needs serious testing
-            Relations.Remove(comp);
+            RemoveRelation(comp);
 
             bool Match(FlowInterface<AtmosphericVolume, AtmosphericValueDef> iface)
             {
