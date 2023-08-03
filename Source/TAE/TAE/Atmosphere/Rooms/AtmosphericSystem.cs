@@ -31,12 +31,15 @@ public class AtmosphericSystem : FlowSystem<RoomComponent, AtmosphericVolume, At
     
     public AtmosphericSystem(int mapCellSize)
     {
-        _mapVolume = new AtmosphericVolume(AtmosResources.DefaultAtmosConfig(mapCellSize));
         _naturalAtmospheres = new List<DefValue<AtmosphericValueDef, float>>();
         _atmosphericSources = new List<IAtmosphericSource>();
-        Notify_Regenerate(mapCellSize);
-        
+    
+        //Map Volume is a special volume used for rooms that are outdoors
+        _mapVolume = new AtmosphericVolume(AtmosResources.DefaultAtmosConfig(mapCellSize));
         AddVolume(_mapVolume);
+        
+        //
+        Notify_Regenerate(mapCellSize);
     }
     
     public AtmosphericSystem(Map map) : this(map.cellIndices.NumGridCells)
@@ -70,11 +73,16 @@ public class AtmosphericSystem : FlowSystem<RoomComponent, AtmosphericVolume, At
             return;
         }
 
+        //Handle RoomComps that count as outdoors
+        //Should use the same container as the "map" room
         if (comp.IsOutdoors)
         {
+            AddRelation(comp, _mapVolume);
             foreach (var adjComp in comp.CompNeighbors.Neighbors)
             {
                 if (!Relations.TryGetValue(adjComp, out var adjVolume)) continue;
+                
+                //Connect map volume to adjacent volume of a room that counts as outdoors
                 var conn = new FlowInterface<AtmosphericVolume, AtmosphericValueDef>(_mapVolume, adjVolume);
                 AddConnection(_mapVolume, conn);
                 AddInterface((comp, adjComp), conn);
@@ -82,9 +90,8 @@ public class AtmosphericSystem : FlowSystem<RoomComponent, AtmosphericVolume, At
             return;
         }
         
-        TLog.Debug($"Adding room {comp.Room.ID} to system relations...");
-        var volume = new AtmosphericVolume(AtmosResources.DefaultAtmosConfig(comp.Room.CellCount));
-        volume.UpdateVolume(comp.Room.CellCount);
+        //Add normal room->room connection
+        var volume = GenerateForOrGet(comp);
         AddVolume(volume);
         foreach (var adjComp in comp.CompNeighbors.Neighbors)
         {
