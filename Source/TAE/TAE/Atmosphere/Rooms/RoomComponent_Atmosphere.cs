@@ -2,6 +2,7 @@
 using System.Linq;
 using TAE.AtmosphericFlow;
 using TeleCore;
+using TeleCore.FlowCore;
 using UnityEngine;
 using Verse;
 
@@ -119,21 +120,49 @@ public class RoomComponent_Atmosphere : RoomComponent
             
             Widgets.Label(new Rect(pointRect.x, pointRect.y-30, 40, 26), $"{volume.Key.Room.ID}");
             Widgets.DrawBoxSolid(pointRect, Color.white);
+            
+            //Solve Connections
+            foreach (var iFace in system.Connections[volume.Value])
+            {
+                var from = iFace.From;
+                var to = iFace.To;
+                var ind1 = system.Relations.FirstIndexOf(x=> x.Value == from);
+                var ind2 = system.Relations.FirstIndexOf(x=> x.Value == to);
+                var pointFrom = points[ind1];
+                var pointTo = points[ind2];
+                var color = iFace.Mode switch
+                {
+                    InterfaceFlowMode.BiDirectional => Color.magenta,
+                    InterfaceFlowMode.ToFrom => Color.green,
+                    _ => Color.red
+                };
+
+                var distVec = (pointTo-pointFrom);
+                var length = distVec.magnitude;
+                var rect = new Rect(pointFrom.x, pointFrom.y, length, 24);
+                var oldMatrix = GUI.matrix;
+                var newMatrix = new Matrix4x4();
+                newMatrix.SetTRS(pointFrom + (distVec / 2f), distVec.ToAngle().ToQuat(), new Vector3(length, 0, 24));
+                GUI.matrix = newMatrix;
+                Widgets.Label(rect, iFace.ToString());
+                GUI.matrix = oldMatrix;
+                Widgets.DrawLine(pointFrom, pointTo, color, 2);
+            }
         }
     }
-    
-    public List<Vector2> GetPointsOnCircle(float radius, int totalPoints)
+
+    private List<Vector2> GetPointsOnCircle(float radius, int totalPoints)
     {
-        List<Vector2> points = new List<Vector2>();
-        float angleStep = 360f / totalPoints;
+        var points = new List<Vector2>();
+        var angleStep = 360f / totalPoints;
 
-        for(int i = 0; i < totalPoints; i++)
+        for (var i = 0; i < totalPoints; i++)
         {
-            float angleInDegrees = angleStep * i;
-            float angleInRadians = angleInDegrees * (Mathf.PI / 180f);
+            var angleInDegrees = angleStep * i;
+            var angleInRadians = angleInDegrees * (Mathf.PI / 180f);
 
-            float x = radius * Mathf.Cos(angleInRadians);
-            float y = radius * Mathf.Sin(angleInRadians);
+            var x = radius * Mathf.Cos(angleInRadians);
+            var y = radius * Mathf.Sin(angleInRadians);
 
             points.Add(new Vector2(x, y));
         }
