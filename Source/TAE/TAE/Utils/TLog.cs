@@ -1,4 +1,4 @@
-﻿#define IS_TELE_DEBUG
+﻿
 
 using System;
 using TeleCore;

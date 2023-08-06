@@ -25,7 +25,6 @@ public static class AtmosResources
             elevation = 0,
             height = 0
             
-            
             // containerLabel = "mm yes air and stuff",
             // storeEvenly = false,
             // dropContents = false,

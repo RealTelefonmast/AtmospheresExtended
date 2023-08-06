@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ModMetaData>
-  <packageId>Telefonmast.AtmosphereExtended</packageId>
-  <name>Atmosphere Extended</name>
+  <packageId>Telefonmast.TrueAtmospheres</packageId>
+  <name>True Atmospheres</name>
   <supportedVersions>
     <li>1.4</li>
   </supportedVersions>

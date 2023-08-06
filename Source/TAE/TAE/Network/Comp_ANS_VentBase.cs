@@ -85,21 +85,24 @@ public class Comp_ANS_VentBase : Comp_AtmosphericNetworkStructure
             
             
             //Flow
-            var fromTo = true;
+            bool? fromTo = null;
             //Equalize Based On Simple Pressure And Clamping
             double flow = NextFlow;
             flow = FlowFunc(selfVolume, roomVolume, flow);
-            if (flow < 0)
+            fromTo = flow switch
             {
-                fromTo = false;
-            }
+                < 0 => false,
+                > 0 => true,
+                _ => fromTo
+            };
+            if (fromTo == null) return;
+            
             flow = Math.Abs(flow);
-
-            NextFlow = ClampFunc(selfVolume, roomVolume, flow, fromTo);
-            Move = ClampFunc(selfVolume, roomVolume, flow, fromTo);
+            NextFlow = ClampFunc(selfVolume, roomVolume, flow, fromTo.Value);
+            Move = ClampFunc(selfVolume, roomVolume, flow, fromTo.Value);
 
             //Update Content
-            if (fromTo)
+            if (fromTo.Value)
             {
                 DefValueStack<NetworkValueDef, double> res = selfVolume.RemoveContent(Move);
                 var res2 = new DefValueStack<AtmosphericValueDef, double>();

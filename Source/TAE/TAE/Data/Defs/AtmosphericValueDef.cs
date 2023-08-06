@@ -47,10 +47,6 @@ public class DissipationConfig : Editable
 
 public class AtmosphericValueDef : FlowValueDef
 {
-    //
-    private AtmosphericTransferWorker workerInt;
-    public Type transferWorker = typeof(AtmosphericTransferWorker);
-
     //The corresponding network value (if available)
     public NetworkValueDef networkValue;
     public DissipationConfig dissipation;
@@ -76,9 +72,6 @@ public class AtmosphericValueDef : FlowValueDef
     public RoomOverlayProperties roomOverlay;
     public bool useRenderLayer = false;
     public double friction;
-
-    public AtmosphericTransferWorker TransferWorker => workerInt ??= (AtmosphericTransferWorker)Activator.CreateInstance(transferWorker, this);
-
     public override void PostLoad()
     {
         //

@@ -99,6 +99,15 @@
 						<roles>
 							<li>Transmitter</li>
 						</roles>
+						<volumeConfig>
+							<capacity>400</capacity>
+							<area>1</area>
+							<elevation>0</elevation>
+							<height>1</height>
+							<values>
+								<fromCollection>AtmosphericNetwork</fromCollection>
+							</values>
+						</volumeConfig>
 					</li>
 				</networks>
 			</li>

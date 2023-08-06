@@ -7,6 +7,7 @@ using NUnit.Framework;
 using TAE;
 using TAE.Atmosphere.Rooms;
 using TAE.AtmosphericFlow;
+using TeleCore.FlowCore;
 using TeleCore.Network.Data;
 using TeleCore.Primitive;
 using UnityEngine;
@@ -17,8 +18,8 @@ namespace TAE_Tests
     public class EqualizationTests
     {
         private static List<AtmosphericVolume> volumes;
-        private static List<AtmosInterface> interfaces;
-        private static Dictionary<AtmosphericVolume, List<AtmosInterface>> connections;
+        private static List<FlowInterface<int,AtmosphericVolume, AtmosphericValueDef>> interfaces;
+        private static Dictionary<AtmosphericVolume, List<FlowInterface<int,AtmosphericVolume, AtmosphericValueDef>>> connections;
 
         public static AtmosphericValueDef[] defs = new AtmosphericValueDef[2]
         {
@@ -49,22 +50,22 @@ namespace TAE_Tests
         {
             var config = new FlowVolumeConfig<AtmosphericValueDef>
             {
-                allowedValues = new List<AtmosphericValueDef>(),
+                //allowedValues = new List<AtmosphericValueDef>(),
                 capacity = 1000
             };
 
             volumes = new List<AtmosphericVolume>();
-            connections = new Dictionary<AtmosphericVolume, List<AtmosInterface>>();
+            connections = new Dictionary<AtmosphericVolume, List<FlowInterface<AtmosphericVolume, AtmosphericValueDef>>>();
             volumes.Add(new AtmosphericVolume(config));
             volumes.Add(new AtmosphericVolume(config));
             volumes[0].UpdateVolume(10);
             volumes[1].UpdateVolume(10);
 
-            var atmosInterface = new List<AtmosInterface> {new(volumes[0], volumes[1])};
+            var atmosInterface = new List<FlowInterface<AtmosphericVolume, AtmosphericValueDef>> {new(volumes[0], volumes[1])};
             connections.Add(volumes[0], atmosInterface);
             connections.Add(volumes[1], atmosInterface);
 
-            interfaces = new List<AtmosInterface>(atmosInterface);
+            interfaces = new List<FlowInterface<AtmosphericVolume, AtmosphericValueDef>>(atmosInterface);
         }
         
         [Test]
@@ -87,7 +88,7 @@ namespace TAE_Tests
             Assert.IsTrue(calc < 0.00001d);
         }
         
-        private static void Equalize(int step)
+        private void Equalize(int step)
         {
             //Prepare
             foreach (AtmosphericVolume volume in volumes)
@@ -101,7 +102,7 @@ namespace TAE_Tests
                 double flow = conn.NextFlow;      
                 var from = conn.From;
                 var to = conn.To;
-                flow = AtmosphericSystem.FlowFunc(from, to, flow, out double dp);
+                flow = AtmosphericSystem.FlowFunc(conn, flow);
                 conn.UpdateBasedOnFlow(flow);
                 flow = Math.Abs(flow);
                 conn.NextFlow = AtmosphericSystem.ClampFunc(connections,from, to, flow);

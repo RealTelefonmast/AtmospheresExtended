@@ -10,7 +10,7 @@ namespace TAE
 
         public CompProperties_AtmosphericSource()
         {
-            this.compClass = typeof(CompAtmosphericSource);
+            this.compClass = typeof(Comp_AtmosphericSource);
         }
     }
 }

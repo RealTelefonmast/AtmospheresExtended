@@ -66,7 +66,7 @@ public class DynamicAtmosphericDataMapInfo : MapInformation
         {
             if (!isBuilding) continue;
             
-            AtmosphericPassGrid.SetValue_Array(pos, AtmosphereUtility.DefaultAtmosphericPassPercentAtCell(pos, map));
+            AtmosphericPassGrid.SetValue_Array(pos, AtmosphericUtility.DefaultAtmosphericPassPercentAtCell(pos, map));
             if (thing.def.IsEdifice())
                 EdificeGrid.SetValue_Array(pos, 1);
             if (thing.def.blockLight)

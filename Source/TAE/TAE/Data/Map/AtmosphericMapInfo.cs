@@ -12,7 +12,9 @@ namespace TAE;
 
 public class AtmosphericMapInfo : MapInformation
 {
+    //Scribing
     private AtmosphericCache _cache;
+    //System for room-nased atmospheric flow
     private AtmosphericSystem _system;
     
     private readonly AtmosphereRenderer _renderer;
@@ -114,17 +116,6 @@ public class AtmosphericMapInfo : MapInformation
         _system.Notify_RemoveRoomComp(comp);
     }
     
-    // -- Atmosphere Sources
-    public void Notify_AddSource(IAtmosphericSource source)
-    {
-        _system.Notify_AddSource(source);
-    }
-
-    public void Notify_RemoveSource(IAtmosphericSource source)
-    {
-        _system.Notify_RemoveSource(source);
-    }
-    
     //Things
     public void Notify_ThingSentSignal(ThingStateChangedEventArgs args)
     {
@@ -139,10 +130,14 @@ public class AtmosphericMapInfo : MapInformation
                 
                 var infront = _compLookUp.TryGetValue(roomA);
                 var behind = _compLookUp.TryGetValue(roomB);
-                infront.Notify_InterfacingThingChanged(behind, args.Thing, args.CompSignal);
+                System.Notify_InterfaceBetweenRoomsChanged(infront, behind, args.Thing, args.CompSignal);
                 break;
             case Building_Door door:
                 var tracker = _compLookUp.TryGetValue(door.GetRoom());
+                foreach (var neighbor in tracker.CompNeighbors.Neighbors)
+                {
+                    System.Notify_InterfaceBetweenRoomsChanged(tracker, neighbor, door, args.CompSignal);
+                }
                 break;
         }
     }

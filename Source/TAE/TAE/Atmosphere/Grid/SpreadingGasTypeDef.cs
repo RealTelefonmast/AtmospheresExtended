@@ -10,8 +10,6 @@ public class SpreadingGasTypeDef : Def
     private static ushort _masterID;
     private static readonly Dictionary<int, SpreadingGasTypeDef> _defByID = new();
     
-    [Unsaved]
-    private AtmosphericTransferWorker workerInt;
     [Unsaved] 
     public ushort IDReference;
     
@@ -27,7 +25,6 @@ public class SpreadingGasTypeDef : Def
     public float spreadViscosity = 0.35f;
 
     public AtmosphericValueDef dissipateTo;
-    public Type transferWorker = typeof(AtmosphericTransferWorker);
 
     public FloatRange rotationSpeeds = new FloatRange(-100,100);
     public float accuracyPenalty;
@@ -40,8 +37,7 @@ public class SpreadingGasTypeDef : Def
     //
     public Type pawnEffectWorker;
     public Type cellEffectWorker;
-
-    public AtmosphericTransferWorker TransferWorker => workerInt ??= (AtmosphericTransferWorker)Activator.CreateInstance(transferWorker, this);
+    
     public float ViscosityMultiplier { get; private set; }
 
     public static implicit operator ushort(SpreadingGasTypeDef def) => def.IDReference;

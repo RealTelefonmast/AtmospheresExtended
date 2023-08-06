@@ -10,7 +10,7 @@ using Verse;
 
 namespace TAE;
 
-public static class AtmosphereUtility
+public static class AtmosphericUtility
 {
     private static readonly int SampleNumCells = GenRadial.NumCellsInRadius(8.9f);
     private static readonly List<IntVec3> relevantCells = new();
@@ -236,9 +236,6 @@ public static class AtmosphereUtility
     {
         if (forThing == null) 
             return 1f;
-
-        if (AtmosPortalData.TryGetWorkerFor(forThing.def, out var worker))
-            return worker.Worker.PassPercent(forThing);
    
         var flowPct = GetFlowPct(forThing);
         return forThing switch
@@ -272,16 +269,11 @@ public static class AtmosphereUtility
         return cooler.IsPoweredOn() ? 2f : 0f;
     }
 
+    //TODO: needs def definition
     public static bool IsAtmosphericLink(Thing thing)
     {
         if (thing == null) return false;
-
-        //Custom PassBuilding Subroutine
-        if (AtmosPortalData.IsPassBuilding(thing.def))
-        {
-            return true;
-        }
-
+        
         //var fullFillage = building.def.Fillage == FillCategory.Full;
         return thing switch
         {

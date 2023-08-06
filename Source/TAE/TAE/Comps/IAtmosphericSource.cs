@@ -1,14 +1,30 @@
-﻿using Verse;
+﻿using System;
+using Verse;
 
-namespace TAE
+namespace TAE;
+
+//TODO: Revamp of atmospushers
+public class AtmospherePusherProps
 {
-    public interface IAtmosphericSource
+    public Type _worker;
+}
+
+public class AtmospherePusher
+{
+    private AtmospherePushWorker _worker;
+    private AtmospherePusherProps _props;
+
+    public AtmospherePusher()
     {
-        public Thing Thing { get; }
-        public Room Room { get; }
-        public AtmosphericValueDef AtmosphericValueDef { get; }
-        bool IsActive { get; }
-        int PushInterval { get; }
-        int PushAmount { get; }
+        
     }
+    
+    public void PushAtmospheres()
+    {
+    }
+}
+
+public abstract class AtmospherePushWorker
+{
+    public abstract bool IsActive { get; }
 }

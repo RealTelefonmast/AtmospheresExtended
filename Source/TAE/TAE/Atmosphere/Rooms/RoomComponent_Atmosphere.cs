@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using TAE.AtmosphericFlow;
 using TeleCore;
@@ -60,17 +61,10 @@ public class RoomComponent_Atmosphere : RoomComponent
     //Note: Used to check whether a border thing is relevant in setting up a link to another roomcomp of the same type.
     public override bool IsRelevantLink(Thing thing)
     {
-        return AtmosphereUtility.IsAtmosphericLink(thing);
+        return AtmosphericUtility.IsAtmosphericLink(thing);
     }
 
     #region Data Notifiers
-    
-    public void Notify_InterfacingThingChanged(RoomComponent_Atmosphere toOther, Thing thing, string signal)
-    {
-        //TODO use new interface lookup
-        var interFace = _atmosphericInfo.System.Relations[this];
-        var conns = _atmosphericInfo.System.Connections[interFace];
-    }
     
     public override void Notify_PawnEnteredRoom(Pawn pawn)
     {
@@ -99,56 +93,71 @@ public class RoomComponent_Atmosphere : RoomComponent
 
     #region Rendering
 
+    private Vector2 scroller;
+    
     public override void Draw_DebugExtra(Rect inRect)
     {
-        var bounds = inRect.ContractedBy(10);
-        var center = bounds.center;
-        Widgets.DrawHighlight(inRect);
-        Widgets.DrawHighlight(bounds);
-        
         var system = AtmosphericInfo.System;
-        var volumeCount = system.Relations.Count;
-        var width =  bounds.width;
-        var rad = width/3f;
-        var points = GetPointsOnCircle(rad, volumeCount);
 
-        for (var i = 0; i < points.Count; i++)
+        var rect = new Rect(inRect.position, new Vector2(inRect.width, inRect.height * 8));
+        Widgets.BeginScrollView(inRect, ref scroller, rect, false);
+        Listing_Standard list = new Listing_Standard();
+        list.Begin(rect);
         {
-            var point = points[i];
-            var pointRect = new Rect(center.x + (point.x - 2), center.y + (point.y - 2), 4, 4);
-            var volume = system.Relations.ElementAt(i);
+            list.LabelDouble("Room ID", Room.ID.ToString());
+            list.LabelDouble("Uses MapVolume?", Volume == AtmosphericInfo.MapVolume ? "Yes" : "No");
+            list.LabelDouble("System Volumes", system.Volumes.Count.ToString());
+            list.LabelDouble("System Relations", system.Relations.Count.ToString());
+            list.LabelDouble("System Interfaces", system.Interfaces.Count.ToString());
+            list.LabelDouble("System Connections", system.Connections.Count.ToString());
+            list.LabelDouble("System InterfaceLookUp", system.InterfaceLookUp.Count.ToString());
+            list.GapLine();
             
-            Widgets.Label(new Rect(pointRect.x, pointRect.y-30, 40, 26), $"{volume.Key.Room.ID}");
-            Widgets.DrawBoxSolid(pointRect, Color.white);
-            
-            //Solve Connections
-            foreach (var iFace in system.Connections[volume.Value])
+            var relations = system.Relations;
+            var relCount = relations.Count;
+            list.Label("Relation Listing");
+            var relationList = list.BeginSection(relCount * 24);
+            foreach (var relation in relations)
             {
-                var from = iFace.From;
-                var to = iFace.To;
-                var ind1 = system.Relations.FirstIndexOf(x=> x.Value == from);
-                var ind2 = system.Relations.FirstIndexOf(x=> x.Value == to);
-                var pointFrom = points[ind1];
-                var pointTo = points[ind2];
-                var color = iFace.Mode switch
-                {
-                    InterfaceFlowMode.BiDirectional => Color.magenta,
-                    InterfaceFlowMode.ToFrom => Color.green,
-                    _ => Color.red
-                };
-
-                var distVec = (pointTo-pointFrom);
-                var length = distVec.magnitude;
-                var rect = new Rect(pointFrom.x, pointFrom.y, length, 24);
-                var oldMatrix = GUI.matrix;
-                var newMatrix = new Matrix4x4();
-                newMatrix.SetTRS(pointFrom + (distVec / 2f), distVec.ToAngle().ToQuat(), new Vector3(length, 0, 24));
-                GUI.matrix = newMatrix;
-                Widgets.Label(rect, iFace.ToString());
-                GUI.matrix = oldMatrix;
-                Widgets.DrawLine(pointFrom, pointTo, color, 2);
+                relationList.LabelDouble(relation.Key.Room.ID.ToString(), relation.Value.FillPercent.ToString("P2"));
             }
+            list.EndSection(relationList);
+            
+            var interfaces = system.Interfaces;
+            var interfaceCount = interfaces.Count;
+            list.Label("Interface Listing");
+            //Begin Section for Interfaces
+            var interfaceList = list.BeginSection(interfaceCount * 24);
+            {
+                int i = 0;
+                foreach (var iFace in interfaces)
+                {
+                    interfaceList.Label($"{iFace.FromPart.Room.ID} -[{iFace.Mode}][{iFace.PassPercent:P2}]-> [{iFace.ToPart.Room.ID}]");
+                    i++;
+                }
+            }
+            list.EndSection(interfaceList);
+            
+            //
+            var connections = system.Connections;
+            var connCount = connections.Count;
+            var connSum = connections.Sum(x => x.Value.Count);
+            list.Label("Connection Listing");
+            var connectionList = list.BeginSection(connSum * 24 + (connCount * 24));
+            foreach (var conn in system.Connections)
+            {
+                connectionList.LabelDouble($"Room[{system.Relations.First(c => c.Value == conn.Key).Key.Room.ID}]:",$"{conn.Value.Count}");
+                foreach (var iFace in conn.Value)
+                {
+                    connectionList.Label($"{iFace.FromPart.Room.ID} -[{iFace.Mode}][{iFace.PassPercent:P2}]-> [{iFace.ToPart.Room.ID}]");
+                }
+            }
+            list.EndSection(connectionList);
         }
+        list.End();
+        Widgets.EndScrollView();
+
+        //system.RenderDebugRelations(inRect);
     }
 
     private List<Vector2> GetPointsOnCircle(float radius, int totalPoints)

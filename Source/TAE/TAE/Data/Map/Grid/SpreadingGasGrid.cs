@@ -449,13 +449,13 @@ public unsafe class SpreadingGasGrid : MapInformation
     public override void UpdateOnGUI()
     {
         //AtmosphereUtility.DrawSpreadingGasAroundMouse();
-        AtmosphereUtility.DrawPassPercentCellsGUI();
+        AtmosphericUtility.DrawPassPercentCellsGUI();
     }
 
     public override void TeleUpdate()
     {
         renderer.Draw();
-        AtmosphereUtility.DrawPassPercentCells();
+        AtmosphericUtility.DrawPassPercentCells();
     }
 
     //Debug Options

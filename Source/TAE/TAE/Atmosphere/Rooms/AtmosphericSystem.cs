@@ -4,10 +4,12 @@ using System.Linq;
 using TAE.AtmosphericFlow;
 using TeleCore;
 using TeleCore.FlowCore;
+using TeleCore.Generics;
 using TeleCore.Network.Data;
 using TeleCore.Network.Flow;
 using TeleCore.Network.Flow.Clamping;
 using TeleCore.Primitive;
+using UnityEngine;
 using Verse;
 
 namespace TAE.Atmosphere.Rooms;
@@ -19,7 +21,6 @@ public class AtmosphericSystem : FlowSystem<RoomComponent, AtmosphericVolume, At
 {
     private AtmosphericVolume _mapVolume;
     private readonly List<DefValue<AtmosphericValueDef, float>> _naturalAtmospheres = new();
-    private readonly List<IAtmosphericSource> _atmosphericSources;
     //Note: Interface represents a portal between rooms
     
     public AtmosphericVolume MapVolume => _mapVolume;
@@ -32,11 +33,10 @@ public class AtmosphericSystem : FlowSystem<RoomComponent, AtmosphericVolume, At
     public AtmosphericSystem(int mapCellSize)
     {
         _naturalAtmospheres = new List<DefValue<AtmosphericValueDef, float>>();
-        _atmosphericSources = new List<IAtmosphericSource>();
     
         //Map Volume is a special volume used for rooms that are outdoors
         _mapVolume = new AtmosphericVolume(AtmosResources.DefaultAtmosConfig(mapCellSize));
-        AddVolume(_mapVolume);
+        RegisterCustomVolume(_mapVolume);
         
         //
         Notify_Regenerate(mapCellSize);
@@ -79,67 +79,65 @@ public class AtmosphericSystem : FlowSystem<RoomComponent, AtmosphericVolume, At
         //Should use the same container as the "map" room
         if (comp.IsOutdoors)
         {
-            AddRelation(comp, _mapVolume);
+            RegisterCustomRelation(comp, _mapVolume);
             foreach (var adjComp in comp.CompNeighbors.Neighbors)
             {
                 if (!Relations.TryGetValue(adjComp, out var adjVolume)) continue;
                 
                 //Connect map volume to adjacent volume of a room that counts as outdoors
-                var conn = new FlowInterface<AtmosphericVolume, AtmosphericValueDef>(_mapVolume, adjVolume);
-                AddConnection(_mapVolume, conn);
+                var conn = new FlowInterface<RoomComponent, AtmosphericVolume, AtmosphericValueDef>(comp, adjComp, _mapVolume, adjVolume);
                 AddInterface((comp, adjComp), conn);
             }
+            AssertState();
             return;
         }
         
         //Add normal room->room connection
         var volume = GenerateForOrGet(comp);
-        AddVolume(volume);
         foreach (var adjComp in comp.CompNeighbors.Neighbors)
         {
             if (!Relations.TryGetValue(adjComp, out var adjVolume)) continue;
-            var conn = new FlowInterface<AtmosphericVolume, AtmosphericValueDef>(volume, adjVolume);
-            AddConnection(volume, conn);
+            var conn = new FlowInterface<RoomComponent, AtmosphericVolume, AtmosphericValueDef>(comp, adjComp, volume, adjVolume);
             AddInterface((comp, adjComp), conn);
         }
+        AssertState();
     }
 
     public void Notify_RemoveRoomComp(RoomComponent_Atmosphere comp)
     {
         if (!Relations.ContainsKey(comp)) return;
 
-        if (comp.IsOutdoors)
+        if (Relations.TryGetValue(comp, out var volume))
         {
-            //TODO: Needs serious testing
-            RemoveRelation(comp);
-
-            bool Match(FlowInterface<AtmosphericVolume, AtmosphericValueDef> iface)
+            if (volume == _mapVolume)
             {
-                var firstMatch = Relations.FirstOrDefault(c => c.Value == iface.To);
-                if (firstMatch.Key == null) return false;
-                var contains = firstMatch.Key.CompNeighbors.Neighbors.Contains(comp);
-                return contains;
+                RemoveRelation(comp);
+                RemoveInterfacesWhere(iFace => iFace.FromPart == comp || iFace.ToPart == comp);
             }
-            
-            RemoveInterfacesWhere(Match);
-            return;
+            else
+            {
+                RemoveRelatedPart(comp);
+            }
+            AssertState();
         }
+    }
+    
+    private const char check = '✓';
+    private const char fail = 'X';
+    
+    private string Icon(bool checkFail)
+    {
+        return $"{(checkFail ? check : fail)}";
+    }
+
+    private Color ColorSel(bool checkFail)
+    {
+        return checkFail ? Color.green : Color.red;
+    }
+
+    public void AssertState()
+    {
         
-        var volume = Relations[comp];
-        RemoveVolume(volume);
-        RemoveRelation(comp);
-        RemoveInterfacesWhere(t => t.From == volume || t.To == volume);
-    }
-    
-    public void Notify_AddSource(IAtmosphericSource source)
-    {
-        if (_atmosphericSources.Contains(source)) return;
-        _atmosphericSources.Add(source);
-    }
-    
-    public void Notify_RemoveSource(IAtmosphericSource source)
-    {
-        _atmosphericSources.Remove(source);
     }
     
 
@@ -152,15 +150,6 @@ public class AtmosphericSystem : FlowSystem<RoomComponent, AtmosphericVolume, At
         {
             PushNaturalSaturation();
         }
-
-        foreach (var source in _atmosphericSources)
-        {
-            if (!source.Thing.Spawned) continue;
-            if (source.Thing.IsHashIntervalTick(source.PushInterval))
-            {
-                TryAddToAtmosphereFromSource(source);
-            }
-        }
     }
 
     #endregion
@@ -170,7 +159,15 @@ public class AtmosphericSystem : FlowSystem<RoomComponent, AtmosphericVolume, At
         _mapVolume.UpdateVolume(cells);
     }
     
-    public override double FlowFunc(FlowInterface<AtmosphericVolume, AtmosphericValueDef> iface, double f)
+    public void Notify_InterfaceBetweenRoomsChanged(RoomComponent roomA, RoomComponent roomB, Thing thing, string signal)
+    {
+        if (InterfaceLookUp.TryGetValue((roomA, roomB), out var iFace))
+        {
+            iFace.SetPassThrough(AtmosphericUtility.DefaultAtmosphericPassPercent(thing));
+        }
+    }
+    
+    public override double FlowFunc(FlowInterface<RoomComponent, AtmosphericVolume, AtmosphericValueDef> iface, double f)
     {
         var from = iface.From;
         var to = iface.To;
@@ -182,17 +179,13 @@ public class AtmosphericSystem : FlowSystem<RoomComponent, AtmosphericVolume, At
         f *= 1 - Friction;
         f *= 1 - GetTotalFriction(src); //Additional Friction from each fluid/gas
         f *= 1 - Math.Min(0.5, DampFriction * dc);
-
-        //f += dp * CSquared;
-        //f *= 1 - GetTotalFriction(src); //Note: Might be unnecessary slow-down
-        //f *= 1 - Math.Min(0.5, DampFriction * dc);
         return f;
     }
 
-    private bool enforceMinPipe = true;
-    private bool enforceMaxPipe = true;
-    
-    public override double ClampFunc(FlowInterface<AtmosphericVolume, AtmosphericValueDef> iface, double f, ClampType clampType)
+    private const bool enforceMinPipe = true;
+    private const bool enforceMaxPipe = true;
+
+    public override double ClampFunc(FlowInterface<RoomComponent, AtmosphericVolume, AtmosphericValueDef> iface, double f, ClampType clampType)
     {     
         var from = iface.From;
         var to = iface.To;
@@ -347,41 +340,6 @@ public class AtmosphericSystem : FlowSystem<RoomComponent, AtmosphericVolume, At
                 });
             }
         }
-    }
-
-    private void TryAddToAtmosphereFromSource(IAtmosphericSource source)
-    {
-        if (!source.IsActive) return;
-        //TODO: 
-        // if (_compLookUp[source.Room].TryAddValueToRoom(source.AtmosphericDef, source.PushAmount, out _))
-        // {
-        //     //TODO: effect on source...
-        // }
-
-        /*
-        if (Pollution != lastPollutionInt)
-        {
-            GameCondition_TiberiumBiome mainCondition = (GameCondition_TiberiumBiome)map.GameConditionManager.GetActiveCondition(TiberiumDefOf.TiberiumBiome);
-            if (mainCondition == null)
-            {
-                GameCondition condition = GameConditionMaker.MakeCondition(TiberiumDefOf.TiberiumBiome);
-                condition.conditionCauser = TRUtils.Tiberium().GroundZeroInfo.GroundZero;
-                condition.Permanent = true;
-                mainCondition = (GameCondition_TiberiumBiome)condition;
-                map.GameConditionManager.RegisterCondition(condition);
-                Log.Message("Adding game condition..");
-            }
-
-            if (!mainCondition.AffectedMaps.Contains(this.map))
-            {
-                mainCondition.AffectedMaps.Add(map);
-                Log.Message("Adding map to game condition..");
-            }
-            //mainCondition.Notify_PollutionChange(map, OutsideContainer.Saturation);
-        }
-
-        lastPollutionInt = Pollution;
-        */
     }
     
     #endregion
