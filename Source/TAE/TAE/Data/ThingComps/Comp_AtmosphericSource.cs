@@ -13,7 +13,7 @@ public class Comp_AtmosphericSource : ThingComp
     public Room Room => parent.GetRoomIndirect();
 
     //
-    public AtmosphericValueDef AtmosphericValueDef => Props.AtmosphericValueDef;
+    public AtmosphericValueDef AtmosphericDef => Props.atmosphericDef;
     public int PushInterval => Props.pushInterval;
     public int PushAmount => Props.pushAmount;
 

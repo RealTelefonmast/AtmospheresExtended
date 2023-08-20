@@ -6,7 +6,7 @@ namespace TAE
     {
         public int pushAmount;
         public int pushInterval;
-        public AtmosphericValueDef AtmosphericValueDef;
+        public AtmosphericValueDef atmosphericDef;
 
         public CompProperties_AtmosphericSource()
         {
