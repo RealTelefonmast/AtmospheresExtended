@@ -60,6 +60,30 @@ public class AtmosphericSystem : FlowSystem<RoomComponent, AtmosphericVolume, At
         }
     }
     
+    protected override float GetInterfacePassThrough(TwoWayKey<RoomComponent> connectors)
+    {
+        var connA = connectors.A;
+        if (connA == null)
+        {
+            TLog.Warning($"Tried to get interface pass-through for null connector: {connectors.A} -> {connectors.B}");
+            return 1;
+        }
+        if (connA.CompNeighbors.Links.Count <= 0)
+        {
+            TLog.Warning($"Tried to get interface pass-through with no links: {connectors.A} -> {connectors.B}");
+            return 1;
+        }
+        
+        RoomComponentLink relLink = connectors.A.CompNeighbors.LinkFor((connectors.A, connectors.B));
+        
+        if (relLink == null)
+        {
+            TLog.Warning($"Tried to get interface pass-through with no links: {connectors.A} -> {connectors.B}");
+            return 1;
+        }
+        return AtmosphericUtility.DefaultAtmosphericPassPercent(relLink.Connector);
+    }
+
     protected override AtmosphericVolume CreateVolume(RoomComponent part)
     {
         var volume =  new AtmosphericVolume(AtmosResources.DefaultAtmosConfig(part.Room.CellCount));

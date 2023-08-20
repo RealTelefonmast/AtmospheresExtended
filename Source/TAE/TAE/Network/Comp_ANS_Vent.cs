@@ -12,7 +12,7 @@ using Verse;
 
 namespace TAE;
 
-public class Comp_ANS_VentBase : Comp_AtmosphericNetworkStructure
+public class Comp_ANS_Vent : Comp_AtmosphericNetworkStructure
 {
     private CompFlickable _flickableComp;
     private IntVec3 intakeCell;
@@ -26,7 +26,7 @@ public class Comp_ANS_VentBase : Comp_AtmosphericNetworkStructure
     protected override Room AtmosphericSource => IntakeCell.GetRoom(parent.Map);
     
     //State Bools
-    public bool CanTickNow => IsPowered;
+    public bool CanTickNow => OwnedAtmosPart.IsReady && AtmosNetwork.IsWorking && (VentProps.passive || IsPowered);
     public virtual bool CanManipulateNow => !IntakeCellBlocked;
     
     protected bool CanWork_Obsolete
@@ -40,11 +40,11 @@ public class Comp_ANS_VentBase : Comp_AtmosphericNetworkStructure
                 {
                     case AtmosphericVentMode.Intake:
                         if (AtmosRoom.Volume.StoredValueOf(def) <= 0) return false;
-                        if (AtmosNetwork.Volume.Full) return false;
+                        if (OwnedAtmosPart.Volume.Full) return false;
                         break;
                     case AtmosphericVentMode.Output:
                         if (AtmosRoom.Volume.StoredValueOf(def) >= 1) return false;
-                        if (AtmosNetwork.Volume.Empty) return false;
+                        if (OwnedAtmosPart.Volume.Empty) return false;
                         break;
                     case AtmosphericVentMode.TwoWay:
                         break;
@@ -74,64 +74,63 @@ public class Comp_ANS_VentBase : Comp_AtmosphericNetworkStructure
     public override void CompTick()
     {
         base.CompTick();
-        if (CanTickNow && CanManipulateNow)
+        if (!CanTickNow || !CanManipulateNow) return;
+        
+        //Begin Exchange
+        var selfVolume = this.OwnedAtmosPart.Volume;
+        var roomVolume = this.AtmosRoom.Volume;
+
+        //Setup
+        PrevStackNetwork = selfVolume.Stack;
+        PrevStackAtmos = roomVolume.Stack;
+            
+            
+        //Flow
+        bool? fromTo = null;
+        //Equalize Based On Simple Pressure And Clamping
+        double flow = NextFlow;
+        flow = FlowFunc(selfVolume, roomVolume, flow);
+        fromTo = flow switch
         {
-            var selfVolume = this.AtmosNetwork.Volume;
-            var roomVolume = this.AtmosRoom.Volume;
+            < 0 => false,
+            > 0 => true,
+            _ => fromTo
+        };
+        if (fromTo == null) return;
+            
+        flow = Math.Abs(flow);
+        NextFlow = ClampFunc(selfVolume, roomVolume, flow, fromTo.Value);
+        Move = ClampFunc(selfVolume, roomVolume, flow, fromTo.Value);
 
-            //Setup
-            PrevStackNetwork = selfVolume.Stack;
-            PrevStackAtmos = roomVolume.Stack;
-            
-            
-            //Flow
-            bool? fromTo = null;
-            //Equalize Based On Simple Pressure And Clamping
-            double flow = NextFlow;
-            flow = FlowFunc(selfVolume, roomVolume, flow);
-            fromTo = flow switch
+        //Update Content
+        if (fromTo.Value)
+        {
+            DefValueStack<NetworkValueDef, double> res = selfVolume.RemoveContent(Move);
+            var res2 = new DefValueStack<AtmosphericValueDef, double>();
+            for(var i = 0; i < res.Length; i++)
             {
-                < 0 => false,
-                > 0 => true,
-                _ => fromTo
-            };
-            if (fromTo == null) return;
-            
-            flow = Math.Abs(flow);
-            NextFlow = ClampFunc(selfVolume, roomVolume, flow, fromTo.Value);
-            Move = ClampFunc(selfVolume, roomVolume, flow, fromTo.Value);
-
-            //Update Content
-            if (fromTo.Value)
-            {
-                DefValueStack<NetworkValueDef, double> res = selfVolume.RemoveContent(Move);
-                var res2 = new DefValueStack<AtmosphericValueDef, double>();
-                for(var i = 0; i < res.Length; i++)
+                var def = res[i].Def;
+                var atmosDef = AtmosRoom.Volume.AllowedValues.FirstOrDefault(d => d.networkValue == def);
+                if (atmosDef != null)
                 {
-                    var def = res[i].Def;
-                    var atmosDef = AtmosRoom.Volume.AllowedValues.FirstOrDefault(d => d.networkValue == def);
-                    if (atmosDef != null)
-                    {
-                        res2 += new DefValue<AtmosphericValueDef, double>(atmosDef, res[i].Value);
-                    }
+                    res2 += new DefValue<AtmosphericValueDef, double>(atmosDef, res[i].Value);
                 }
-                roomVolume.AddContent(res2);
             }
-            else
+            roomVolume.AddContent(res2);
+        }
+        else
+        {
+            DefValueStack<AtmosphericValueDef, double> res = roomVolume.RemoveContent(Move);
+            var res2 = new DefValueStack<NetworkValueDef, double>();
+            for(var i = 0; i < res.Length; i++)
             {
-                DefValueStack<AtmosphericValueDef, double> res = roomVolume.RemoveContent(Move);
-                var res2 = new DefValueStack<NetworkValueDef, double>();
-                for(var i = 0; i < res.Length; i++)
+                var def = res[i].Def;
+                if (def.networkValue != null)
                 {
-                    var def = res[i].Def;
-                    if (def.networkValue != null)
-                    {
-                        res2 += new DefValue<NetworkValueDef, double>(def.networkValue, res[i].Value);
-                    }
+                    res2 += new DefValue<NetworkValueDef, double>(def.networkValue, res[i].Value);
                 }
-                selfVolume.AddContent(res2);
             }
-            
+            selfVolume.AddContent(res2);
         }
     }
     
@@ -332,8 +331,8 @@ public class Comp_ANS_VentBase : Comp_AtmosphericNetworkStructure
     //Check whether we have vent neighbours that can receive
     private bool IsAtmosphericProvider()
     {
-        var adjacencyList = AtmosNetwork.Network.Graph.GetAdjacencyList(AtmosNetwork);
+        var adjacencyList = OwnedAtmosPart.Network.Graph.GetAdjacencyList(OwnedAtmosPart);
         if (adjacencyList == null || !adjacencyList.Any()) return false;
-        return adjacencyList.Any(c => c.Item2.Value.Parent is Comp_ANS_VentBase pvent && pvent.NeedsToReceiveFrom(this));
+        return adjacencyList.Any(c => c.Item2.Value.Parent is Comp_ANS_Vent pvent && pvent.NeedsToReceiveFrom(this));
     }
 }

@@ -104,9 +104,15 @@ public class AtmosphericMapInfo : MapInformation
 
     public void Notify_AddRoomComp(RoomComponent_Atmosphere comp)
     {
-        _allComps.Add(comp);
-        _compLookUp.Add(comp.Room, comp);
-        _system.Notify_AddRoomComp(comp);
+        if (_compLookUp.TryAdd(comp.Room, comp))
+        {
+            _allComps.Add(comp);
+            _system.Notify_AddRoomComp(comp);
+        }
+        else
+        {
+            TLog.Warning($"Tried to add existin roomComp: {comp.Room.ID} | IsDisbanded? {comp.Disbanded}");
+        }
     }
 
     public void Notify_RemoveRoomComp(RoomComponent_Atmosphere comp)

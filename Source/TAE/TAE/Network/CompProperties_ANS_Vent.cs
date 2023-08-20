@@ -20,6 +20,7 @@ public class CompProperties_ANS_Vent : CompProperties_ANS
     private List<AtmosphericValueDef> allowedValuesInt;
         
     //
+    public bool passive = false;
     public IntVec3 intakeOffset;
     public AtmosphericVentMode ventMode = AtmosphericVentMode.Intake;
     public int gasThroughPut = 1;

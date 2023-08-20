@@ -1,5 +1,6 @@
 ﻿using TAE.Atmosphere.Rooms;
 using TeleCore;
+using TeleCore.Network;
 using TeleCore.Network.Data;
 using Verse;
 
@@ -10,7 +11,9 @@ public class Comp_AtmosphericNetworkStructure : Comp_Network
     private RoomComponent_Atmosphere atmosphericInt;
 
     //
-    public INetworkPart AtmosNetwork { get; private set; }
+    public INetworkPart OwnedAtmosPart { get; private set; }
+    public PipeNetwork AtmosNetwork => OwnedAtmosPart.Network;
+    
     public RoomComponent_Atmosphere AtmosRoom
     {
         get
@@ -28,7 +31,7 @@ public class Comp_AtmosphericNetworkStructure : Comp_Network
     public override void PostSpawnSetup(bool respawningAfterLoad)
     {
         base.PostSpawnSetup(respawningAfterLoad);
-        AtmosNetwork = this[AtmosDefOf.AtmosphericNetwork];
+        OwnedAtmosPart = this[AtmosDefOf.AtmosphericNetwork];
     }
 
     public override void CompTick()

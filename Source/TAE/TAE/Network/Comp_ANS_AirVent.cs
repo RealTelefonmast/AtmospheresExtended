@@ -7,7 +7,7 @@ using Verse;
 
 namespace TAE;
 
-public class Comp_ANS_AirVent : Comp_ANS_VentBase
+public class Comp_ANS_AirVent : Comp_ANS_Vent
 {
     private FloatControl speedControl;
 

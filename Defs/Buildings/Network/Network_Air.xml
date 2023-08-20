@@ -26,7 +26,7 @@
 			<Steel>100</Steel>
 			<ComponentIndustrial>5</ComponentIndustrial>
 		</costList>
-		<comps>
+		<comps Inherit="False">
 			<li Class="TeleCore.CompProperties_Network">
 				<!--<compClass>TiberiumRim.Comp_ANS_Filter</compClass>-->
 				<networks>
@@ -49,7 +49,6 @@
 					</li>
 				</networks>
 				<generalIOConfig>
-					<patternSize>(4,4)</patternSize>
 					<pattern>#XX#|X++X|X++X|#XX#</pattern>
 				</generalIOConfig>
 			</li>
@@ -121,6 +120,100 @@
 	</ThingDef>
 	
 	<ThingDef ParentName="Tele_StationBase">
+		<defName>AtmosphericValve</defName>
+		<label>valve</label>
+		<description>.</description>
+		<size>(1,1)</size>
+		<costList>
+			<Steel>100</Steel>
+		</costList>
+		<receivesSignals>true</receivesSignals>
+		<rotatable>true</rotatable>
+		<uiIconPath>Buildings/Network/Valve/Valve_Icon</uiIconPath>
+		<graphicData>
+			<texPath>Buildings/Network/Valve/Valve_Base</texPath>
+			<graphicClass>Graphic_Single</graphicClass>
+			<drawSize>(1.25,1.25)</drawSize>
+			<drawRotated>false</drawRotated>
+		</graphicData>
+		<drawerType>MapMeshAndRealTime</drawerType>
+		<altitudeLayer>Building</altitudeLayer>
+		<passability>PassThroughOnly</passability>
+		<pathCost>70</pathCost>
+		<blockWind>true</blockWind>
+		<castEdgeShadows>false</castEdgeShadows>
+		<staticSunShadowHeight>0</staticSunShadowHeight>
+		<fillPercent>1</fillPercent>
+		<tickerType>Never</tickerType>
+		<statBases>
+			<MaxHitPoints>350</MaxHitPoints>
+			<WorkToBuild>2500</WorkToBuild>
+			<Mass>20</Mass>
+			<Flammability>1.0</Flammability>
+			<Beauty>0</Beauty>
+		</statBases>
+		<comps>
+			<li Class="TeleCore.CompProperties_Network">
+				<compClass>TeleCore.Comp_Network_Valve</compClass>
+				<networks>
+					<li>
+						<networkDef>AtmosphericNetwork</networkDef>
+						<roles>
+							<li>Transmitter</li>
+							<li>Storage</li>
+						</roles>
+						<volumeConfig>
+							<capacity>400</capacity>
+							<area>1</area>
+							<elevation>0</elevation>
+							<height>1</height>
+							<values>
+								<fromCollection>AtmosphericNetwork</fromCollection>
+							</values>
+						</volumeConfig>
+					</li>
+				</networks>
+				<generalIOConfig>
+					<pattern>###|I+O|###</pattern>
+				</generalIOConfig>
+			</li>
+			<li Class="TeleCore.CompProperties_FX"> 
+				<fxLayers>
+					<li>
+						<graphicData>
+							<texPath>Buildings/Network/Valve/Valve_Handle</texPath>
+							<graphicClass>Graphic_Single</graphicClass>
+							<drawSize>(1.25,1.25)</drawSize>
+						</graphicData>
+						<pivotPixelOffset>(0,0,5)</pivotPixelOffset>
+						<textureSize>(64,64)</textureSize>
+						<fxMode>Dynamic</fxMode>
+						<categoryTag>FXNetwork</categoryTag>
+						<layerTag>Valve</layerTag>
+					</li>
+				</fxLayers>
+			</li>
+			<li Class="CompProperties_Flickable">
+				<commandTexture>Buildings/Network/Valve/Valve_Handle</commandTexture>
+				<commandLabelKey>TAE.Network.Valve.Label</commandLabelKey>
+				<commandDescKey>TAE.Network.Valve.Desc</commandDescKey>
+			</li>
+		</comps>
+		<terrainAffordanceNeeded>Medium</terrainAffordanceNeeded>
+		<constructEffect>ConstructMetal</constructEffect>
+		<canOverlapZones>false</canOverlapZones>
+		<modExtensions>
+			<li Class="TeleCore.TeleDefExtension">
+				<addCustomTick>true</addCustomTick>
+			</li>
+			<li Class="TeleCore.SubMenuExtension">
+				<groupDef>TestGroup</groupDef>
+				<category>Structure</category>
+			</li>
+		</modExtensions>
+	</ThingDef>
+	
+	<ThingDef ParentName="Tele_StationBase">
 		<defName>AtmosphericVentIn</defName>
 		<label>atmospheric vent (intake)</label>
 		<description>.</description>
@@ -131,6 +224,7 @@
 		<tickerType>Normal</tickerType>
 		<uiIconPath>Buildings/Network/Intake/icon</uiIconPath>
 		<designationCategory>Atmospheric</designationCategory>
+		<rotatable>false</rotatable>
 		<graphicData>
 			<texPath>Buildings/Network/Intake/base</texPath>
 			<graphicClass>Graphic_Single</graphicClass>
@@ -175,7 +269,6 @@
 					</li>
 				</networks>
 				<generalIOConfig>
-					<patternSize>(3,3)</patternSize>
 					<pattern>#O#|O#O|#O#</pattern>
 				</generalIOConfig>
 			</li>
@@ -189,7 +282,7 @@
 							<texPath>Buildings/Network/Intake/fan</texPath>
 							<graphicClass>Graphic_Single</graphicClass>
 							<drawSize>(1.25,1.25)</drawSize>
-							<drawOffset>(0,0,0.1)</drawOffset>
+							<drawOffset>(0,0,0.2)</drawOffset>
 						</graphicData>
 						<rotate>
 							<rotationSpeed>75</rotationSpeed>
@@ -201,8 +294,8 @@
 						<graphicData>
 							<texPath>Buildings/Network/Intake/top</texPath>
 							<graphicClass>Graphic_Single</graphicClass>
+							<drawOffset>0,0,0.1)</drawOffset>
 							<drawSize>(1.25,1.25)</drawSize>
-							<drawOffset>(0,0,0.1)</drawOffset>
 						</graphicData>
 						<needsPower>false</needsPower>
 					</li>
@@ -218,8 +311,7 @@
 		</placeWorkers>
 		<castEdgeShadows>false</castEdgeShadows>
 		<staticSunShadowHeight>0</staticSunShadowHeight>	
-		<fillPercent>1</fillPercent>
-		<rotatable>true</rotatable>			
+		<fillPercent>1</fillPercent>		
 		<surfaceType>Item</surfaceType>
 		<modExtensions>
 			<li Class="TeleCore.SubMenuExtension">
@@ -239,6 +331,8 @@
 		<drawerType>MapMeshAndRealTime</drawerType>
 		<tickerType>Normal</tickerType>
 		<size>(1,1)</size>
+		<fillPercent>0.25</fillPercent>		
+		<rotatable>false</rotatable>	
 		<designationCategory>Atmospheric</designationCategory>
 		<graphicData>
 			<texPath>Buildings/Network/Vent_Out</texPath>
@@ -282,7 +376,6 @@
 					</li>
 				</networks>
 				<generalIOConfig>
-					<patternSize>(3,3)</patternSize>
 					<pattern>#I#|I#I|#I#</pattern>
 				</generalIOConfig>
 			</li>
@@ -295,11 +388,87 @@
 			<li>TAE.PlaceWorker_AtmosphericVent</li>
 		</placeWorkers>
 		<castEdgeShadows>false</castEdgeShadows>
-		<staticSunShadowHeight>0</staticSunShadowHeight>	
-		<fillPercent>1</fillPercent>
-		<rotatable>true</rotatable>			
+		<staticSunShadowHeight>0</staticSunShadowHeight>
 		<surfaceType>Item</surfaceType>
 		<modExtensions>
+			<li Class="TeleCore.SubMenuExtension">
+				<groupDef>TestGroup</groupDef>
+				<category>Structure</category>
+			</li>
+		</modExtensions>
+	</ThingDef>
+	
+	<ThingDef ParentName="Tele_BuildingBaseOverBuildings">
+		<defName>TAE_PoweredVent</defName>
+		<label>atmospheric vent (powered)</label>
+		<description>.</description>
+		<thingClass>Building</thingClass>
+		<tickerType>Normal</tickerType>
+		<designationCategory>Atmospheric</designationCategory>
+		<altitudeLayer>BuildingOnTop</altitudeLayer>
+		<costList>
+			<Steel>30</Steel>
+		</costList>
+		<statBases>
+			<WorkToBuild>400</WorkToBuild>
+			<MaxHitPoints>100</MaxHitPoints>
+			<Flammability>1.0</Flammability>
+		</statBases>
+		<graphicData>
+			<texPath>Buildings/Network/PassiveVent/Vent</texPath>
+			<graphicClass>TeleCore.Graphic_MultiWithAlt</graphicClass>
+			<damageData>
+				<cornerTL>Damage/Corner</cornerTL>
+				<cornerTR>Damage/Corner</cornerTR>
+				<cornerBL>Damage/Corner</cornerBL>
+				<cornerBR>Damage/Corner</cornerBR>
+			</damageData>
+		</graphicData>
+		<comps>
+			<li Class="TAE.CompProperties_ANS_Vent">
+				<compClass>TAE.Comp_ANS_Vent</compClass>
+				<passive>false</passive>
+				<intakeOffset>(0,0,-1)</intakeOffset>
+				<ventMode>TwoWay</ventMode>
+				<gasThroughPut>10</gasThroughPut>
+				<filter>
+					<acceptedTag>Air</acceptedTag>
+				</filter>
+				<networks>
+					<li>
+						<networkDef>AtmosphericNetwork</networkDef>
+						<requiresController>false</requiresController>
+						<roles>
+							<li>Transmitter</li>
+							<li>Storage</li>
+						</roles>
+						<volumeConfig>
+							<capacity>80</capacity>
+							<values>
+								<fromCollection>AtmosphericNetwork</fromCollection>
+							</values>
+						</volumeConfig>
+					</li>
+				</networks>
+				<generalIOConfig>
+					<pattern>#X#|X+X|#X#</pattern>
+				</generalIOConfig>
+			</li>
+			<!--
+			<li Class="CompProperties_Flickable">
+				<commandTexture>UI/Commands/Vent</commandTexture>
+				<commandLabelKey>CommandDesignateOpenCloseVentLabel</commandLabelKey>
+				<commandDescKey>CommandDesignateOpenCloseVentDesc</commandDescKey>
+			</li>
+			-->
+		</comps>
+		<placeWorkers>
+			<li>TAE.PlaceWorker_AtmosphericVent</li>
+		</placeWorkers>
+		<modExtensions>
+			<li Class="TeleCore.TeleDefExtension">
+				<graphicAlternateWorkerType>TeleCore.AlternateGraphicWorkerWallOnSouth</graphicAlternateWorkerType>
+			</li>
 			<li Class="TeleCore.SubMenuExtension">
 				<groupDef>TestGroup</groupDef>
 				<category>Structure</category>
@@ -337,7 +506,8 @@
 		</graphicData>
 		<comps>
 			<li Class="TAE.CompProperties_ANS_Vent">
-				<compClass>TAE.Comp_ANS_PassiveVent</compClass>
+				<compClass>TAE.Comp_ANS_Vent</compClass>
+				<passive>true</passive>
 				<intakeOffset>(0,0,-1)</intakeOffset>
 				<ventMode>TwoWay</ventMode>
 				<gasThroughPut>10</gasThroughPut>
@@ -361,7 +531,6 @@
 					</li>
 				</networks>
 				<generalIOConfig>
-					<patternSize>(3,3)</patternSize>
 					<pattern>#X#|X+X|#X#</pattern>
 				</generalIOConfig>
 			</li>
