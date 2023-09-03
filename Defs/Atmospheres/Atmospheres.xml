@@ -10,23 +10,5 @@
 		<defName>Atmosphere_Underwater</defName>
 		<label>water</label>
 	</TeleCore.FlowValueCollectionDef>
-	
-	<TeleCore.NetworkDef>
-		<defName>AtmosphericNetwork</defName>
-		<containerLabel>Atmospheres</containerLabel>
-		<transmitterDef>AtmosphericPipe</transmitterDef>
-		<controllerDef>AtmosphericPump</controllerDef>
-		<transmitterGraphic>
-			<texPath>Buildings/Network/Pipe_Air</texPath>
-			<graphicClass>Graphic_Single</graphicClass>
-		</transmitterGraphic>
-		<overlayGraphic>
-			<texPath>Buildings/Network/Pipe_Air_overlay</texPath>
-			<graphicClass>Graphic_Single</graphicClass>
-			<shaderType>MetaOverlay</shaderType>
-			<color>(140, 230, 255)</color>
-		</overlayGraphic>
-	</TeleCore.NetworkDef>
 
-	
 </Defs>

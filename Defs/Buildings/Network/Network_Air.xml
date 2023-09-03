@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Defs>
 
+	<!-- Atmospheric Controller -->
 	<ThingDef ParentName="Tele_StationBase">
-		<defName>AtmosphericPump</defName>
-		<label>Atmospheric Pump</label>
+		<defName>AtmosphericController</defName>
+		<label>Atmospheric Controller</label>
 		<description>.</description>
 		<thingCategories Inherit="false" />
 		<altitudeLayer>Building</altitudeLayer>
@@ -71,6 +72,7 @@
 		</modExtensions>
 	</ThingDef>
 	
+	<!-- Atmospheric Pipe -->
 	<ThingDef ParentName="NetworkPipeBase">
 		<defName>AtmosphericPipe</defName>
 		<label>gas pipe</label>
@@ -119,6 +121,7 @@
 		</modExtensions>
 	</ThingDef>
 	
+	<!-- Valve -->
 	<ThingDef ParentName="Tele_StationBase">
 		<defName>AtmosphericValve</defName>
 		<label>valve</label>
@@ -154,7 +157,7 @@
 		</statBases>
 		<comps>
 			<li Class="TeleCore.CompProperties_Network">
-				<compClass>TeleCore.Comp_Network_Valve</compClass>
+				<compClass>TeleCore.Comp_Network_Valve</compClass> <!--	<compClass>TeleCore.Comp_Network_Valve</compClass>-->
 				<networks>
 					<li>
 						<networkDef>AtmosphericNetwork</networkDef>
@@ -213,6 +216,121 @@
 		</modExtensions>
 	</ThingDef>
 	
+	<ThingDef ParentName="Tele_StationBase">
+		<defName>AtmosphericPump</defName>
+		<label>pump</label>
+		<description>.</description>
+		<size>(1,1)</size>
+		<costList>
+			<Steel>100</Steel>
+		</costList>
+		<receivesSignals>true</receivesSignals>
+		<rotatable>true</rotatable>
+		<uiIconPath>Buildings/Network/PumpValve/Pump</uiIconPath>
+		<graphicData>
+			<texPath>Buildings/Network/PumpValve/Pump_Back</texPath>
+			<graphicClass>Graphic_Single</graphicClass>
+			<drawSize>(1.25,2.5)</drawSize>
+			<drawRotated>false</drawRotated>
+		</graphicData>
+		<drawerType>MapMeshAndRealTime</drawerType>
+		<altitudeLayer>Building</altitudeLayer>
+		<passability>PassThroughOnly</passability>
+		<pathCost>70</pathCost>
+		<blockWind>true</blockWind>
+		<castEdgeShadows>false</castEdgeShadows>
+		<staticSunShadowHeight>0</staticSunShadowHeight>
+		<fillPercent>1</fillPercent>
+		<tickerType>Never</tickerType>
+		<statBases>
+			<MaxHitPoints>350</MaxHitPoints>
+			<WorkToBuild>2500</WorkToBuild>
+			<Mass>20</Mass>
+			<Flammability>1.0</Flammability>
+			<Beauty>0</Beauty>
+		</statBases>
+		<comps>
+			<li Class="TeleCore.CompProperties_Network">
+				<compClass>TeleCore.Comp_Network_Pump</compClass>
+				<networks>
+					<li>
+						<networkDef>AtmosphericNetwork</networkDef>
+						<roles>
+							<li>Transmitter</li>
+							<li>Storage</li>
+						</roles>
+						<volumeConfig>
+							<capacity>400</capacity>
+							<area>1</area>
+							<elevation>0</elevation>
+							<height>1</height>
+							<values>
+								<fromCollection>AtmosphericNetwork</fromCollection>
+							</values>
+						</volumeConfig>
+					</li>
+				</networks>
+				<generalIOConfig>
+					<pattern>###|I+O|###</pattern>
+				</generalIOConfig>
+			</li>
+			<li Class="TeleCore.CompProperties_FX"> 
+				<fxLayers>
+					<li>
+						<graphicData>
+							<texPath>Buildings/Network/PumpValve/Pump_Piston</texPath>
+							<graphicClass>Graphic_Single</graphicClass>
+							<drawSize>(1.25,2.5)</drawSize>
+							<shaderType>RenderMask</shaderType>
+							<shaderParameters>
+								<_MaskTex>/Buildings/Network/PumpValve/Pump_Piston_Mask</_MaskTex>
+							</shaderParameters>
+						</graphicData>
+						<fxMode>Dynamic</fxMode>
+						<categoryTag>FXNetwork</categoryTag>
+						<layerTag>PumpPiston</layerTag>
+					</li>
+					<li>
+						<graphicData>
+							<texPath>Buildings/Network/PumpValve/Pump_Front</texPath>
+							<graphicClass>Graphic_Single</graphicClass>
+							<drawSize>(1.25,2.5)</drawSize>
+						</graphicData>
+						<fxMode>Static</fxMode>
+						<categoryTag>FXNetwork</categoryTag>
+						<layerTag>Pump</layerTag>
+					</li>
+					<li>
+						<graphicData>
+							<texPath>Buildings/Network/PumpValve/Pump_Cap</texPath>
+							<graphicClass>Graphic_Multi</graphicClass>
+							<drawSize>(1.25,2.5)</drawSize>
+						</graphicData>
+						<fxMode>Dynamic</fxMode>
+						<categoryTag>FXNetwork</categoryTag>
+						<layerTag>PumpPistonCap</layerTag>
+					</li>
+				</fxLayers>
+			</li>
+		</comps>
+		<terrainAffordanceNeeded>Medium</terrainAffordanceNeeded>
+		<constructEffect>ConstructMetal</constructEffect>
+		<canOverlapZones>false</canOverlapZones>
+		<modExtensions>
+			<li Class="TeleCore.TeleDefExtension">
+				<addCustomTick>true</addCustomTick>
+			</li>
+			<li Class="TeleCore.FXDefExtension">
+				<rotateDrawSize>false</rotateDrawSize>
+				<alignToBottom>true</alignToBottom>
+			</li>
+			<li Class="TeleCore.SubMenuExtension">
+				<groupDef>TestGroup</groupDef>
+				<category>Structure</category>
+			</li>
+		</modExtensions>
+	</ThingDef>
+
 	<ThingDef ParentName="Tele_StationBase">
 		<defName>AtmosphericVentIn</defName>
 		<label>atmospheric vent (intake)</label>
