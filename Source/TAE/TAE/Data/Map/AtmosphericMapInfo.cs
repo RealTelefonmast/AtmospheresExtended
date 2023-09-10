@@ -14,8 +14,6 @@ public class AtmosphericMapInfo : MapInformation
 {
     //Scribing
     private AtmosphericScriber _scriber;
-    private AtmosphericCache _cache;
-    
     //System for room-nased atmospheric flow
     private AtmosphericSystem _system;
     
@@ -28,12 +26,10 @@ public class AtmosphericMapInfo : MapInformation
     public AtmosphereRenderer Renderer => _renderer;
     public AtmosphericSystem System => _system;
     public AtmosphericVolume MapVolume => _system.MapVolume;
-    internal AtmosphericCache Cache => _cache;
 
     public AtmosphericMapInfo(Map map) : base(map)
     {
         _scriber = new AtmosphericScriber(this);
-        _cache = new AtmosphericCache(map);
         _system = new AtmosphericSystem(map);
         
         //
