@@ -135,7 +135,7 @@ public class AtmosphericSystem : FlowSystem<RoomComponent, AtmosphericVolume, At
         {
             if (volume == _mapVolume)
             {
-                RemoveRelation(comp);
+                RemoveRelatedPart(comp);
                 RemoveInterfacesWhere(iFace => iFace.FromPart == comp || iFace.ToPart == comp);
             }
             else
@@ -191,7 +191,7 @@ public class AtmosphericSystem : FlowSystem<RoomComponent, AtmosphericVolume, At
         }
     }
     
-    public override double FlowFunc(FlowInterface<RoomComponent, AtmosphericVolume, AtmosphericValueDef> iface, double f)
+    protected override double FlowFunc(FlowInterface<RoomComponent, AtmosphericVolume, AtmosphericValueDef> iface, double f)
     {
         var from = iface.From;
         var to = iface.To;
@@ -208,8 +208,8 @@ public class AtmosphericSystem : FlowSystem<RoomComponent, AtmosphericVolume, At
 
     private const bool enforceMinPipe = true;
     private const bool enforceMaxPipe = true;
-
-    public override double ClampFunc(FlowInterface<RoomComponent, AtmosphericVolume, AtmosphericValueDef> iface, double f, ClampType clampType)
+    
+    protected override double ClampFunc(FlowInterface<RoomComponent, AtmosphericVolume, AtmosphericValueDef> iface, double f, ClampType clampType)
     {     
         var from = iface.From;
         var to = iface.To;

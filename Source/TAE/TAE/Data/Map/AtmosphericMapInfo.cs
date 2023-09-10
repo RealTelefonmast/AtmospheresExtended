@@ -13,7 +13,7 @@ namespace TAE;
 public class AtmosphericMapInfo : MapInformation
 {
     //Scribing
-    private AtmosphericCache _cache;
+    private AtmosphericScriber _scriber;
     //System for room-nased atmospheric flow
     private AtmosphericSystem _system;
     
@@ -29,11 +29,9 @@ public class AtmosphericMapInfo : MapInformation
 
     public AtmosphericMapInfo(Map map) : base(map)
     {
-        _cache = new AtmosphericCache(this);
+        _scriber = new AtmosphericScriber(this);
         _system = new AtmosphericSystem(map);
         
-        //mapContainer = new AtmosphericContainer(null, AtmosResources.DefaultAtmosConfig(map.cellIndices.NumGridCells));
-            
         //
         _compLookUp = new Dictionary<Room, RoomComponent_Atmosphere>();
         _allComps = new List<RoomComponent_Atmosphere>();
@@ -44,7 +42,7 @@ public class AtmosphericMapInfo : MapInformation
 
     public override void ExposeDataExtra()
     {
-        Scribe_Deep.Look(ref _cache, "atmosCache", map);
+        Scribe_Deep.Look(ref _scriber, "cacheData", this);
     }
 
     //
@@ -156,7 +154,7 @@ public class AtmosphericMapInfo : MapInformation
 
     public void Notify_ApplyLoadedData()
     {
-        //.Cache.scriber.ApplyLoadedDataToRegions();
+        _scriber.ApplyLoadedDataToRegions();
     }
 
     public void TrySpawnGasAt(IntVec3 cell, SpreadingGasTypeDef gasType, float value)

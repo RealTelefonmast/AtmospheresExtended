@@ -19,7 +19,10 @@ public static class AtmosResources
     {
         return new FlowVolumeConfig<AtmosphericValueDef>
         {
-            AllowedValues = AllAtmosphericDefs,
+            values = new FlowVolumeConfig<AtmosphericValueDef>.Values()
+            {
+                allowedValues = AllAtmosphericDefs,
+            },
             capacity = roomSize * CELL_CAPACITY,
             area = 0,
             elevation = 0,

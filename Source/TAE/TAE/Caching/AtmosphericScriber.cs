@@ -5,7 +5,7 @@ using Verse;
 
 namespace TAE.Caching;
 
-internal class AtmosphericScriber
+internal class AtmosphericScriber : IExposable
 {
     private AtmosphericMapInfo _mapInfo;
     private Map _map;
@@ -13,7 +13,7 @@ internal class AtmosphericScriber
     private DefValueStack<AtmosphericValueDef, double>[] temporaryGrid;
     private DefValueStack<AtmosphericValueDef, double>[] atmosphericGrid;
 
-    internal AtmosphericScriber(AtmosphericMapInfo mapInfo)
+    public AtmosphericScriber(AtmosphericMapInfo mapInfo)
     {
         _mapInfo = mapInfo;
         _map = mapInfo.Map;
@@ -43,6 +43,11 @@ internal class AtmosphericScriber
         atmosphericGrid = null;
     }
 
+    public void ExposeData()
+    {
+        ScribeData();
+    }
+    
     internal void ScribeData()
     {
         TLog.Debug($"Exposing Atmospheric | {Scribe.mode}".Colorize(Color.cyan));
