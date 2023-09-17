@@ -331,8 +331,12 @@ public class Comp_ANS_Vent : Comp_AtmosphericNetworkStructure
     //Check whether we have vent neighbours that can receive
     private bool IsAtmosphericProvider()
     {
-        var adjacencyList = OwnedAtmosPart.Network.Graph.GetAdjacencyList(OwnedAtmosPart);
-        if (adjacencyList == null || !adjacencyList.Any()) return false;
-        return adjacencyList.Any(c => c.Item2.Value.Parent is Comp_ANS_Vent pvent && pvent.NeedsToReceiveFrom(this));
+        if (OwnedAtmosPart.Network.Graph.TryGetAdjacencyList(OwnedAtmosPart, out var adjacencyList))
+        {
+            if (!adjacencyList.Any()) return false;
+            return adjacencyList.Any(c =>
+                c.Item2.Value.Parent is Comp_ANS_Vent pvent && pvent.NeedsToReceiveFrom(this));
+        }
+        return false;
     }
 }

@@ -117,7 +117,7 @@ public class AtmosphericSystem : FlowSystem<RoomComponent, AtmosphericVolume, At
         }
         
         //Add normal room->room connection
-        var volume = GenerateForOrGet(comp);
+        var volume = GenerateForOrGetVolume(comp);
         foreach (var adjComp in comp.CompNeighbors.Neighbors)
         {
             if (!Relations.TryGetValue(adjComp, out var adjVolume)) continue;
@@ -135,12 +135,12 @@ public class AtmosphericSystem : FlowSystem<RoomComponent, AtmosphericVolume, At
         {
             if (volume == _mapVolume)
             {
-                RemoveRelatedPart(comp);
+                TryRemoveRelatedPart(comp);
                 RemoveInterfacesWhere(iFace => iFace.FromPart == comp || iFace.ToPart == comp);
             }
             else
             {
-                RemoveRelatedPart(comp);
+                TryRemoveRelatedPart(comp);
             }
             AssertState();
         }
