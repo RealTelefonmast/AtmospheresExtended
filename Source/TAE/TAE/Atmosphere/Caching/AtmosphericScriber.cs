@@ -68,8 +68,7 @@ internal class AtmosphericScriber : IExposable
                 }
             }
         }
-
-
+        
         if (Scribe.mode == LoadSaveMode.LoadingVars)
         {
             atmosphericGrid = new DefValueStack<AtmosphericValueDef,double>[arraySize];
@@ -82,7 +81,6 @@ internal class AtmosphericScriber : IExposable
             byte[] dataBytes = null;
             if (Scribe.mode == LoadSaveMode.Saving)
             {
-                //GenSerialization.SerializeFloat(arraySize, (int idx) => temporaryGrid[idx].values?.FirstOrFallback(f => f.Def == type).Value ?? 0);
                 dataBytes = DataSerializeUtility.SerializeUshort(arraySize, (int idx) => (ushort)(temporaryGrid[idx].Values?.FirstOrFallback(f => f.Def == type).Value ?? 0));
                 DataExposeUtility.ByteArray(ref dataBytes, $"{type.defName}.atmospheric");
             }
@@ -98,13 +96,6 @@ internal class AtmosphericScriber : IExposable
                         atmosphericGrid[idx] += atmosStack;
                     }
                 });
-                    
-                /*
-                GenSerialization.LoadFloat(dataBytes, arraySize, delegate (int idx, float idxValue)
-                {
-                    atmosphericGrid[idx] += new DefValueStack<AtmosphericDef>(type, idxValue);
-                });
-                */
             }
         }
     }

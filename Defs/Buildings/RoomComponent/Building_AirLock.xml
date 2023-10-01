@@ -37,7 +37,7 @@
 		<constructionSkillPrerequisite>6</constructionSkillPrerequisite>
 		<modExtensions>
 			<li Class="TeleCore.SubMenuExtension">
-				<groupDef>TestGroup</groupDef>
+				<groupDef>TAEBasics</groupDef>
 				<category>Structure</category>
 			</li>
 		</modExtensions>

@@ -48,7 +48,7 @@
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
     
-    <PackageReference Include="TeleCore" Version="1.9.4.4">
+    <PackageReference Include="TeleCore" Version="1.9.5.4">
       <PrivateAssets>all</PrivateAssets>
       <ExcludeAssets>runtime</ExcludeAssets>
       <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

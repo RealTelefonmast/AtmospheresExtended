@@ -11,18 +11,19 @@
 	<TeleCore.SubBuildMenuDef>
 		<defName>AtmosphericMenu</defName>
 		<subMenus>
-			<li>TestGroup</li>
+			<li>TAEBasics</li>
 			<li>TAEDebug</li>
 		</subMenus>
 	</TeleCore.SubBuildMenuDef>
 	
 	<TeleCore.SubMenuGroupDef>
-		<defName>TestGroup</defName>
+		<defName>TAEBasics</defName>
 		<subCategories>
 			<li>Structure</li>
 			<li>Decoration</li>
 			<li>TestCat</li>
 		</subCategories>
+		<groupIconPath>UI/Icons/AtmosIcon</groupIconPath>
 	</TeleCore.SubMenuGroupDef>
 	
 	<TeleCore.SubMenuGroupDef>
