@@ -19,9 +19,9 @@
 	<TeleCore.SubMenuGroupDef>
 		<defName>TAEBasics</defName>
 		<subCategories>
-			<li>Structure</li>
-			<li>Decoration</li>
-			<li>TestCat</li>
+			<li>Passive</li>
+			<li>AirLock</li>
+			<li>Utility</li>
 		</subCategories>
 		<groupIconPath>UI/Icons/AtmosIcon</groupIconPath>
 	</TeleCore.SubMenuGroupDef>
@@ -35,18 +35,18 @@
 	</TeleCore.SubMenuGroupDef>
 	
 	<TeleCore.SubMenuCategoryDef>
-		<defName>Structure</defName>
-		<label>Structure</label>
+		<defName>System</defName>
+		<label>Piping</label>
 	</TeleCore.SubMenuCategoryDef>  
   
 	<TeleCore.SubMenuCategoryDef>
-		<defName>Decoration</defName>
-		<label>Decoration</label>
+		<defName>AirLock</defName>
+		<label>Air Lock</label>
 	</TeleCore.SubMenuCategoryDef>  
 	
 	<TeleCore.SubMenuCategoryDef>
-		<defName>TestCat</defName>
-		<label>TestCat</label>
+		<defName>Utility</defName>
+		<label>Utility</label>
 	</TeleCore.SubMenuCategoryDef>  
 	
 	<TeleCore.SubMenuCategoryDef>

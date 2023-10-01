@@ -67,7 +67,7 @@
 		<modExtensions>
 			<li Class="TeleCore.SubMenuExtension">
 				<groupDef>TAEBasics</groupDef>
-				<category>Structure</category>
+				<category>System</category>
 			</li>
 		</modExtensions>
 	</ThingDef>
@@ -116,7 +116,7 @@
 		<modExtensions>
 			<li Class="TeleCore.SubMenuExtension">
 				<groupDef>TAEBasics</groupDef>
-				<category>Structure</category>
+				<category>System</category>
 			</li>
 		</modExtensions>
 	</ThingDef>
@@ -211,7 +211,7 @@
 			</li>
 			<li Class="TeleCore.SubMenuExtension">
 				<groupDef>TAEBasics</groupDef>
-				<category>Structure</category>
+				<category>Utility</category>
 			</li>
 		</modExtensions>
 	</ThingDef>
@@ -326,7 +326,7 @@
 			</li>
 			<li Class="TeleCore.SubMenuExtension">
 				<groupDef>TAEBasics</groupDef>
-				<category>Structure</category>
+				<category>Utility</category>
 			</li>
 		</modExtensions>
 	</ThingDef>
@@ -434,7 +434,7 @@
 		<modExtensions>
 			<li Class="TeleCore.SubMenuExtension">
 				<groupDef>TAEBasics</groupDef>
-				<category>Structure</category>
+				<category>Utility</category>
 			</li>
 		</modExtensions>
 	</ThingDef>
@@ -511,7 +511,7 @@
 		<modExtensions>
 			<li Class="TeleCore.SubMenuExtension">
 				<groupDef>TAEBasics</groupDef>
-				<category>Structure</category>
+				<category>Utility</category>
 			</li>
 		</modExtensions>
 	</ThingDef>
@@ -589,11 +589,10 @@
 			</li>
 			<li Class="TeleCore.SubMenuExtension">
 				<groupDef>TAEBasics</groupDef>
-				<category>Structure</category>
+				<category>System</category>
 			</li>
 		</modExtensions>
 	</ThingDef>
-	
 	
 	<!-- Passive Atmospheric Exchange -->
 	<ThingDef ParentName="Tele_BuildingBaseOverBuildings">
@@ -667,7 +666,7 @@
 			</li>
 			<li Class="TeleCore.SubMenuExtension">
 				<groupDef>TAEBasics</groupDef>
-				<category>Structure</category>
+				<category>System</category>
 			</li>
 		</modExtensions>
 	</ThingDef>
