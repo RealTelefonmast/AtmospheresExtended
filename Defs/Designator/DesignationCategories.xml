@@ -19,7 +19,7 @@
 	<TeleCore.SubMenuGroupDef>
 		<defName>TAEBasics</defName>
 		<subCategories>
-			<li>Passive</li>
+			<li>System</li>
 			<li>AirLock</li>
 			<li>Utility</li>
 		</subCategories>

@@ -38,7 +38,7 @@
 		<modExtensions>
 			<li Class="TeleCore.SubMenuExtension">
 				<groupDef>TAEBasics</groupDef>
-				<category>Structure</category>
+				<category>AirLock</category>
 			</li>
 		</modExtensions>
 	</ThingDef>
