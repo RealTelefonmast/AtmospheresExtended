@@ -2,6 +2,11 @@
 <Defs>
   
 	<TeleCore.FlowValueCollectionDef>
+		<defName>Atmosphere_Air</defName>
+		<label>air</label>
+	</TeleCore.FlowValueCollectionDef>
+
+	<TeleCore.FlowValueCollectionDef>
 		<defName>Atmosphere_Underwater</defName>
 		<label>water</label>
 	</TeleCore.FlowValueCollectionDef>
