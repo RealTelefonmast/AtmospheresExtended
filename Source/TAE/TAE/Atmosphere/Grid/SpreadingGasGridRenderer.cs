@@ -6,7 +6,7 @@ using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 using Verse;
 
-namespace TAE;
+namespace TAC;
 
 [StructLayout(LayoutKind.Sequential)]
 struct GasMeshProperties

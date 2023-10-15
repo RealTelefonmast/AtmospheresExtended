@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using RimWorld;
-using TAE.Static;
+using TAC.Static;
 using TeleCore;
 using TeleCore.Static.Utilities;
 using UnityEngine;
 using Verse;
 
-namespace TAE;
+namespace TAC;
 
 public static class AtmosphericUtility
 {
@@ -284,4 +284,13 @@ public static class AtmosphericUtility
             _ => false
         };
     }
+
+    #region Extensions
+
+    public static AtmosphericMapInfo Atmosphere(this Map map)
+    {
+        return map.GetMapInfo<AtmosphericMapInfo>();
+    }
+
+    #endregion
 }

@@ -6,7 +6,7 @@ using HarmonyLib;
 using UnityEngine;
 using Verse;
 
-namespace TAE;
+namespace TAC;
 
 public class AtmosphereMod : Mod
 {

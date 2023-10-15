@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace TAE.Static;
+namespace TAC.Static;
 
 public static class AtmosphericReferenceCache
 {

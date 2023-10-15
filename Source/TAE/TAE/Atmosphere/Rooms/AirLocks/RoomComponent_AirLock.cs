@@ -2,12 +2,12 @@
 using System.Linq;
 using HarmonyLib;
 using RimWorld;
-using TAE.Atmosphere.Rooms;
+using TAC.Atmosphere.Rooms;
 using TeleCore;
 using UnityEngine;
 using Verse;
 
-namespace TAE;
+namespace TAC;
 
 //
 public class RoomComponent_AirLock : RoomComponent
@@ -21,6 +21,8 @@ public class RoomComponent_AirLock : RoomComponent
     private HashSet<Comp_ANS_AirLockVent> AirVentComps = new();
         
     private HashSet<Building_Airlock> AirLockDoors = new();
+
+    public override string ShortIdentifier => "AirLock";
 
     //
     public RoomComponent_Atmosphere Atmospheric => atmosphericCompInt ??= Parent.GetRoomComp<RoomComponent_Atmosphere>();

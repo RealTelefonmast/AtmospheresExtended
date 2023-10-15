@@ -2,7 +2,7 @@
 using RimWorld;
 using Verse;
 
-namespace TAE.Static;
+namespace TAC.Static;
 
 [StaticConstructorOnStartup]
 public static class AtmosphericData

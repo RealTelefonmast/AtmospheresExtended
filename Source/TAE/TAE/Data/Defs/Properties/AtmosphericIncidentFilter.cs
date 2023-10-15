@@ -2,7 +2,7 @@
 using RimWorld;
 using Verse;
 
-namespace TAE;
+namespace TAC;
 
 public class AtmosphericIncidentFilter : Editable
 {

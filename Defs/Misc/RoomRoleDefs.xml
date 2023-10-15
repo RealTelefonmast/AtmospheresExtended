@@ -4,7 +4,7 @@
 	<RoomRoleDef>
 		<defName>TAE_AirLockRole</defName>
 		<label>air lock</label>
-		<workerClass>TAE.RoomRoleWorker_AirLock</workerClass>
+		<workerClass>TAC.RoomRoleWorker_AirLock</workerClass>
 		<relatedStats>
 			<li>Space</li>
 		</relatedStats>

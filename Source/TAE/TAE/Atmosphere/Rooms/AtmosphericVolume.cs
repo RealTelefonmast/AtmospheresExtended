@@ -2,16 +2,17 @@
 using TeleCore.FlowCore;
 using TeleCore.Network.Data;
 
-namespace TAE.AtmosphericFlow;
+namespace TAC.AtmosphericFlow;
 
 /// <summary>
 /// Similar to <see cref="FlowBox"/> for volumes of atmospheric values.
 /// </summary>
-public class AtmosphericVolume : FlowVolume<AtmosphericValueDef>
+public class AtmosphericVolume : FlowVolumeShared<AtmosphericValueDef>
 {
     private int _cells;
     
-    public override double MaxCapacity => _cells * AtmosResources.CELL_CAPACITY;
+    public override double MaxCapacity => CapacityPerType * _config.AllowedValues.Count;
+    public override double CapacityPerType => _cells * AtmosResources.CELL_CAPACITY;
 
     public void UpdateVolume(int cellCount)
     {

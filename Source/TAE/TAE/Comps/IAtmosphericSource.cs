@@ -1,7 +1,7 @@
 ﻿using System;
 using Verse;
 
-namespace TAE;
+namespace TAC;
 
 //TODO: Revamp of atmospushers
 public class AtmospherePusherProps

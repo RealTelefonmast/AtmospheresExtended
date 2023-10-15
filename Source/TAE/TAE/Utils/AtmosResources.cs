@@ -6,11 +6,15 @@ using TeleCore.Generics.Container;
 using TeleCore.Network.Data;
 using Verse;
 
-namespace TAE;
+namespace TAC;
 
 public static class AtmosResources
 {   
-    internal const int CELL_CAPACITY = 128;
+    // 1000L of Air = 1m^3 of Air
+    //We assume a rimworld tile has a volume of 2m^3
+    internal const float CELL_FLOOR = 2.25f; //1.5*1.5
+    internal const float CELL_HEIGHT = 2.5f;
+    internal const int CELL_CAPACITY = 5625; // 2.25 * 2.5 * 1000
     public const float MIN_EQ_VAL = 2;
     
     public static List<AtmosphericValueDef> AllAtmosphericDefs => DefDatabase<AtmosphericValueDef>.AllDefsListForReading;

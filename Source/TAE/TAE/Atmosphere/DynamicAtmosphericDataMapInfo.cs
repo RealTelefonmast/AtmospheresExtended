@@ -1,11 +1,11 @@
-﻿using TAE.Atmosphere.Rooms;
+﻿using TAC.Atmosphere.Rooms;
 using TeleCore;
 using TeleCore.Data.Events;
 using TeleCore.Static;
 using UnityEngine;
 using Verse;
 
-namespace TAE;
+namespace TAC;
 
 public class DynamicAtmosphericDataMapInfo : MapInformation
 {

@@ -2,7 +2,7 @@
 using UnityEngine;
 using Verse;
 
-namespace TAE;
+namespace TAC;
 
 [StaticConstructorOnStartup]
 internal static class TAEUnityContent

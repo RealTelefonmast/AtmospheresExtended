@@ -3,7 +3,7 @@ using RimWorld;
 using TeleCore;
 using Verse;
 
-namespace TAE;
+namespace TAC;
 
 public class TAERulesetDef : Def
 {

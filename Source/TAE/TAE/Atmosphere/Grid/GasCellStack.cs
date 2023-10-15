@@ -4,7 +4,7 @@ using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Verse;
 
-namespace TAE;
+namespace TAC;
 
 [StructLayout(LayoutKind.Sequential)]
 public unsafe struct GasCellStack

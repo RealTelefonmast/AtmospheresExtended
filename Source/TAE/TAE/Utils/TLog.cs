@@ -5,7 +5,7 @@ using TeleCore;
 using UnityEngine;
 using Verse;
 
-namespace TAE;
+namespace TAC;
 
 internal static class TLog
 {

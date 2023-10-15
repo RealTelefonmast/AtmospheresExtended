@@ -3,7 +3,7 @@ using TeleCore.Primitive;
 using UnityEngine;
 using Verse;
 
-namespace TAE.Caching;
+namespace TAC.Caching;
 
 internal class AtmosphericScriber : IExposable
 {

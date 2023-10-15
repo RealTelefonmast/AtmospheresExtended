@@ -3,7 +3,7 @@ using TeleCore;
 using Verse;
 using Verse.Profile;
 
-namespace TAE;
+namespace TAC;
 
 internal static class LoadingPatches
 {

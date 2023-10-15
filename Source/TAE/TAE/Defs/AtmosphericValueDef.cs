@@ -1,49 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using TAE.Static;
+﻿using System.Collections.Generic;
+using TAC.Static;
 using TeleCore;
-using TeleCore.Primitive;
 using Verse;
 
-namespace TAE;
-
-public enum AtmosphericRealm
-{
-    AnyBiome,
-    SpecificBiome
-}
-
-public enum AtmosphericType
-{
-    Gas,
-    Fluid
-}
-
-[Flags]
-public enum DissipationMode
-{
-    None,
-    IntoAir,
-    IntoGround
-}
-
-public class RealmConfig : Editable
-{
-    public AtmosphericRealm realmType;
-    public List<AtmosphericValueDef> requiresAtmospheres;
-}
-
-/// <summary>
-/// Defines properties of any gas or fluid that can dissipate into air or ground.
-/// </summary>
-public class DissipationConfig : Editable
-{
-    public SpreadingGasTypeDef toGas;
-    public DissipationMode mode;
-    
-    //TODO: Add terrainfilter from TR
-    public List<string> terrainFilter;
-}
+namespace TAC;
 
 public class AtmosphericValueDef : FlowValueDef
 {
@@ -72,10 +32,14 @@ public class AtmosphericValueDef : FlowValueDef
     public RoomOverlayProperties roomOverlay;
     public bool useRenderLayer = false;
     public double friction;
+    
+    
     public override void PostLoad()
     {
         //
         base.PostLoad();
+        //Unit in liters
+        valueUnit = "L";
         AtmosphericReferenceCache.RegisterDef(this);
     }
 }

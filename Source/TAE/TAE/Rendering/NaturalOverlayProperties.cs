@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace TAE
+namespace TAC
 {
     public class NaturalOverlayProperties
     {

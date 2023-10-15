@@ -198,8 +198,8 @@
 			</li>
 			<li Class="CompProperties_Flickable">
 				<commandTexture>Buildings/Network/Valve/Valve_Handle</commandTexture>
-				<commandLabelKey>TAE.Network.Valve.Label</commandLabelKey>
-				<commandDescKey>TAE.Network.Valve.Desc</commandDescKey>
+				<commandLabelKey>TAC.Network.Valve.Label</commandLabelKey>
+				<commandDescKey>TAC.Network.Valve.Desc</commandDescKey>
 			</li>
 		</comps>
 		<terrainAffordanceNeeded>Medium</terrainAffordanceNeeded>
@@ -361,7 +361,7 @@
 			<ComponentIndustrial>1</ComponentIndustrial>
 		</costList>
 		<comps>
-			<li Class="TAE.CompProperties_ANS_AirVent">
+			<li Class="TAC.CompProperties_ANS_AirVent">
 				<ventMode>Intake</ventMode>
 				<gasThroughPut>10</gasThroughPut>
 				<filter>
@@ -425,7 +425,7 @@
 			</li>
 		</comps>
 		<placeWorkers>
-			<li>TAE.PlaceWorker_AtmosphericVent</li>
+			<li>TAC.PlaceWorker_AtmosphericVent</li>
 		</placeWorkers>
 		<castEdgeShadows>false</castEdgeShadows>
 		<staticSunShadowHeight>0</staticSunShadowHeight>	
@@ -468,7 +468,7 @@
 			<ComponentIndustrial>1</ComponentIndustrial>
 		</costList>
 		<comps>
-			<li Class="TAE.CompProperties_ANS_AirVent">
+			<li Class="TAC.CompProperties_ANS_AirVent">
 				<ventMode>Output</ventMode>
 				<gasThroughPut>10</gasThroughPut>
 				<filter>
@@ -503,7 +503,7 @@
 			</li>
 		</comps>
 		<placeWorkers>
-			<li>TAE.PlaceWorker_AtmosphericVent</li>
+			<li>TAC.PlaceWorker_AtmosphericVent</li>
 		</placeWorkers>
 		<castEdgeShadows>false</castEdgeShadows>
 		<staticSunShadowHeight>0</staticSunShadowHeight>
@@ -543,8 +543,8 @@
 			</damageData>
 		</graphicData>
 		<comps>
-			<li Class="TAE.CompProperties_ANS_Vent">
-				<compClass>TAE.Comp_ANS_Vent</compClass>
+			<li Class="TAC.CompProperties_ANS_Vent">
+				<compClass>TAC.Comp_ANS_Vent</compClass>
 				<passive>false</passive>
 				<intakeOffset>(0,0,-1)</intakeOffset>
 				<ventMode>TwoWay</ventMode>
@@ -581,7 +581,7 @@
 			-->
 		</comps>
 		<placeWorkers>
-			<li>TAE.PlaceWorker_AtmosphericVent</li>
+			<li>TAC.PlaceWorker_AtmosphericVent</li>
 		</placeWorkers>
 		<modExtensions>
 			<li Class="TeleCore.TeleDefExtension">
@@ -622,8 +622,8 @@
 			</damageData>
 		</graphicData>
 		<comps>
-			<li Class="TAE.CompProperties_ANS_Vent">
-				<compClass>TAE.Comp_ANS_Vent</compClass>
+			<li Class="TAC.CompProperties_ANS_Vent">
+				<compClass>TAC.Comp_ANS_Vent</compClass>
 				<passive>true</passive>
 				<intakeOffset>(0,0,-1)</intakeOffset>
 				<ventMode>TwoWay</ventMode>
@@ -658,7 +658,7 @@
 			</li>
 		</comps>
 		<placeWorkers>
-			<li>TAE.PlaceWorker_AtmosphericVent</li>
+			<li>TAC.PlaceWorker_AtmosphericVent</li>
 		</placeWorkers>
 		<modExtensions>
 			<li Class="TeleCore.TeleDefExtension">

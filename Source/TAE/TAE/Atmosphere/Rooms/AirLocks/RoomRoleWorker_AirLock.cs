@@ -2,7 +2,7 @@
 using TeleCore;
 using Verse;
 
-namespace TAE;
+namespace TAC;
 
 public class RoomRoleWorker_AirLock : RoomRoleWorker
 {

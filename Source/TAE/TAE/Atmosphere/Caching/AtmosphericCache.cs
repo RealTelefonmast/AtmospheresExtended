@@ -1,13 +1,14 @@
-﻿using System.Collections.Generic;
-using TAE.Atmosphere.Rooms;
-using TAE.AtmosphericFlow;
+﻿using System;
+using System.Collections.Generic;
+using TAC.Atmosphere.Rooms;
+using TAC.AtmosphericFlow;
 using TeleCore;
 using TeleCore.Data.Events;
 using TeleCore.Events;
 using TeleCore.Primitive;
 using Verse;
 
-namespace TAE.Caching;
+namespace TAC.Caching;
 
 public struct CachedAtmosphere
 {
@@ -107,15 +108,24 @@ public class AtmosphericCache
             }
         }
 
-        //var num = 0;
+        var num = 0;
         var stack = new DefValueStack<AtmosphericValueDef, double>();
         foreach (var cachedAtmos2 in _relevantCacheList)
         {
-            //num += cachedAtmos2.NumCells;
+            num += cachedAtmos2.NumCells;
             stack += cachedAtmos2.Atmosphere;
         }
+        
+        DefValueStack<AtmosphericValueDef, double> result;
+        if (r.CellCount >= num)
+        {
+            result = stack;
+        }
+        else
+        {
+            result = stack * Math.Round(r.CellCount / (double) num, 4);
+        }
 
-        var result = stack;
         var result2 = !_relevantCacheList.NullOrEmpty();
         _procRoomIDs.Clear();
         _relevantCacheList.Clear();

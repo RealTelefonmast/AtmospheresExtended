@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
-using TAE.Atmosphere.Rooms;
+using TAC.Atmosphere.Rooms;
 using TeleCore;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 using Verse;
 
-namespace TAE;
+namespace TAC;
 
 //TODO: Make rule based sprading and dissipation: ie: if a gas cell is surrounded by gas of the same type, it spreads less than a cell with free neighbours => viscosity simulation
 //TODO: NEW Fluid dynamics sim reference: https://cg.informatik.uni-freiburg.de/intern/seminar/gridFluids_fluid-EulerParticle.pdf

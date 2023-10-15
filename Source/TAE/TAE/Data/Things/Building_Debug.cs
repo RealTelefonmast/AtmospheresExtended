@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using RimWorld;
-using TAE.Atmosphere.Rooms;
+using TAC.Atmosphere.Rooms;
 using TeleCore;
 using TeleCore.Network.Utility;
 using TeleCore.Rendering;
@@ -12,7 +12,7 @@ using Verse;
 using GridLayout = Verse.GridLayout;
 using WidgetRow = Verse.WidgetRow;
 
-namespace TAE;
+namespace TAC;
 
 public class Building_Debug : Building
 {
