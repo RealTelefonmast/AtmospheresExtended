@@ -3,7 +3,7 @@ using TeleCore.Data.Events;
 using TeleCore.Static;
 using Verse;
 
-namespace TAE;
+namespace TAC;
 
 public class DynamicAtmosphericDataTracker : ThingTrackerComp
 {
@@ -48,7 +48,7 @@ public class DynamicAtmosphericDataTracker : ThingTrackerComp
             case "DoorClosed":
             {
                 args.Thing.Map.GetMapInfo<DynamicAtmosphericDataMapInfo>().Notify_ThingSentSignal(args);
-            }
+            } 
                 break;
         }
     }

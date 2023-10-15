@@ -1,7 +1,7 @@
 ﻿using TeleCore;
 using Verse;
 
-namespace TAE;
+namespace TAC;
 
 public class GasInterface : DefModExtension
 {

@@ -1,6 +1,6 @@
 ﻿using Verse;
 
-namespace TAE
+namespace TAC
 {
     public class CompProperties_PathFollowerExtra : CompProperties
     {

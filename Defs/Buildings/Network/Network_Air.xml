@@ -66,8 +66,8 @@
 		<surfaceType>Item</surfaceType>
 		<modExtensions>
 			<li Class="TeleCore.SubMenuExtension">
-				<groupDef>TestGroup</groupDef>
-				<category>Structure</category>
+				<groupDef>TAEBasics</groupDef>
+				<category>System</category>
 			</li>
 		</modExtensions>
 	</ThingDef>
@@ -115,8 +115,8 @@
 		</comps>
 		<modExtensions>
 			<li Class="TeleCore.SubMenuExtension">
-				<groupDef>TestGroup</groupDef>
-				<category>Structure</category>
+				<groupDef>TAEBasics</groupDef>
+				<category>System</category>
 			</li>
 		</modExtensions>
 	</ThingDef>
@@ -198,8 +198,8 @@
 			</li>
 			<li Class="CompProperties_Flickable">
 				<commandTexture>Buildings/Network/Valve/Valve_Handle</commandTexture>
-				<commandLabelKey>TAE.Network.Valve.Label</commandLabelKey>
-				<commandDescKey>TAE.Network.Valve.Desc</commandDescKey>
+				<commandLabelKey>TAC.Network.Valve.Label</commandLabelKey>
+				<commandDescKey>TAC.Network.Valve.Desc</commandDescKey>
 			</li>
 		</comps>
 		<terrainAffordanceNeeded>Medium</terrainAffordanceNeeded>
@@ -210,8 +210,8 @@
 				<addCustomTick>true</addCustomTick>
 			</li>
 			<li Class="TeleCore.SubMenuExtension">
-				<groupDef>TestGroup</groupDef>
-				<category>Structure</category>
+				<groupDef>TAEBasics</groupDef>
+				<category>Utility</category>
 			</li>
 		</modExtensions>
 	</ThingDef>
@@ -325,8 +325,8 @@
 				<alignToBottom>true</alignToBottom>
 			</li>
 			<li Class="TeleCore.SubMenuExtension">
-				<groupDef>TestGroup</groupDef>
-				<category>Structure</category>
+				<groupDef>TAEBasics</groupDef>
+				<category>Utility</category>
 			</li>
 		</modExtensions>
 	</ThingDef>
@@ -361,7 +361,7 @@
 			<ComponentIndustrial>1</ComponentIndustrial>
 		</costList>
 		<comps>
-			<li Class="TAE.CompProperties_ANS_AirVent">
+			<li Class="TAC.CompProperties_ANS_AirVent">
 				<ventMode>Intake</ventMode>
 				<gasThroughPut>10</gasThroughPut>
 				<filter>
@@ -425,7 +425,7 @@
 			</li>
 		</comps>
 		<placeWorkers>
-			<li>TAE.PlaceWorker_AtmosphericVent</li>
+			<li>TAC.PlaceWorker_AtmosphericVent</li>
 		</placeWorkers>
 		<castEdgeShadows>false</castEdgeShadows>
 		<staticSunShadowHeight>0</staticSunShadowHeight>	
@@ -433,8 +433,8 @@
 		<surfaceType>Item</surfaceType>
 		<modExtensions>
 			<li Class="TeleCore.SubMenuExtension">
-				<groupDef>TestGroup</groupDef>
-				<category>Structure</category>
+				<groupDef>TAEBasics</groupDef>
+				<category>Utility</category>
 			</li>
 		</modExtensions>
 	</ThingDef>
@@ -468,7 +468,7 @@
 			<ComponentIndustrial>1</ComponentIndustrial>
 		</costList>
 		<comps>
-			<li Class="TAE.CompProperties_ANS_AirVent">
+			<li Class="TAC.CompProperties_ANS_AirVent">
 				<ventMode>Output</ventMode>
 				<gasThroughPut>10</gasThroughPut>
 				<filter>
@@ -503,15 +503,15 @@
 			</li>
 		</comps>
 		<placeWorkers>
-			<li>TAE.PlaceWorker_AtmosphericVent</li>
+			<li>TAC.PlaceWorker_AtmosphericVent</li>
 		</placeWorkers>
 		<castEdgeShadows>false</castEdgeShadows>
 		<staticSunShadowHeight>0</staticSunShadowHeight>
 		<surfaceType>Item</surfaceType>
 		<modExtensions>
 			<li Class="TeleCore.SubMenuExtension">
-				<groupDef>TestGroup</groupDef>
-				<category>Structure</category>
+				<groupDef>TAEBasics</groupDef>
+				<category>Utility</category>
 			</li>
 		</modExtensions>
 	</ThingDef>
@@ -543,8 +543,8 @@
 			</damageData>
 		</graphicData>
 		<comps>
-			<li Class="TAE.CompProperties_ANS_Vent">
-				<compClass>TAE.Comp_ANS_Vent</compClass>
+			<li Class="TAC.CompProperties_ANS_Vent">
+				<compClass>TAC.Comp_ANS_Vent</compClass>
 				<passive>false</passive>
 				<intakeOffset>(0,0,-1)</intakeOffset>
 				<ventMode>TwoWay</ventMode>
@@ -581,19 +581,18 @@
 			-->
 		</comps>
 		<placeWorkers>
-			<li>TAE.PlaceWorker_AtmosphericVent</li>
+			<li>TAC.PlaceWorker_AtmosphericVent</li>
 		</placeWorkers>
 		<modExtensions>
 			<li Class="TeleCore.TeleDefExtension">
 				<graphicAlternateWorkerType>TeleCore.AlternateGraphicWorkerWallOnSouth</graphicAlternateWorkerType>
 			</li>
 			<li Class="TeleCore.SubMenuExtension">
-				<groupDef>TestGroup</groupDef>
-				<category>Structure</category>
+				<groupDef>TAEBasics</groupDef>
+				<category>System</category>
 			</li>
 		</modExtensions>
 	</ThingDef>
-	
 	
 	<!-- Passive Atmospheric Exchange -->
 	<ThingDef ParentName="Tele_BuildingBaseOverBuildings">
@@ -623,8 +622,8 @@
 			</damageData>
 		</graphicData>
 		<comps>
-			<li Class="TAE.CompProperties_ANS_Vent">
-				<compClass>TAE.Comp_ANS_Vent</compClass>
+			<li Class="TAC.CompProperties_ANS_Vent">
+				<compClass>TAC.Comp_ANS_Vent</compClass>
 				<passive>true</passive>
 				<intakeOffset>(0,0,-1)</intakeOffset>
 				<ventMode>TwoWay</ventMode>
@@ -659,15 +658,15 @@
 			</li>
 		</comps>
 		<placeWorkers>
-			<li>TAE.PlaceWorker_AtmosphericVent</li>
+			<li>TAC.PlaceWorker_AtmosphericVent</li>
 		</placeWorkers>
 		<modExtensions>
 			<li Class="TeleCore.TeleDefExtension">
 				<graphicAlternateWorkerType>TeleCore.AlternateGraphicWorkerWallOnSouth</graphicAlternateWorkerType>
 			</li>
 			<li Class="TeleCore.SubMenuExtension">
-				<groupDef>TestGroup</groupDef>
-				<category>Structure</category>
+				<groupDef>TAEBasics</groupDef>
+				<category>System</category>
 			</li>
 		</modExtensions>
 	</ThingDef>

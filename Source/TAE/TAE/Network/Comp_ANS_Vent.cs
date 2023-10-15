@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using RimWorld;
-using TAE.AtmosphericFlow;
+using TAC.AtmosphericFlow;
 using TeleCore;
 using TeleCore.FlowCore;
 using TeleCore.Network.Flow;
@@ -10,7 +10,7 @@ using TeleCore.Primitive;
 using UnityEngine;
 using Verse;
 
-namespace TAE;
+namespace TAC;
 
 public class Comp_ANS_Vent : Comp_AtmosphericNetworkStructure
 {
@@ -26,34 +26,18 @@ public class Comp_ANS_Vent : Comp_AtmosphericNetworkStructure
     protected override Room AtmosphericSource => IntakeCell.GetRoom(parent.Map);
     
     //State Bools
-    public bool CanTickNow => OwnedAtmosPart.IsReady && AtmosNetwork.IsWorking && (VentProps.passive || IsPowered);
-    public virtual bool CanManipulateNow => !IntakeCellBlocked;
-    
-    protected bool CanWork_Obsolete
+    public bool CanTickNow
     {
         get
         {
-            if (!IsPowered) return false;
-            foreach (var def in VentProps.AllowedValues)
-            {
-                switch (VentProps.ventMode)
-                {
-                    case AtmosphericVentMode.Intake:
-                        if (AtmosRoom.Volume.StoredValueOf(def) <= 0) return false;
-                        if (OwnedAtmosPart.Volume.Full) return false;
-                        break;
-                    case AtmosphericVentMode.Output:
-                        if (AtmosRoom.Volume.StoredValueOf(def) >= 1) return false;
-                        if (OwnedAtmosPart.Volume.Empty) return false;
-                        break;
-                    case AtmosphericVentMode.TwoWay:
-                        break;
-                }
-            }
-            return true;
+            var isOwnedAtmosPartReady = OwnedAtmosPart.IsReady;
+            var isNetworkWorkingOrPassiveVent = VentProps.passive || AtmosNetwork.IsWorking;
+            var isPoweredOrPassiveVent = VentProps.passive || IsPowered;
+            return isOwnedAtmosPartReady && isNetworkWorkingOrPassiveVent && isPoweredOrPassiveVent;
         }
     }
-
+    
+    public virtual bool CanManipulateNow => !IntakeCellBlocked;
     
     public override void PostSpawnSetup(bool respawningAfterLoad)
     {
@@ -75,6 +59,7 @@ public class Comp_ANS_Vent : Comp_AtmosphericNetworkStructure
     {
         base.CompTick();
         if (!CanTickNow || !CanManipulateNow) return;
+        
         
         //Begin Exchange
         var selfVolume = this.OwnedAtmosPart.Volume;
@@ -134,7 +119,7 @@ public class Comp_ANS_Vent : Comp_AtmosphericNetworkStructure
         }
     }
     
-    public static double Pressure<T>(FlowVolume<T> volume) where T : FlowValueDef
+    public static double Pressure<T>(FlowVolumeBase<T> volume) where T : FlowValueDef
     {
         if (volume.MaxCapacity <= 0)
         {

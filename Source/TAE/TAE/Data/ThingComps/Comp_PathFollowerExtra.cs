@@ -2,7 +2,7 @@
 using Verse;
 using Verse.AI;
 
-namespace TAE
+namespace TAC
 {
     public class Comp_PathFollowerExtra : ThingComp
     {

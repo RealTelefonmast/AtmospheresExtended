@@ -2,7 +2,7 @@
 using UnityEngine.Rendering;
 using Verse;
 
-namespace TAE
+namespace TAC
 {
     public class SkyOverlay_Atmosphere : SkyOverlay
     {

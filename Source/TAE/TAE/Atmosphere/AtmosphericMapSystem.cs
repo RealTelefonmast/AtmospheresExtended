@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using TAE.AtmosphericFlow;
+using TAC.AtmosphericFlow;
 using TeleCore;
 using TeleCore.FlowCore;
 using TeleCore.Generics;
@@ -12,12 +12,11 @@ using TeleCore.Primitive;
 using UnityEngine;
 using Verse;
 
-namespace TAE.Atmosphere.Rooms;
+namespace TAC.Atmosphere.Rooms;
 
 //TODO: Add a visual readout of a graph between all roomcomps via interfaces
 //TODO: Like those burst graphs
-
-public class AtmosphericSystem : FlowSystem<RoomComponent, AtmosphericVolume, AtmosphericValueDef>
+public class AtmosphericMapSystem : FlowSystem<RoomComponent, AtmosphericVolume, AtmosphericValueDef>
 {
     private AtmosphericVolume _mapVolume;
     private readonly List<DefValue<AtmosphericValueDef, float>> _naturalAtmospheres = new();
@@ -30,7 +29,7 @@ public class AtmosphericSystem : FlowSystem<RoomComponent, AtmosphericVolume, At
     public static double CSquared => 0.03;
     public static double DampFriction => 0.01; //TODO: Extract into global flowsystem config xml or mod settings
     
-    public AtmosphericSystem(int mapCellSize)
+    public AtmosphericMapSystem(int mapCellSize)
     {
         _naturalAtmospheres = new List<DefValue<AtmosphericValueDef, float>>();
     
@@ -42,7 +41,7 @@ public class AtmosphericSystem : FlowSystem<RoomComponent, AtmosphericVolume, At
         Notify_Regenerate(mapCellSize);
     }
     
-    public AtmosphericSystem(Map map) : this(map.cellIndices.NumGridCells)
+    public AtmosphericMapSystem(Map map) : this(map.cellIndices.NumGridCells)
     {
     }
     
@@ -54,7 +53,7 @@ public class AtmosphericSystem : FlowSystem<RoomComponent, AtmosphericVolume, At
     
     public void Notify_UpdateRoomComp(RoomComponent_Atmosphere comp)
     {
-        if (Relations.TryGetValue(comp, out var volume))
+        if (Relations.TryGetValue(comp, out var volume) && volume != _mapVolume)
         {
             volume.UpdateVolume(comp.Room.CellCount);
         }
@@ -63,19 +62,24 @@ public class AtmosphericSystem : FlowSystem<RoomComponent, AtmosphericVolume, At
     protected override float GetInterfacePassThrough(TwoWayKey<RoomComponent> connectors)
     {
         var connA = connectors.A;
+        var connB = connectors.B;
         if (connA == null)
         {
             TLog.Warning($"Tried to get interface pass-through for null connector: {connectors.A} -> {connectors.B}");
-            return 1;
+            return 0;
         }
         if (connA.CompNeighbors.Links.Count <= 0)
         {
+            if (connA.Parent.IsOutside && connB.Parent.IsOutside)
+            {
+                //Both are outside, no flow needed.
+                return 0;
+            }
             TLog.Warning($"Tried to get interface pass-through with no links: {connectors.A} -> {connectors.B}");
             return 1;
         }
         
-        RoomComponentLink relLink = connectors.A.CompNeighbors.LinkFor((connectors.A, connectors.B));
-        
+        RoomComponentLink? relLink = connectors.A.CompNeighbors.LinkFor((connectors.A, connectors.B));
         if (relLink == null)
         {
             TLog.Warning($"Tried to get interface pass-through with no links: {connectors.A} -> {connectors.B}");
@@ -95,7 +99,7 @@ public class AtmosphericSystem : FlowSystem<RoomComponent, AtmosphericVolume, At
     {
         if (Relations.ContainsKey(comp))
         {
-            TLog.Error("This technically shouldn't happen");
+            TLog.Error("This technically shouldn't happen.");
             return;
         }
 
@@ -125,8 +129,9 @@ public class AtmosphericSystem : FlowSystem<RoomComponent, AtmosphericVolume, At
             AddInterface((comp, adjComp), conn);
         }
         AssertState();
+        PushNaturalSaturation();
     }
-
+    
     public void Notify_RemoveRoomComp(RoomComponent_Atmosphere comp)
     {
         if (!Relations.ContainsKey(comp)) return;
@@ -164,13 +169,12 @@ public class AtmosphericSystem : FlowSystem<RoomComponent, AtmosphericVolume, At
         
     }
     
-
     #region Ticking
     
     protected override void PreTickProcessor(int tick)
     {
         //Keep Natural Saturation Up
-        if (tick % 750 == 0)
+        if (tick % 250 == 0)
         {
             PushNaturalSaturation();
         }
@@ -287,15 +291,16 @@ public class AtmosphericSystem : FlowSystem<RoomComponent, AtmosphericVolume, At
     }
 
     #region Atmospheric
-
+    
     private void PushNaturalSaturation()
     {
         foreach (var atmosphere in _naturalAtmospheres)
         {
             var storedOf = _mapVolume.StoredValueOf(atmosphere.Def);
-            var desired = _mapVolume.MaxCapacity * atmosphere.Value;
-            var diff = desired - storedOf;
+            var desired = _mapVolume.CapacityPerType * atmosphere.Value;
+            var diff = Math.Round(desired - storedOf, 6);
             if (diff <= 0) continue;
+            //TLog.Debug($"Pushing {diff}/{_mapVolume.CapacityPerType} for {atmosphere.Def}: {Math.Round(pct, 6)}");
             _mapVolume.TryAdd(atmosphere, diff);
         }
     }

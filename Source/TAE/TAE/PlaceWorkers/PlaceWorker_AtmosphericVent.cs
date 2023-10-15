@@ -3,7 +3,7 @@ using TeleCore;
 using UnityEngine;
 using Verse;
 
-namespace TAE;
+namespace TAC;
 
 public class PlaceWorker_AtmosphericVent : PlaceWorker
 {

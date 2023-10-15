@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Verse;
 
-namespace TAE;
+namespace TAC;
 
 public class SpreadingGasTypeDef : Def
 {

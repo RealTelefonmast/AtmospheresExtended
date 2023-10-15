@@ -1,11 +1,11 @@
 ﻿using System.Linq;
 using System.Text;
 using RimWorld;
-using TAE.Atmosphere.Rooms;
+using TAC.Atmosphere.Rooms;
 using UnityEngine;
 using Verse;
 
-namespace TAE;
+namespace TAC;
 
 public class Building_Airlock : Building_Door
 {

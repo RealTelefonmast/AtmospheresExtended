@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using TAE.Static;
+using TAC.Static;
 using TeleCore;
 using TeleCore.Primitive;
 using Verse;
 
-namespace TAE;
+namespace TAC;
 
 public enum AtmosphericVentMode
 {

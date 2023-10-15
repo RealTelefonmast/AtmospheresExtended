@@ -4,7 +4,7 @@
 	<ThingDef ParentName="BuildingNaturalBase">
 		<defName>AtmosphericDebug</defName>
 		<label>Atmospheric Debug</label>
-		<thingClass>TAE.Building_Debug</thingClass>
+		<thingClass>TAC.Building_Debug</thingClass>
 		<statBases>
 			<MaxHitPoints>20000</MaxHitPoints>
 			<Beauty>999</Beauty>
@@ -23,7 +23,7 @@
 		<size>(1,1)</size>
 		<fillPercent>0</fillPercent>
 		<inspectorTabs>
-			<li>TAE.ITab_TAEDebug</li>
+			<li>TAC.ITab_TAEDebug</li>
 		</inspectorTabs>
 		<modExtensions>
 			<li Class="TeleCore.SubMenuExtension">

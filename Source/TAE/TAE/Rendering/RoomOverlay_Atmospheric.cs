@@ -4,7 +4,7 @@ using TeleCore;
 using UnityEngine;
 using Verse;
 
-namespace TAE;
+namespace TAC;
 
 public class RoomOverlay_Atmospheric : RoomOverlayRenderer
 {

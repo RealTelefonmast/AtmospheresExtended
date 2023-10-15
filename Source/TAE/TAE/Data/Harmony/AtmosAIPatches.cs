@@ -2,7 +2,7 @@
 using Verse;
 using Verse.AI;
 
-namespace TAE
+namespace TAC
 {
     internal static class AtmosAIPatches
     {

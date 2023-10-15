@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using RimWorld;
-using TAE.Atmosphere.Rooms;
+using TAC.Atmosphere.Rooms;
 using TeleCore;
 using TeleCore.Network.Utility;
 using TeleCore.Rendering;
@@ -12,33 +12,39 @@ using Verse;
 using GridLayout = Verse.GridLayout;
 using WidgetRow = Verse.WidgetRow;
 
-namespace TAE;
+namespace TAC;
 
 public class Building_Debug : Building
 {
-    //
-    public RoomComponent_Atmosphere Atmos;
+
+    private RoomComponent_Atmosphere _atmos;
     
+    public RoomComponent_Atmosphere Atmos
+    {
+        get
+        {
+            if (_atmos?.Disbanded ?? false)
+            {
+                _atmos = this.GetRoom().GetRoomComp<RoomComponent_Atmosphere>();
+            }
+            return _atmos ??= this.GetRoom().GetRoomComp<RoomComponent_Atmosphere>();
+        }
+    }
+
     //
     public bool ShowAtmosPortals = true;
     public bool ShowAtmosComps = false;
     public bool ShowAllBorderThings = true;
     public bool ShowContainerReadout = false;
-
-
+    
     public override void SpawnSetup(Map map, bool respawningAfterLoad)
     {
         base.SpawnSetup(map, respawningAfterLoad);
-        Atmos = this.GetRoom().GetRoomComp<RoomComponent_Atmosphere>();
     }
     
     public override void Tick()
     {
         base.Tick();
-        if (Atmos.Disbanded)
-        {
-            Atmos = this.GetRoom().GetRoomComp<RoomComponent_Atmosphere>();;
-        }
     }
 
     public override void DrawGUIOverlay()
@@ -91,9 +97,10 @@ public class Building_Debug : Building
             //TWidgets.DrawValueContainerReadout(new Rect(mousePosition3.x, mousePosition3.y - containerReadoutSize3.y, containerReadoutSize3.x, containerReadoutSize3.y), comp.OutsideContainer);
         }
     }
-
+    
     public override void Draw()
     {
+        if(_atmos == null) return;
         foreach (var room in Atmos.AtmosphericInfo.AllAtmosphericRooms)
         {
             GenDraw.FillableBarRequest r = default(GenDraw.FillableBarRequest);
@@ -106,6 +113,7 @@ public class Building_Debug : Building
             r.rotation = Rot4.East;
             GenDraw.DrawFillableBar(r);
         }
+        
         
         if (ShowAtmosComps)
         {

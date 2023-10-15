@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using TAE.Atmosphere.Rooms;
+using TAC.Atmosphere.Rooms;
 using TeleCore;
 using UnityEngine;
 using Verse;
 
-namespace TAE;
+namespace TAC;
 
 public class AtmosphereRenderer
 {

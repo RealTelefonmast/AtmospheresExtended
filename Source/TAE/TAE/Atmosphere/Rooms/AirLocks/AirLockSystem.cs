@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Verse;
 
-namespace TAE.Data.RoomComps.Airlock;
+namespace TAC;
 
 /// <summary>
 /// A singular system for an airlock room.

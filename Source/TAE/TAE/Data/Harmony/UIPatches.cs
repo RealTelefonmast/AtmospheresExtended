@@ -9,7 +9,7 @@ using UnityEngine;
 using Verse;
 using Verse.Sound;
 
-namespace TAE;
+namespace TAC;
 
 public static class UIPatches
 {

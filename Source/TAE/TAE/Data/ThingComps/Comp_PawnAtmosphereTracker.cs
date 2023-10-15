@@ -1,19 +1,36 @@
 ﻿using System.Collections.Generic;
-using TAE.Atmosphere.Rooms;
+using TAC.Atmosphere.Rooms;
+using TeleCore;
 using Verse;
 
-namespace TAE;
+namespace TAC;
 
 public class Comp_PawnAtmosphereTracker : ThingComp
 {
     private static readonly Dictionary<Pawn, Comp_PawnAtmosphereTracker> OneOffs = new();
-    private RoomComponent_Atmosphere currentAtmosphere;
+    private RoomComponent_Atmosphere? _curAtmosphere;
 
     public Pawn Pawn => parent as Pawn;
+    public RoomComponent_Atmosphere RoomComp => _curAtmosphere;
 
-    public bool IsOutside => currentAtmosphere.IsOutdoors;
-
-    public RoomComponent_Atmosphere RoomComp => currentAtmosphere;
+    public bool IsOutside
+    {
+        get
+        {
+            if (_curAtmosphere == null)
+            {
+                TLog.Warning("Pawn had no atmosphere tracker. Re-attaching from current position.");
+                var room = Pawn.Position.GetRoom(Pawn.Map);
+                _curAtmosphere = room.GetRoomComp<RoomComponent_Atmosphere>();
+                if (_curAtmosphere == null)
+                {
+                    TLog.Error($"Pawn is in invalid room! {Pawn.Position} -> Room[{room.ID}][{room.Dereferenced}]");
+                    return false;
+                }
+            }
+            return _curAtmosphere.IsOutdoors;
+        }
+    }
 
     public static Comp_PawnAtmosphereTracker CompFor(Pawn pawn)
     {
@@ -40,18 +57,18 @@ public class Comp_PawnAtmosphereTracker : ThingComp
 
     public bool IsInAtmosphere(AtmosphericValueDef valueDef)
     {
-        return currentAtmosphere.Volume.StoredValueOf(valueDef) > 0;
+        return _curAtmosphere.Volume.StoredValueOf(valueDef) > 0;
     }
 
     //
     public void Notify_EnteredAtmosphere(RoomComponent_Atmosphere atmosphere)
     {
-        currentAtmosphere = atmosphere;
+        _curAtmosphere = atmosphere;
     }
 
     //Implies leaving outside
     public void Notify_Clear()
     {
-        currentAtmosphere = null;
+        _curAtmosphere = null;
     }
 }

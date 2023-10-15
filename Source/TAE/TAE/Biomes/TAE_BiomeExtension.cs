@@ -2,10 +2,10 @@
 using TeleCore;
 using Verse;
 
-namespace TAE;
+namespace TAC;
 
 /// <summary>
-/// Allows you to set biome-wide atmopsheres
+/// Allows you to set biome-wide atmospheres
 /// </summary>
 public class TAE_BiomeExtension : DefModExtension
 {

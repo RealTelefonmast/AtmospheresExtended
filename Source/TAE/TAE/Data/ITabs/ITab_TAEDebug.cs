@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using RimWorld;
-using TAE.Atmosphere.Rooms;
-using TAE.AtmosphericFlow;
+using TAC.Atmosphere.Rooms;
+using TAC.AtmosphericFlow;
 using TeleCore;
 using TeleCore.Network.Utility;
 using UnityEngine;
 using Verse;
 using GridLayout = Verse.GridLayout;
 
-namespace TAE;
+namespace TAC;
 
 //TODO: replace this with RoomComp.Draw_DebugExtra
 public class ITab_TAEDebug : ITab

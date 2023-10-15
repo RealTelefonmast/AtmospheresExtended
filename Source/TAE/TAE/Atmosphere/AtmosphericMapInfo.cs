@@ -1,21 +1,25 @@
 ﻿using System.Collections.Generic;
 using RimWorld;
-using TAE.Atmosphere.Rooms;
-using TAE.AtmosphericFlow;
-using TAE.Caching;
+using TAC.Atmosphere;
+using TAC.Atmosphere.Rooms;
+using TAC.AtmosphericFlow;
+using TAC.Caching;
 using TeleCore;
 using TeleCore.Data.Events;
 using TeleCore.Primitive;
 using Verse;
 
-namespace TAE;
+namespace TAC;
 
 public class AtmosphericMapInfo : MapInformation
 {
     //Scribing
     private AtmosphericScriber _scriber;
+    private AtmosphericCache _cache;
+    
     //System for room-nased atmospheric flow
-    private AtmosphericSystem _system;
+    private AtmosphericMapSystem _system;
+    private AtmosphericMapConverters _converters;
     
     private readonly AtmosphereRenderer _renderer;
     private readonly Dictionary<Room, RoomComponent_Atmosphere> _compLookUp;
@@ -24,13 +28,17 @@ public class AtmosphericMapInfo : MapInformation
     //
     public List<RoomComponent_Atmosphere> AllAtmosphericRooms => _allComps;
     public AtmosphereRenderer Renderer => _renderer;
-    public AtmosphericSystem System => _system;
+    public AtmosphericMapSystem System => _system;
+    public AtmosphericMapConverters Converters => _converters;
     public AtmosphericVolume MapVolume => _system.MapVolume;
+    internal AtmosphericCache Cache => _cache;
 
     public AtmosphericMapInfo(Map map) : base(map)
     {
         _scriber = new AtmosphericScriber(this);
-        _system = new AtmosphericSystem(map);
+        _cache = new AtmosphericCache(map);
+        _system = new AtmosphericMapSystem(map);
+        _converters = new AtmosphericMapConverters();
         
         //
         _compLookUp = new Dictionary<Room, RoomComponent_Atmosphere>();
@@ -90,6 +98,7 @@ public class AtmosphericMapInfo : MapInformation
         var tick = Find.TickManager.TicksGame;
 
         _system.Tick(tick);
+        _converters.Tick();
         _renderer.Tick();
     }
     

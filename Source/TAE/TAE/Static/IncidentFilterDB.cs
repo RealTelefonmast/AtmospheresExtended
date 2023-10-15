@@ -3,7 +3,7 @@ using RimWorld;
 using TeleCore;
 using Verse;
 
-namespace TAE.Static;
+namespace TAC.Static;
 
 internal static class IncidentFilterDB
 {

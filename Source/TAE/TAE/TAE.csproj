@@ -5,14 +5,15 @@
     <Authors>Telefonmast (aka Maxim)</Authors>
     <Company>Telefonmast</Company>
     <Description>Atmospheres for RimWorld.</Description>
-    <RootNamespace>TAE</RootNamespace>
-    <AssemblyName>TrueAtmospheres</AssemblyName>
+    <RootNamespace>TAC</RootNamespace>
+    <AssemblyName>AtmosCore</AssemblyName>
     <TargetFramework>net472</TargetFramework>
     <LangVersion>preview</LangVersion>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <Optimize>true</Optimize>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <OutputPath>..\..\..\Assemblies\</OutputPath>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -48,7 +49,7 @@
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
     
-    <PackageReference Include="TeleCore" Version="1.9.4.4">
+    <PackageReference Include="TeleCore" Version="1.9.6.3">
       <PrivateAssets>all</PrivateAssets>
       <ExcludeAssets>runtime</ExcludeAssets>
       <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -68,6 +69,11 @@
 
   <ItemGroup>
     <Publicize Include="Assembly-CSharp" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Airlock\" />
+    <Folder Include="Maps\Rooms\" />
   </ItemGroup>
 
 </Project>

@@ -1,13 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using TAE.AtmosphericFlow;
+using TAC.AtmosphericFlow;
 using TeleCore;
 using TeleCore.FlowCore;
 using UnityEngine;
 using Verse;
 
-namespace TAE.Atmosphere.Rooms;
+namespace TAC;
 
 public class RoomComponent_Atmosphere : RoomComponent
 {
@@ -15,6 +15,8 @@ public class RoomComponent_Atmosphere : RoomComponent
     private AtmosphericMapInfo _atmosphericInfo;
 
     public AtmosphericMapInfo AtmosphericInfo => _atmosphericInfo;
+    
+    public override string ShortIdentifier => "Atmos";
 
     public AtmosphericVolume Volume
     {

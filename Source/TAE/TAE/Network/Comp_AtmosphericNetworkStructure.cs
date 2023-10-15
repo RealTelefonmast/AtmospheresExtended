@@ -1,10 +1,10 @@
-﻿using TAE.Atmosphere.Rooms;
+﻿using TAC.Atmosphere.Rooms;
 using TeleCore;
 using TeleCore.Network;
 using TeleCore.Network.Data;
 using Verse;
 
-namespace TAE;
+namespace TAC;
 
 public class Comp_AtmosphericNetworkStructure : Comp_Network
 {

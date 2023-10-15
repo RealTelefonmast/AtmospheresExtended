@@ -1,16 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ModMetaData>
-  <packageId>Telefonmast.TrueAtmospheres</packageId>
-  <name>True Atmospheres</name>
+  <packageId>telefonmast.realism.core.atmos</packageId>
+  <name>Tele's Gases and Liquids</name>
+  <description>Adds a sophisticated framework to </description>
   <supportedVersions>
     <li>1.4</li>
   </supportedVersions>
   <authors>
-	<li>Telefonmast</li>
+	  <li>Telefonmast</li>
   </authors>
   <url></url>
   <loadAfter>
-	<li>Telefonmast.TeleCore</li>
+	  <li>telefonmast.core</li>
   </loadAfter>
   <modDependencies>
     <li>
@@ -20,7 +21,7 @@
       <steamWorkshopUrl>steam://url/CommunityFilePage/2009463077</steamWorkshopUrl>
     </li>
 	<li>
-      <packageId>Telefonmast.TeleCore</packageId>
+      <packageId>telefonmast.core</packageId>
       <displayName>TeleCore</displayName>
       <steamWorkshopUrl>steam://url/CommunityFilePage/2810454935</steamWorkshopUrl>
     </li>

@@ -11,18 +11,19 @@
 	<TeleCore.SubBuildMenuDef>
 		<defName>AtmosphericMenu</defName>
 		<subMenus>
-			<li>TestGroup</li>
+			<li>TAEBasics</li>
 			<li>TAEDebug</li>
 		</subMenus>
 	</TeleCore.SubBuildMenuDef>
 	
 	<TeleCore.SubMenuGroupDef>
-		<defName>TestGroup</defName>
+		<defName>TAEBasics</defName>
 		<subCategories>
-			<li>Structure</li>
-			<li>Decoration</li>
-			<li>TestCat</li>
+			<li>System</li>
+			<li>AirLock</li>
+			<li>Utility</li>
 		</subCategories>
+		<groupIconPath>UI/Icons/AtmosIcon</groupIconPath>
 	</TeleCore.SubMenuGroupDef>
 	
 	<TeleCore.SubMenuGroupDef>
@@ -34,18 +35,18 @@
 	</TeleCore.SubMenuGroupDef>
 	
 	<TeleCore.SubMenuCategoryDef>
-		<defName>Structure</defName>
-		<label>Structure</label>
+		<defName>System</defName>
+		<label>Piping</label>
 	</TeleCore.SubMenuCategoryDef>  
   
 	<TeleCore.SubMenuCategoryDef>
-		<defName>Decoration</defName>
-		<label>Decoration</label>
+		<defName>AirLock</defName>
+		<label>Air Lock</label>
 	</TeleCore.SubMenuCategoryDef>  
 	
 	<TeleCore.SubMenuCategoryDef>
-		<defName>TestCat</defName>
-		<label>TestCat</label>
+		<defName>Utility</defName>
+		<label>Utility</label>
 	</TeleCore.SubMenuCategoryDef>  
 	
 	<TeleCore.SubMenuCategoryDef>

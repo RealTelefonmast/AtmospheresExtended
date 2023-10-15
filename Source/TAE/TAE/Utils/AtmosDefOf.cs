@@ -2,7 +2,7 @@
 using TeleCore;
 using Verse;
 
-namespace TAE;
+namespace TAC;
 
 [DefOf]
 public static class AtmosDefOf

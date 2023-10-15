@@ -1,6 +1,6 @@
 ﻿using RimWorld;
 
-namespace TAE.Data.Stats;
+namespace TAC.Data.Stats;
 
 public class StatWorker_GasPermeability : StatWorker
 {

@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Defs>
 
-	<TAE.SpreadingGasTypeDef>
+	<TAC.SpreadingGasTypeDef>
 		<defName>Gas_TestGas</defName>
 		<label>Test Gas</label>
 		
@@ -20,6 +20,6 @@
 		
 		<dissipateTo IsNull="True"/>
 		
-	</TAE.SpreadingGasTypeDef>
+	</TAC.SpreadingGasTypeDef>
 
 </Defs>

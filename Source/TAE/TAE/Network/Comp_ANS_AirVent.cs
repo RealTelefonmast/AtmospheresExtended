@@ -5,7 +5,7 @@ using TeleCore;
 using TeleCore.Data.Events;
 using Verse;
 
-namespace TAE;
+namespace TAC;
 
 public class Comp_ANS_AirVent : Comp_ANS_Vent
 {
